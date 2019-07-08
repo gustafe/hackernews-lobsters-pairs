@@ -1,0 +1,13 @@
+select hn.created_time, lo.created_time,
+strftime('%s',hn.created_time)-strftime('%s',lo.created_time)
+from hackernews hn
+inner join lobsters lo
+on lo.url = hn.url
+where hn.url is not null
+
+
+### Hackernews / Lobsters ### 
+HNL_LIB=/home/gustaf/prj/HN-Lobsters-Tracker
+perl -I $HNL_LIB $HNL_LIB/HN-get-new-items-load-store.pl
+perl -I $HNL_LIB $HNL_LIB/Lo-get-new-items-load-store.pl
+

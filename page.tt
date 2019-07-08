@@ -1,0 +1,22 @@
+<h1>Recent submissions to Hackernews && Lobste.rs</h1>
+
+<p>All times are UTC.</p>
+<p>Page generated on [% meta.generate_time %].</p>
+
+[% FOREACH pair=pairs %]
+<h2>[% pair.heading %]</h2>
+
+<p>First submitted to [% pair.first.site %]
+on [% pair.first.time %]
+by <a href="[% pair.first.submitter_href %]">[% pair.first.submitter %]</a>
+as <a href="[% pair.first.title_href %]">[% pair.first.title %]</a>
+(score: [% pair.first.score %], comments: [% pair.first.comments %]).</p>
+
+<p>Then submitted to [% pair.then.site %]
+on [% pair.then.time %] ([%pair.diff %] later)
+by <a href="[% pair.then.submitter_href%]">[% pair.then.submitter %]</a> 
+as <a href="[% pair.then.title_href %]">[% pair.then.title%]</a>
+(score: [% pair.then.score %], comments: [% pair.then.comments %]).</p>
+
+[% END %]
+

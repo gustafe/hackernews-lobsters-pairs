@@ -1,0 +1,746 @@
+$VAR1 = {
+          'short_id' => 'b4gsiv',
+          'comment_count' => 0,
+          'downvotes' => 1,
+          'created_at' => '2019-07-05T07:16:13.000-05:00',
+          'description' => '<p>TL:DR - YouTube changed policies in April to drop videos with certain types of hacking content, which was recently picked up on twitter. We accelerated our plans to host our own content and are opening it up to the wider community.</p>
+',
+          'tags' => [
+                      'culture',
+                      'security'
+                    ],
+          'submitter_user' => {
+                                'created_at' => '2016-06-22T08:04:06.000-05:00',
+                                'avatar_url' => '/avatars/stevelord-100.png',
+                                'about' => 'I do hardware and security stuff, but I prefer ducks.
+
+* [HIDIOT](https://hidiot.com/)
+* [Raw Hex](https://rawhex.com/)
+* [44CON](https://44con.com/)
+* [Mandalorian](http://www.mandalorian.com/)
+',
+                                'username' => 'stevelord',
+                                'karma' => 1349,
+                                'is_moderator' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'invited_by_user' => 'melonism',
+                                'is_admin' => $VAR1->{'submitter_user'}{'is_moderator'}
+                              },
+          'short_id_url' => 'https://lobste.rs/s/b4gsiv',
+          'title' => 'Building a Safe Space for Security Research (Videos)',
+          'comments_url' => 'https://lobste.rs/s/b4gsiv/building_safe_space_for_security',
+          'url' => 'https://44con.com/2019/07/05/building-a-safe-space-for-security-research/',
+          'upvotes' => 1,
+          'score' => 0
+        };
+$VAR1 = {
+          'short_id_url' => 'https://lobste.rs/s/rhjjkb',
+          'tags' => [
+                      'security',
+                      'testing'
+                    ],
+          'submitter_user' => {
+                                'username' => 'calvin',
+                                'karma' => 46863,
+                                'about' => 'Soon we will all have special names... names designed to make the cathode ray tube resonate.
+
+XMPP: calvin [at] snacki.ca',
+                                'is_moderator' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'invited_by_user' => 'nbyouri',
+                                'is_admin' => $VAR1->{'submitter_user'}{'is_moderator'},
+                                'created_at' => '2014-07-01T06:47:13.000-05:00',
+                                'github_username' => 'NattyNarwhal',
+                                'avatar_url' => '/avatars/calvin-100.png'
+                              },
+          'url' => 'https://kripken.github.io/blog/binaryen/2019/06/11/fuzz-reduce-productivity.html',
+          'title' => 'Fuzzers & Reducers as Productivity Tools',
+          'comments_url' => 'https://lobste.rs/s/rhjjkb/fuzzers_reducers_as_productivity_tools',
+          'score' => 2,
+          'upvotes' => 2,
+          'comment_count' => 0,
+          'short_id' => 'rhjjkb',
+          'description' => '',
+          'downvotes' => 0,
+          'created_at' => '2019-07-05T07:07:00.000-05:00'
+        };
+$VAR1 = {
+          'created_at' => '2019-07-05T07:06:28.000-05:00',
+          'downvotes' => 0,
+          'description' => '',
+          'short_id' => 'edswvq',
+          'comment_count' => 0,
+          'upvotes' => 2,
+          'score' => 2,
+          'comments_url' => 'https://lobste.rs/s/edswvq/snuffleupagus_versus_recent_high',
+          'title' => 'Snuffleupagus versus recent high-profile vulnerabilities',
+          'url' => 'https://dustri.org/b/snuffleupagus-versus-recent-high-profile-vulnerabilities.html',
+          'submitter_user' => {
+                                'avatar_url' => '/avatars/calvin-100.png',
+                                'created_at' => '2014-07-01T06:47:13.000-05:00',
+                                'github_username' => 'NattyNarwhal',
+                                'is_moderator' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'is_admin' => $VAR1->{'submitter_user'}{'is_moderator'},
+                                'invited_by_user' => 'nbyouri',
+                                'karma' => 46863,
+                                'username' => 'calvin',
+                                'about' => 'Soon we will all have special names... names designed to make the cathode ray tube resonate.
+
+XMPP: calvin [at] snacki.ca'
+                              },
+          'tags' => [
+                      'php',
+                      'security'
+                    ],
+          'short_id_url' => 'https://lobste.rs/s/edswvq'
+        };
+$VAR1 = {
+          'comments_url' => 'https://lobste.rs/s/ixbhzl/google_suspends_new_zealand_trending',
+          'title' => 'Google suspends New Zealand \'trending\' emails after suspect\'s name released',
+          'url' => 'https://www.abc.net.au/news/2019-07-05/google-suspends-trending-email-alerts-in-nz-after-breach/11284148',
+          'submitter_user' => {
+                                'created_at' => '2019-03-22T08:53:39.000-05:00',
+                                'avatar_url' => '/avatars/whalabi-100.png',
+                                'about' => 'Former dev, writing about the tech industry, science, and such these days',
+                                'username' => 'whalabi',
+                                'karma' => 153,
+                                'is_moderator' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'invited_by_user' => 'gerikson',
+                                'is_admin' => $VAR1->{'submitter_user'}{'is_moderator'}
+                              },
+          'tags' => [
+                      'privacy'
+                    ],
+          'short_id_url' => 'https://lobste.rs/s/ixbhzl',
+          'upvotes' => 1,
+          'score' => -1,
+          'created_at' => '2019-07-05T06:19:55.000-05:00',
+          'downvotes' => 2,
+          'description' => '',
+          'short_id' => 'ixbhzl',
+          'comment_count' => 0
+        };
+$VAR1 = {
+          'short_id' => 'khgqhm',
+          'comment_count' => 0,
+          'downvotes' => 0,
+          'created_at' => '2019-07-05T04:18:56.000-05:00',
+          'description' => '',
+          'submitter_user' => {
+                                'about' => '[klingt.net](https://klingt.net)',
+                                'username' => 'klingtnet',
+                                'karma' => 806,
+                                'invited_by_user' => 'ktsl',
+                                'is_admin' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'is_moderator' => $VAR1->{'submitter_user'}{'is_admin'},
+                                'github_username' => 'klingtnet',
+                                'created_at' => '2016-12-16T04:04:25.000-06:00',
+                                'avatar_url' => '/avatars/klingtnet-100.png'
+                              },
+          'tags' => [
+                      'compilers',
+                      'go'
+                    ],
+          'short_id_url' => 'https://lobste.rs/s/khgqhm',
+          'title' => 'Go compiler internals: adding a new statement to Go - Part 1',
+          'comments_url' => 'https://lobste.rs/s/khgqhm/go_compiler_internals_adding_new',
+          'url' => 'https://eli.thegreenplace.net/2019/go-compiler-internals-adding-a-new-statement-to-go-part-1/',
+          'upvotes' => 8,
+          'score' => 8
+        };
+$VAR1 = {
+          'comments_url' => 'https://lobste.rs/s/svf0ux/would_aliens_understand_lambda_calculus',
+          'title' => 'Would aliens understand lambda calculus? (2018)',
+          'url' => 'http://tomasp.net/blog/2018/alien-lambda-calculus/',
+          'tags' => [
+                      'plt'
+                    ],
+          'submitter_user' => {
+                                'invited_by_user' => 'steveklabnik',
+                                'is_admin' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'is_moderator' => $VAR1->{'submitter_user'}{'is_admin'},
+                                'about' => 'I made the initial port of Rust to ARM and Android.',
+                                'karma' => 4829,
+                                'username' => 'sanxiyn',
+                                'avatar_url' => '/avatars/sanxiyn-100.png',
+                                'github_username' => 'sanxiyn',
+                                'twitter_username' => 'sanxiyn',
+                                'created_at' => '2015-01-21T09:51:34.000-06:00'
+                              },
+          'short_id_url' => 'https://lobste.rs/s/svf0ux',
+          'upvotes' => 7,
+          'score' => 7,
+          'created_at' => '2019-07-05T04:09:41.000-05:00',
+          'downvotes' => 0,
+          'description' => '',
+          'short_id' => 'svf0ux',
+          'comment_count' => 0
+        };
+$VAR1 = {
+          'score' => 0,
+          'upvotes' => 5,
+          'url' => 'https://gitlab.gnome.org/GNOME/gimp/issues/3617',
+          'comments_url' => 'https://lobste.rs/s/6nt0lx/consider_renaming_gimp_less_offensive',
+          'title' => 'Consider Renaming GIMP To A Less Offensive Name',
+          'short_id_url' => 'https://lobste.rs/s/6nt0lx',
+          'submitter_user' => {
+                                'is_admin' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'is_moderator' => $VAR1->{'submitter_user'}{'is_admin'},
+                                'invited_by_user' => 'technomancy',
+                                'about' => "Jordi Guti\x{e9}rrez Hermoso. 
+
+GNU Octave dev, Mercurial enthusiast.
+
+Coder, mathematician, hacker-errant.
+
+You may contact me at jordigh\@octave.org",
+                                'karma' => 5251,
+                                'username' => 'JordiGH',
+                                'avatar_url' => '/avatars/JordiGH-100.png',
+                                'created_at' => '2014-11-24T16:21:05.000-06:00'
+                              },
+          'tags' => [
+                      'culture',
+                      'graphics'
+                    ],
+          'description' => '',
+          'downvotes' => 5,
+          'created_at' => '2019-07-04T21:59:46.000-05:00',
+          'comment_count' => 1,
+          'short_id' => '6nt0lx'
+        };
+$VAR1 = {
+          'score' => 6,
+          'upvotes' => 6,
+          'short_id_url' => 'https://lobste.rs/s/mnchx4',
+          'submitter_user' => {
+                                'is_admin' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'invited_by_user' => 'pushcx',
+                                'is_moderator' => $VAR1->{'submitter_user'}{'is_admin'},
+                                'about' => 'Software developer',
+                                'username' => 'Teckla',
+                                'karma' => 443,
+                                'avatar_url' => '/avatars/Teckla-100.png',
+                                'created_at' => '2016-08-16T13:59:33.000-05:00'
+                              },
+          'tags' => [
+                      'distributed',
+                      'networking'
+                    ],
+          'url' => 'https://techblog.bozho.net/idea-a-generic-p2p-network-client/',
+          'comments_url' => 'https://lobste.rs/s/mnchx4/idea_generic_p2p_network_client',
+          'title' => 'Idea: A Generic P2P Network Client',
+          'comment_count' => 2,
+          'short_id' => 'mnchx4',
+          'description' => '',
+          'downvotes' => 0,
+          'created_at' => '2019-07-04T20:46:32.000-05:00'
+        };
+$VAR1 = {
+          'score' => 3,
+          'upvotes' => 3,
+          'short_id_url' => 'https://lobste.rs/s/ncr9pe',
+          'tags' => [
+                      'math',
+                      'visualization'
+                    ],
+          'submitter_user' => {
+                                'about' => '*Literally* full of ants.
+
+Friendly engineer and human being.
+
+Strong opinions held weakly, sometimes weekly.
+
+> Gentrification is the process by which nebulous threats are pacified and alchemised into money. 
+',
+                                'karma' => 21940,
+                                'username' => 'friendlysock',
+                                'is_moderator' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'invited_by_user' => 'MasonJar',
+                                'is_admin' => $VAR1->{'submitter_user'}{'is_moderator'},
+                                'created_at' => '2014-02-20T00:43:41.000-06:00',
+                                'avatar_url' => '/avatars/friendlysock-100.png'
+                              },
+          'url' => 'https://github.com/kroitor/gjk.c',
+          'comments_url' => 'https://lobste.rs/s/ncr9pe/gjk_c_gilbert_johnson_keerthi_plain_c',
+          'title' => "gjk.c \x{2013} Gilbert-Johnson-Keerthi In Plain C",
+          'comment_count' => 1,
+          'short_id' => 'ncr9pe',
+          'description' => '',
+          'created_at' => '2019-07-04T19:49:05.000-05:00',
+          'downvotes' => 0
+        };
+$VAR1 = {
+          'downvotes' => 0,
+          'created_at' => '2019-07-04T19:03:49.000-05:00',
+          'description' => '',
+          'short_id' => 'zg7n8n',
+          'comment_count' => 4,
+          'upvotes' => 17,
+          'score' => 17,
+          'comments_url' => 'https://lobste.rs/s/zg7n8n/time_i_tried_ruin_halo_2',
+          'title' => 'The time I tried to ruin Halo 2',
+          'url' => 'https://www.polygon.com/features/2019/7/2/18651880/the-time-i-tried-to-ruin-halo-2-user-research',
+          'tags' => [
+                      'cogsci',
+                      'games',
+                      'historical'
+                    ],
+          'submitter_user' => {
+                                'created_at' => '2014-02-20T00:43:41.000-06:00',
+                                'avatar_url' => '/avatars/friendlysock-100.png',
+                                'username' => 'friendlysock',
+                                'karma' => 21940,
+                                'about' => '*Literally* full of ants.
+
+Friendly engineer and human being.
+
+Strong opinions held weakly, sometimes weekly.
+
+> Gentrification is the process by which nebulous threats are pacified and alchemised into money. 
+',
+                                'is_admin' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'invited_by_user' => 'MasonJar',
+                                'is_moderator' => $VAR1->{'submitter_user'}{'is_admin'}
+                              },
+          'short_id_url' => 'https://lobste.rs/s/zg7n8n'
+        };
+$VAR1 = {
+          'tags' => [
+                      'devops'
+                    ],
+          'submitter_user' => {
+                                'created_at' => '2016-10-12T16:06:59.000-05:00',
+                                'avatar_url' => '/avatars/vaibhavsagar-100.png',
+                                'about' => '',
+                                'karma' => 145,
+                                'username' => 'vaibhavsagar',
+                                'is_admin' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'is_moderator' => $VAR1->{'submitter_user'}{'is_admin'},
+                                'invited_by_user' => 'rhonorv'
+                              },
+          'short_id_url' => 'https://lobste.rs/s/kwupl9',
+          'title' => 'Functional DevOps in a Dysfunctional World',
+          'comments_url' => 'https://lobste.rs/s/kwupl9/functional_devops_dysfunctional_world',
+          'url' => 'https://vaibhavsagar.com/blog/2019/07/04/functional-devops/',
+          'upvotes' => 9,
+          'score' => 9,
+          'short_id' => 'kwupl9',
+          'comment_count' => 2,
+          'downvotes' => 0,
+          'created_at' => '2019-07-04T17:59:47.000-05:00',
+          'description' => ''
+        };
+$VAR1 = {
+          'description' => '',
+          'downvotes' => 1,
+          'created_at' => '2019-07-04T17:52:40.000-05:00',
+          'comment_count' => 0,
+          'short_id' => 'kw352q',
+          'score' => 6,
+          'upvotes' => 7,
+          'url' => 'https://medium.com/@kori/systems-easily-understandable-by-one-person-f92e8613e2e',
+          'title' => 'Systems easily understandable by one person',
+          'comments_url' => 'https://lobste.rs/s/kw352q/systems_easily_understandable_by_one',
+          'short_id_url' => 'https://lobste.rs/s/kw352q',
+          'submitter_user' => {
+                                'is_admin' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'is_moderator' => $VAR1->{'submitter_user'}{'is_admin'},
+                                'invited_by_user' => 'FRIGN',
+                                'username' => 'luiz',
+                                'karma' => 621,
+                                'about' => 'Otherwise known as kori.
+[Keybase](https://keybase.io/kori)',
+                                'avatar_url' => '/avatars/luiz-100.png',
+                                'created_at' => '2015-08-02T15:24:51.000-05:00',
+                                'github_username' => 'kori'
+                              },
+          'tags' => [
+                      'culture',
+                      'linux',
+                      'lisp',
+                      'osdev',
+                      'programming',
+                      'release'
+                    ]
+        };
+$VAR1 = {
+          'url' => 'https://dacav.roundhousecode.com/blog/2019-07/04-disposable-firefox.html',
+          'title' => 'Disposable Firefox',
+          'comments_url' => 'https://lobste.rs/s/8pbc1o/disposable_firefox',
+          'short_id_url' => 'https://lobste.rs/s/8pbc1o',
+          'submitter_user' => {
+                                'created_at' => '2014-01-07T03:41:49.000-06:00',
+                                'avatar_url' => '/avatars/dacav-100.png',
+                                'username' => 'dacav',
+                                'karma' => 56,
+                                'about' => 'http://dacav.roundhousecode.com',
+                                'is_moderator' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'is_admin' => $VAR1->{'submitter_user'}{'is_moderator'},
+                                'invited_by_user' => 'n'
+                              },
+          'tags' => [
+                      'browsers',
+                      'linux',
+                      'security'
+                    ],
+          'score' => 5,
+          'upvotes' => 5,
+          'description' => '',
+          'downvotes' => 0,
+          'created_at' => '2019-07-04T16:23:51.000-05:00',
+          'comment_count' => 0,
+          'short_id' => '8pbc1o'
+        };
+$VAR1 = {
+          'downvotes' => 0,
+          'created_at' => '2019-07-04T16:22:40.000-05:00',
+          'description' => '',
+          'short_id' => 'mpwus7',
+          'comment_count' => 0,
+          'comments_url' => 'https://lobste.rs/s/mpwus7/software_woven_into_wire_core_rope_apollo',
+          'title' => 'Software woven into wire: Core rope and the Apollo Guidance Computer',
+          'url' => 'http://www.righto.com/2019/07/software-woven-into-wire-core-rope-and.html',
+          'tags' => [
+                      'hardware',
+                      'historical'
+                    ],
+          'submitter_user' => {
+                                'invited_by_user' => 'nbyouri',
+                                'is_admin' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'is_moderator' => $VAR1->{'submitter_user'}{'is_admin'},
+                                'username' => 'calvin',
+                                'karma' => 46863,
+                                'about' => 'Soon we will all have special names... names designed to make the cathode ray tube resonate.
+
+XMPP: calvin [at] snacki.ca',
+                                'avatar_url' => '/avatars/calvin-100.png',
+                                'created_at' => '2014-07-01T06:47:13.000-05:00',
+                                'github_username' => 'NattyNarwhal'
+                              },
+          'short_id_url' => 'https://lobste.rs/s/mpwus7',
+          'upvotes' => 4,
+          'score' => 4
+        };
+$VAR1 = {
+          'downvotes' => 1,
+          'created_at' => '2019-07-04T16:22:20.000-05:00',
+          'description' => '',
+          'short_id' => '8d6dmb',
+          'comment_count' => 2,
+          'upvotes' => 12,
+          'score' => 11,
+          'comments_url' => 'https://lobste.rs/s/8d6dmb/404_found',
+          'title' => '404 Found',
+          'url' => 'https://flak.tedunangst.com/post/404-Found',
+          'submitter_user' => {
+                                'avatar_url' => '/avatars/calvin-100.png',
+                                'github_username' => 'NattyNarwhal',
+                                'created_at' => '2014-07-01T06:47:13.000-05:00',
+                                'is_admin' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'is_moderator' => $VAR1->{'submitter_user'}{'is_admin'},
+                                'invited_by_user' => 'nbyouri',
+                                'about' => 'Soon we will all have special names... names designed to make the cathode ray tube resonate.
+
+XMPP: calvin [at] snacki.ca',
+                                'karma' => 46863,
+                                'username' => 'calvin'
+                              },
+          'tags' => [
+                      'web'
+                    ],
+          'short_id_url' => 'https://lobste.rs/s/8d6dmb'
+        };
+$VAR1 = {
+          'downvotes' => 0,
+          'created_at' => '2019-07-04T16:12:15.000-05:00',
+          'description' => '<p>I cut the relevant pages from this source: <a href="https://archive.org/stream/BYTE_Vol_10-08_1985-08_The_Amiga#page/n241/mode/2up" rel="nofollow">https://archive.org/stream/BYTE_Vol_10-08_1985-08_The_Amiga#page/n241/mode/2up</a></p>
+<p>(The original was 400+ pages and a few hundred MB)</p>
+',
+          'short_id' => '3yvi1o',
+          'comment_count' => 3,
+          'upvotes' => 4,
+          'score' => 4,
+          'title' => 'A Hope Tutorial (1985)',
+          'comments_url' => 'https://lobste.rs/s/3yvi1o/hope_tutorial_1985',
+          'url' => 'http://breckyunits.com/AHopeTutorial.pdf',
+          'tags' => [
+                      'haskell',
+                      'pdf',
+                      'plt'
+                    ],
+          'submitter_user' => {
+                                'avatar_url' => '/avatars/breck-100.png',
+                                'created_at' => '2019-04-15T00:02:13.000-05:00',
+                                'github_username' => 'breck7',
+                                'is_moderator' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'is_admin' => $VAR1->{'submitter_user'}{'is_moderator'},
+                                'invited_by_user' => 'ec',
+                                'username' => 'breck',
+                                'karma' => 27,
+                                'about' => 'Researcher/Software Engineer/Data Scientist at University of Hawaii Cancer Center.
+
+https://github.com/breck7'
+                              },
+          'short_id_url' => 'https://lobste.rs/s/3yvi1o'
+        };
+$VAR1 = {
+          'submitter_user' => {
+                                'invited_by_user' => 'tankf33der',
+                                'is_moderator' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'is_admin' => $VAR1->{'submitter_user'}{'is_moderator'},
+                                'karma' => 132,
+                                'username' => 'Loup-Vaillant',
+                                'about' => '',
+                                'avatar_url' => '/avatars/Loup-Vaillant-100.png',
+                                'created_at' => '2019-03-25T08:44:12.000-05:00'
+                              },
+          'tags' => [
+                      'practices'
+                    ],
+          'short_id_url' => 'https://lobste.rs/s/smxgmb',
+          'comments_url' => 'https://lobste.rs/s/smxgmb/assholes_probing_examination',
+          'title' => 'Assholes: A Probing Examination',
+          'url' => 'https://www.nomachetejuggling.com/2019/06/03/dont-hire-assholes/',
+          'upvotes' => 34,
+          'score' => 33,
+          'short_id' => 'smxgmb',
+          'comment_count' => 10,
+          'downvotes' => 1,
+          'created_at' => '2019-07-04T15:56:06.000-05:00',
+          'description' => ''
+        };
+$VAR1 = {
+          'description' => '',
+          'downvotes' => 0,
+          'created_at' => '2019-07-04T15:51:17.000-05:00',
+          'comment_count' => 6,
+          'short_id' => 'dd9odp',
+          'url' => 'https://www.slideshare.net/JordanParmer/category-theory-in-10-minutes-77309719',
+          'title' => 'Category Theory in 10 Minutes',
+          'comments_url' => 'https://lobste.rs/s/dd9odp/category_theory_10_minutes',
+          'short_id_url' => 'https://lobste.rs/s/dd9odp',
+          'submitter_user' => {
+                                'github_username' => 'sebastien',
+                                'created_at' => '2016-03-29T10:31:33.000-05:00',
+                                'avatar_url' => '/avatars/sebastien-100.png',
+                                'about' => 'Interested in programming languages, data visualization, computer graphics and any kind of digital activism. I run FFunction, a dataviz studio by day.',
+                                'username' => 'sebastien',
+                                'karma' => 842,
+                                'invited_by_user' => 'pushcx',
+                                'is_moderator' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'is_admin' => $VAR1->{'submitter_user'}{'is_moderator'}
+                              },
+          'tags' => [
+                      'compsci',
+                      'math',
+                      'slides'
+                    ],
+          'score' => 8,
+          'upvotes' => 8
+        };
+$VAR1 = {
+          'downvotes' => 0,
+          'created_at' => '2019-07-04T14:44:26.000-05:00',
+          'description' => '',
+          'short_id' => '8ngnkf',
+          'comment_count' => 0,
+          'upvotes' => 2,
+          'score' => 2,
+          'title' => 'Formatting floating point numbers',
+          'comments_url' => 'https://lobste.rs/s/8ngnkf/formatting_floating_point_numbers',
+          'url' => 'https://www.zverovich.net/2019/02/11/formatting-floating-point-numbers.html',
+          'tags' => [
+                      'c++',
+                      'compsci'
+                    ],
+          'submitter_user' => {
+                                'about' => 'I\'m an academic in artificial intelligence. My research has mostly been on AI & games, both games as a testbed for AI and AI for game design. I\'m also interested in other kinds of human/machine co-creation, computationally modeling design spaces, and history of technology. Currently an academic in Washington, D.C. (previously: Cornwall, Copenhagen, Santa Cruz, Atlanta, ...).
+
+Website: [kmjn.org](http://www.kmjn.org/)',
+                                'karma' => 5942,
+                                'username' => 'mjn',
+                                'is_moderator' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'is_admin' => $VAR1->{'submitter_user'}{'is_moderator'},
+                                'invited_by_user' => 'itistoday',
+                                'twitter_username' => 'mm_jj_nn',
+                                'created_at' => '2015-02-11T16:45:32.000-06:00',
+                                'avatar_url' => '/avatars/mjn-100.png'
+                              },
+          'short_id_url' => 'https://lobste.rs/s/8ngnkf'
+        };
+$VAR1 = {
+          'upvotes' => 4,
+          'score' => 4,
+          'title' => 'wimpysworld/antsy-alien-attack',
+          'comments_url' => 'https://lobste.rs/s/in4qxy/wimpysworld_antsy_alien_attack',
+          'url' => 'https://github.com/wimpysworld/antsy-alien-attack',
+          'tags' => [
+                      'games',
+                      'linux'
+                    ],
+          'submitter_user' => {
+                                'invited_by_user' => 'derekprior',
+                                'is_moderator' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'is_admin' => $VAR1->{'submitter_user'}{'is_moderator'},
+                                'about' => 'Automation Junkie, Geek, Freemason.  I wave my freak flag high :)',
+                                'karma' => 4625,
+                                'username' => 'feoh',
+                                'avatar_url' => '/avatars/feoh-100.png',
+                                'twitter_username' => 'feoh',
+                                'github_username' => 'feoh',
+                                'created_at' => '2016-01-11T11:27:16.000-06:00'
+                              },
+          'short_id_url' => 'https://lobste.rs/s/in4qxy',
+          'downvotes' => 0,
+          'created_at' => '2019-07-04T14:41:48.000-05:00',
+          'description' => '',
+          'short_id' => 'in4qxy',
+          'comment_count' => 1
+        };
+$VAR1 = {
+          'comment_count' => 0,
+          'short_id' => 'ujwgwx',
+          'description' => '',
+          'downvotes' => 1,
+          'created_at' => '2019-07-04T13:35:30.000-05:00',
+          'score' => 3,
+          'upvotes' => 4,
+          'short_id_url' => 'https://lobste.rs/s/ujwgwx',
+          'tags' => [
+                      'compilers',
+                      'plt',
+                      'programming'
+                    ],
+          'submitter_user' => {
+                                'avatar_url' => '/avatars/yorickpeterse-100.png',
+                                'created_at' => '2019-06-10T09:26:43.000-05:00',
+                                'is_moderator' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'is_admin' => $VAR1->{'submitter_user'}{'is_moderator'},
+                                'invited_by_user' => 'benlovell',
+                                'username' => 'yorickpeterse',
+                                'karma' => 26,
+                                'about' => 'Staff developer at [GitLab](https://about.gitlab.com). Author of the [Inko programming language](https://inko-lang.org/).'
+                              },
+          'url' => 'https://inko-lang.org/news/funding-inkos-development/',
+          'comments_url' => 'https://lobste.rs/s/ujwgwx/funding_inko_s_development',
+          'title' => 'Funding Inko\'s Development'
+        };
+$VAR1 = {
+          'score' => 2,
+          'upvotes' => 2,
+          'short_id_url' => 'https://lobste.rs/s/r2ebf9',
+          'submitter_user' => {
+                                'is_admin' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'invited_by_user' => 'JordiGH',
+                                'is_moderator' => $VAR1->{'submitter_user'}{'is_admin'},
+                                'karma' => 11,
+                                'username' => 'dhanushka',
+                                'about' => "Engineer, Blogger, FOSS lover, Creator of \@tweebot9, DIYer and \x{1f1f1}\x{1f1f0}",
+                                'avatar_url' => '/avatars/dhanushka-100.png',
+                                'created_at' => '2019-06-04T13:17:59.000-05:00'
+                              },
+          'tags' => [
+                      'devops',
+                      'networking',
+                      'web'
+                    ],
+          'url' => 'https://architecture-database.blogspot.com/2019/07/gentle-introduction-to-envoy-proxy-and.html',
+          'comments_url' => 'https://lobste.rs/s/r2ebf9/gentle_introduction_envoy_proxy_load',
+          'title' => 'Gentle Introduction to the Envoy Proxy and Load-balancing',
+          'comment_count' => 0,
+          'short_id' => 'r2ebf9',
+          'description' => '<p>This is a simple introduction to the envoy proxy and load balancing concepts in proxies.</p>
+',
+          'created_at' => '2019-07-04T13:11:56.000-05:00',
+          'downvotes' => 0
+        };
+$VAR1 = {
+          'short_id' => 'hlg2ty',
+          'comment_count' => 0,
+          'downvotes' => 0,
+          'created_at' => '2019-07-04T11:02:47.000-05:00',
+          'description' => '',
+          'tags' => [
+                      'programming'
+                    ],
+          'submitter_user' => {
+                                'avatar_url' => '/avatars/calvin-100.png',
+                                'created_at' => '2014-07-01T06:47:13.000-05:00',
+                                'github_username' => 'NattyNarwhal',
+                                'is_admin' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'is_moderator' => $VAR1->{'submitter_user'}{'is_admin'},
+                                'invited_by_user' => 'nbyouri',
+                                'karma' => 46863,
+                                'username' => 'calvin',
+                                'about' => 'Soon we will all have special names... names designed to make the cathode ray tube resonate.
+
+XMPP: calvin [at] snacki.ca'
+                              },
+          'short_id_url' => 'https://lobste.rs/s/hlg2ty',
+          'comments_url' => 'https://lobste.rs/s/hlg2ty/generating_good_error_messages_from_code',
+          'title' => 'Generating good error messages from code analysis tools is harder than it looks',
+          'url' => 'https://devblogs.microsoft.com/oldnewthing/20190704-00/?p=102650',
+          'upvotes' => 1,
+          'score' => 1
+        };
+$VAR1 = {
+          'comment_count' => 0,
+          'short_id' => '5tw3h3',
+          'description' => '',
+          'downvotes' => 0,
+          'created_at' => '2019-07-04T10:53:21.000-05:00',
+          'short_id_url' => 'https://lobste.rs/s/5tw3h3',
+          'tags' => [
+                      'javascript'
+                    ],
+          'submitter_user' => {
+                                'github_username' => 'jfet97',
+                                'twitter_username' => 'JFieldEffectT',
+                                'created_at' => '2018-06-12T07:42:52.000-05:00',
+                                'avatar_url' => '/avatars/jfet97-100.png',
+                                'about' => 'Frontend student/developer',
+                                'karma' => 30,
+                                'username' => 'jfet97',
+                                'is_admin' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'is_moderator' => $VAR1->{'submitter_user'}{'is_admin'},
+                                'invited_by_user' => 'bio_end_io_t'
+                              },
+          'url' => 'https://dev.to/jfet97/reactive-primitives-in-javascript-and-other-cool-stuff-with-oxjs-4mhe',
+          'title' => 'Reactive primitives in JavaScript (and other cool stuff with OxJS)',
+          'comments_url' => 'https://lobste.rs/s/5tw3h3/reactive_primitives_javascript_other',
+          'score' => 2,
+          'upvotes' => 2
+        };
+$VAR1 = {
+          'created_at' => '2019-07-04T10:50:23.000-05:00',
+          'downvotes' => 0,
+          'description' => '',
+          'short_id' => '0lwwmn',
+          'comment_count' => 0,
+          'upvotes' => 5,
+          'score' => 5,
+          'comments_url' => 'https://lobste.rs/s/0lwwmn/monitoring_stock_prices_with_prometheus',
+          'title' => 'Monitoring Stock Prices with Prometheus and Molescrape',
+          'url' => 'http://eliteinformatiker.de/2019/07/03/monitoring-stock-prices-with-prometheus-and-molescrape',
+          'submitter_user' => {
+                                'about' => 'I am a software developer working in the automotive industry, In my free time I mainly work on two projects:
+
+- a web crawling and post processing platform (+ running some projects there)
+- a foreign language text recommender system
+
+Links to my sites:
+- Portfolio: https://stefan-koch.name/
+- Blog: https://eliteinformatiker.de/ (mixed German and English)',
+                                'karma' => 78,
+                                'username' => 'aufziehvogel',
+                                'invited_by_user' => 'vehk',
+                                'is_moderator' => bless( do{\(my $o = 0)}, 'JSON::PP::Boolean' ),
+                                'is_admin' => $VAR1->{'submitter_user'}{'is_moderator'},
+                                'created_at' => '2018-08-10T15:05:07.000-05:00',
+                                'avatar_url' => '/avatars/aufziehvogel-100.png'
+                              },
+          'tags' => [
+                      'finance',
+                      'show'
+                    ],
+          'short_id_url' => 'https://lobste.rs/s/0lwwmn'
+        };
