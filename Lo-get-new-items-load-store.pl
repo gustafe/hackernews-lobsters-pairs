@@ -45,6 +45,6 @@ for my $item (@{$list}) {
 		 );
     $count++;
 }
-say "New Lobste.rs items added: $count";
+say "\nNew Lobste.rs items added: $count\n";
 $sth->finish();
 $dbh->disconnect();

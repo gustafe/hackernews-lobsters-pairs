@@ -11,8 +11,7 @@ my @failed;
 my @items;
 my $ua =get_ua();
 my $insert_sql = qq{insert into hackernews (
-id, created_time, url, title, submitter, score, comments
-)
+id, created_time, url, title, submitter, score, comments)
 values
 (?, datetime(?,'unixepoch'),?,?,?,?,?)};
 my $latest_sql = qq{select max(id) from hackernews};
@@ -54,9 +53,16 @@ while (@{$list}) {
 	next;
     }
     my $item = decode_json( $payload );
+    # skip items without URLs
+    if (!defined $item->{url}) {
+	warn "||> $id has no URL, skipping";
+	next;
+    }
+    
     push @items, [ map { $item->{$_}} ('id','time','url','title','by','score','descendants')];
     $count++;
 }
+
 
 # add to store
 
@@ -67,8 +73,9 @@ foreach my $item (@items) {
 }
 $sth->finish();
 $dbh->disconnect();
-say "New HN items added: $count";
+say "\nNew HN items added: $count\n";
 if (scalar @failed > 0) {
+    say "### ITEMS NOT FOUND ###";
     foreach my $id (@failed) {
 	say $id;
     }
