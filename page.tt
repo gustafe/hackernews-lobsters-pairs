@@ -1,8 +1,9 @@
+[% INCLUDE header.tt %]
 <h1>Recent submissions to Hackernews && Lobste.rs</h1>
 
 
 <p><a href="about.html">About</a>. All times are UTC.</p>
-<p>Page generated on [% meta.generate_time %].</p>
+<p>Page generated on [% meta.generate_time %]. Usually updates hourly.</p>
 
 <ul>
 <li>Pairs: [% meta.total %]</li>
@@ -16,16 +17,15 @@
 <p>First seen on [% pair.first.site %]
 as <a href="[% pair.first.title_href %]">[% pair.first.title %]</a>
 on <span title="[% pair.first.time %]">[% pair.first.pretty_date%]</span>, 
-submitted by <a href="[% pair.first.submitter_href %]">[% pair.first.submitter %]</a>
-(score:&nbsp[% pair.first.score %],
-comments:&nbsp[% pair.first.comments %][% IF pair.first.ratio %], ratio:&nbsp;[% pair.first.ratio %][% END %]).</p>
+submitted by <a href="[% pair.first.submitter_href %]">[% pair.first.submitter %]</a>.
+&nbsp<span title="score">[% pair.first.score %]</span>&nbsp;|&nbsp<span title="comments">[% pair.first.comments %]</span>[% IF pair.first.ratio %]&nbsp|&nbsp;<span title="ratio c/s">[% pair.first.ratio %]</span>[% END %]</p>
 
 <p>Then appeared on [% pair.then.site %]
 <span title="[% pair.then.time %]">[%pair.diff %]</span> later
 as <a href="[% pair.then.title_href %]">[% pair.then.title%]</a>
-submitted by <a href="[% pair.then.submitter_href%]">[% pair.then.submitter %]</a>
-(score: [% pair.then.score %],
-comments: [% pair.then.comments %][% IF pair.then.ratio %], ratio:&nbsp;[% pair.then.ratio %][% END %]).</p>
+submitted by <a href="[% pair.then.submitter_href%]">[% pair.then.submitter %]</a>.
+&nbsp<span title="score">[% pair.then.score %]</span>&nbsp;|&nbsp<span title="comments">[% pair.then.comments %]</span>[% IF pair.then.ratio %]&nbsp|&nbsp;<span title="ratio c/s">[% pair.then.ratio %]</span>[% END %]</p>
 
 [% END %]
 
+[% INCLUDE footer.tt %]

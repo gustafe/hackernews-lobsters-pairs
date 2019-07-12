@@ -5,7 +5,8 @@ use Modern::Perl '2015';
 use JSON;
 use HNLtracker qw/get_dbh get_ua/;
 use Data::Dumper;
-
+use open IO => ':utf8';
+#binmode STDOUT, ':utf8';
 # read from list
 my @failed;
 my @items;
@@ -49,13 +50,13 @@ while (@{$list}) {
     my $payload = $res->decoded_content;
     
     if ($payload eq 'null') {
-	warn "++> $id has null content\n";
+	say "++> $id has null content\n";
 	next;
     }
     my $item = decode_json( $payload );
     # skip items without URLs
     if (!defined $item->{url}) {
-	warn "||> $id has no URL, skipping";
+	say "||> $id has no URL, skipping";
 	next;
     }
     

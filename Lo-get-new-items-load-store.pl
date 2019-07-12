@@ -6,7 +6,8 @@ use Modern::Perl '2015';
 use JSON;
 use Data::Dumper;
 use HNLtracker qw/get_dbh get_ua/;
-
+use open IO => ':utf8';
+#binmode STDOUT, ':utf8';
 my $newest_url = 'https://lobste.rs/newest.json';
 my $ua = get_ua();
 my $response = $ua->get($newest_url);
