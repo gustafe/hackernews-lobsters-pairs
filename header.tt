@@ -1,8 +1,26 @@
 <html>
 <head>
-<title>Comparing Hackernews and Lobste.rs submissions</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[% meta.page_title %]</title>
+
+<link rel="stylesheet" href="http://gerikson.com/stylesheets/hnlo.css"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"> 
+
 <meta charset="utf-8"/>
+<script src="http://gerikson.com/js/pretty.js"></script>
+
+<script>
+window.onload = function(){
+	var links = document.getElementById("generated");	
+
+		if ( links.getAttribute("timestamp")) {
+			var date = prettyDate(links.getAttribute("timestamp"));
+			if ( date )
+				links.innerHTML = date;
+		}
+};
+</script>
+
+
+
 </head>
 <body>
