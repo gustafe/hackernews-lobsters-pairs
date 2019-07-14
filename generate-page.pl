@@ -17,32 +17,32 @@ my $update_score;
 GetOptions( 'update_score' => \$update_score );
 
 ### Definitions and constants
-my $debug =0;
-my $page_title = 'HN&&LO';
+my $debug              = 0;
+my $page_title         = 'HN&&LO';
 my $no_of_days_to_show = 3;
-my $ratio_limit=9;
+my $ratio_limit        = 9;
 my $feeds;
 my $ua;
 $feeds->{lo} = {
     comments       => 'comment_count',
-    api_item_href       => 'https://lobste.rs/s/',
+    api_item_href  => 'https://lobste.rs/s/',
     table_name     => 'lobsters',
     site           => 'Lobste.rs',
     title_href     => 'https://lobste.rs/s/',
-		submitter_href => 'https://lobste.rs/u/',
-		update_sql => "update lobsters set title=?,score=?,comments=? where id=?",
-		delete_sql => "delete from lobsters where id=?",
+    submitter_href => 'https://lobste.rs/u/',
+    update_sql => "update lobsters set title=?,score=?,comments=? where id=?",
+    delete_sql => "delete from lobsters where id=?",
 
 };
 $feeds->{hn} = {
     comments       => 'descendants',
-    api_item_href       => 'https://hacker-news.firebaseio.com/v0/item/',
+    api_item_href  => 'https://hacker-news.firebaseio.com/v0/item/',
     table_name     => 'hackernews',
     site           => 'Hacker News',
     title_href     => 'https://news.ycombinator.com/item?id=',
-		submitter_href => 'https://news.ycombinator.com/user?id=',
-		update_sql=> "update hackernews set title=?,score=?,comments=? where id=?",
-		delete_sql=>"delete from hackernews where id=?",
+    submitter_href => 'https://news.ycombinator.com/user?id=',
+    update_sql => "update hackernews set title=?,score=?,comments=? where id=?",
+    delete_sql => "delete from hackernews where id=?",
 };
 
 my $sql = {
@@ -63,18 +63,28 @@ order by hn.created_time",
 
 #### subs
 sub sec_to_human_time;
+
 sub get_item_from_source {
     my ( $tag, $id ) = @_;
+
     # this is fragile, it relies on all feed APIs having the same structure!
     my $href = $feeds->{$tag}->{api_item_href} . $id . '.json';
-    my $r = $ua->get( $href );
+    my $r    = $ua->get($href);
+    if ( !$r->is_success() ) {
+
+        #	warn "==> fetch failed for $tag $id: ";
+        #	warn Dumper $r;
+        return undef;
+    }
     return undef unless $r->is_success();
-    my $json = decode_json ( $r->decoded_content() );
+    my $json = decode_json( $r->decoded_content() );
+
     # we only return stuff that we're interested in
-    return {title => $json->{title},
-	    score=>$json->{score},
-	    comments => $json->{$feeds->{$tag}->{comments}}
-	   };
+    return {
+        title    => $json->{title},
+        score    => $json->{score},
+        comments => $json->{ $feeds->{$tag}->{comments} }
+    };
 }
 #### setup
 my $dbh = get_dbh();
@@ -110,12 +120,15 @@ while ( my $r = $sth->fetchrow_hashref ) {
         $data->{$tag}->{submitter_href} =
           $feeds->{$tag}->{submitter_href} . $data->{$tag}->{submitter};
         $data->{$tag}->{site} = $feeds->{$tag}->{site};
-	$data->{$tag}->{tag} = $tag;
+        $data->{$tag}->{tag}  = $tag;
 
         # scores and comments
 
-        if ( $data->{$tag}->{score} > 0
-            and ( $data->{$tag}->{score} + $data->{$tag}->{comments} > $ratio_limit ) )
+        if (
+            $data->{$tag}->{score} > 0
+            and ( $data->{$tag}->{score} + $data->{$tag}->{comments} >
+                $ratio_limit )
+          )
         {
             $data->{$tag}->{ratio} = sprintf( '%.02f',
                 $data->{$tag}->{comments} / $data->{$tag}->{score} );
@@ -161,73 +174,89 @@ $sth->finish();
 if ($update_score) {
     $ua = get_ua();
     my $lists;
-    # find changes, if any
-    foreach my $pair ( @pairs) {
-	foreach my $seq ('first','then') {
-	    my $item = $pair->{$seq};
-	    my $res =get_item_from_source( $item->{tag}, $item->{id} );
-	    next unless defined $res; # might be problem accessing the API, try later
-	    if (!defined $res->{title} ) { # assume item has been deleted
-		# TODO this will not remove it from the current output, however
-		push @{$lists->{$item->{tag}}->{delete}},    $item->{id};
-		
-		next;
-	    }
-	    say "$feeds->{$item->{tag}}->{site} ID $item->{id}";
-	    if ($res->{title} ne $item->{title} or
-		$res->{comments}!=$item->{comments} or
-		$res->{score}!=$item->{score} ) {
 
-		if ($debug) {
-	
-		    say "T: $item->{title} -> $res->{title}";
-		    say "S: $item->{score} -> $res->{score}";
-		    say "C: $item->{comments} -> $res->{comments}";
-		}
-		$pair->{$seq}->{title} = $res->{title};
-		$pair->{$seq}->{score} = $res->{score};
-		$pair->{$seq}->{comments} = $res->{comments};
-		push @{$lists->{$item->{tag}}->{update}}, [$res->{title},
-							   $res->{score},
-							   $res->{comments},
-							   $item->{id}];
-	    }
-	}
+    # find changes, if any
+    foreach my $pair (@pairs) {
+        foreach my $seq ( 'first', 'then' ) {
+            my $item = $pair->{$seq};
+            my $res = get_item_from_source( $item->{tag}, $item->{id} );
+            next
+              if ( !defined $res and $item->{tag} eq 'hn' )
+              ;    # might be problem accessing the API, try later
+                   # if it's Lobsters, assume it's gone
+            if ( !defined $res and $item->{tag} eq 'lo' ) {
+                say "Delete scheduled for $item->{site} ID $item->{id}";
+                push @{ $lists->{ $item->{tag} }->{delete} }, $item->{id};
+
+                next;
+            }
+            if ( !defined $res->{title} and $item->{tag} eq 'hn' )
+            {      # assume item has been deleted
+                 # TODO this will not remove it from the current output, however
+                say "Delete scheduled for $item->{site} ID $item->{id}";
+                push @{ $lists->{ $item->{tag} }->{delete} }, $item->{id};
+
+                next;
+            }
+            say "$feeds->{$item->{tag}}->{site} ID $item->{id}" if $debug;
+            if (   $res->{title} ne $item->{title}
+                or $res->{comments} != $item->{comments}
+                or $res->{score} != $item->{score} )
+            {
+
+                if ($debug) {
+
+                    say "T: $item->{title} -> $res->{title}";
+                    say "S: $item->{score} -> $res->{score}";
+                    say "C: $item->{comments} -> $res->{comments}";
+                }
+                $pair->{$seq}->{title}    = $res->{title};
+                $pair->{$seq}->{score}    = $res->{score};
+                $pair->{$seq}->{comments} = $res->{comments};
+                push @{ $lists->{ $item->{tag} }->{update} },
+                  [
+                    $res->{title},    $res->{score},
+                    $res->{comments}, $item->{id}
+                  ];
+            }
+        }
     }
+
     # execute changes
-    foreach my $tag (keys %{$feeds}) {
-	if (defined  $lists->{$tag}->{delete}) {
-	    # TODO implement deletions
-	    my $sth = $dbh->prepare( $feeds->{$tag}->{delete_sql} ) or die $dbh->errstr;
-	    foreach my $id (@{$lists->{$tag}->{delete}}) {
-		say "will delete $tag $id!" ;
-		my $rv = $sth->execute( $id ) or warn $sth->errstr;	
-	    }
-	    $sth->finish();
-	}
-	if (defined $lists->{$tag}->{update} ) {
-	    my $sth = $dbh->prepare( $feeds->{$tag}->{update_sql} )
-	      or die $dbh->errstr;
-	    foreach my $item (@{$lists->{$tag}->{update}}) {
-		say "updating $feeds->{$tag}->{site} ID $item->[-1]" if $debug;
-		my $rv =$sth->execute( @{$item} ) or warn $sth->errstr;
-	    }
-	    $sth->finish();
-	}
+    foreach my $tag ( keys %{$feeds} ) {
+        if ( defined $lists->{$tag}->{delete} ) {
+
+            # TODO implement deletions
+            my $sth = $dbh->prepare( $feeds->{$tag}->{delete_sql} )
+              or die $dbh->errstr;
+            foreach my $id ( @{ $lists->{$tag}->{delete} } ) {
+                say "deleting $tag $id ...";
+                my $rv = $sth->execute($id) or warn $sth->errstr;
+            }
+            $sth->finish();
+        }
+        if ( defined $lists->{$tag}->{update} ) {
+            my $sth = $dbh->prepare( $feeds->{$tag}->{update_sql} )
+              or die $dbh->errstr;
+            foreach my $item ( @{ $lists->{$tag}->{update} } ) {
+                say "updating $feeds->{$tag}->{site} ID $item->[-1]";
+                my $rv = $sth->execute( @{$item} ) or warn $sth->errstr;
+            }
+            $sth->finish();
+        }
     }
 }
-
 
 my $dt_now =
   DateTime->from_epoch( epoch => $now, time_zone => 'Europe/Stockholm' );
 my %data = (
     pairs => \@pairs,
-	    meta  => { generate_time => $dt_now->strftime('%Y-%m-%d %H:%M:%S'),
-		       page_title=>$page_title,
-		       no_of_days_to_show=>$no_of_days_to_show,
-		       ratio_limit => $ratio_limit,
-		     },
-
+    meta  => {
+        generate_time      => $dt_now->strftime('%Y-%m-%d %H:%M:%S'),
+        page_title         => $page_title,
+        no_of_days_to_show => $no_of_days_to_show,
+        ratio_limit        => $ratio_limit,
+    },
 
 );
 my $tt =

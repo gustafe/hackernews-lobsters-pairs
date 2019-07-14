@@ -6,13 +6,14 @@ href="https://news.ycombinator.com/">Hacker News</a> and <a
 href="https://lobste.rs">Lobste.rs</a> in the last <strong>[%
 meta.no_of_days_to_show %]</strong> 24-hour periods.<p>
 
-<p>Each entry contains links to the entry on each site, and the
-entry's <strong>S</strong>core, <strong>C</strong>omments, and the
-<strong>R</strong>atio (=comments/score), if the sum of scores and
-comments is greater than [% meta.ratio_limit %].</p>
+<p>Each entry contains links to the submission on each site, and the
+submission's <strong>S</strong>core, number of <strong>C</strong>omments, and
+the <strong>R</strong>atio of comments to score (if the sum of scores and
+comments is greater than [% meta.ratio_limit %]).</p>
 
-<p>This page was generated <span id="generated" timestamp="[%
-meta.generate_time %]">[% meta.generate_time %]</span>. It usually
+<p>This page was generated <span id="generated" 
+timestamp="[% meta.generate_time %]" 
+title="[% meta.generate_time %]">[% meta.generate_time %]</span>. It usually
 updates hourly. <a href="about.html">About</a>.</p>
 
 [% FOREACH pair=pairs %]

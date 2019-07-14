@@ -1,3 +1,6 @@
+</head>
+<body>
+
 # What's all this about, then?
 
 This is a little page that scrapes the APIs for Hackernews and Lobsters, compares URLs for submissions, and prints a match if the URLs are the same.

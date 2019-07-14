@@ -17,7 +17,9 @@ refresh:
 scores:
 	perl -I $(BIN) $(BIN)/generate-page.pl --update_score 
 
-about.html: header.tt footer.tt about.md
-	cat header.tt > $(WWW)/about.html
+about.html: about.header common.tt footer.tt about.md todo.md
+	cat about.header > $(WWW)/about.html
+	cat common.tt > $(WWW)/about.html
 	cat about.md | $(MD) >> $(WWW)/about.html
+	cat todo.md | $(MD) >> $(WWW)/about.html
 	cat footer.tt >> $(WWW)/about.html

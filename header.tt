@@ -2,10 +2,8 @@
 <head>
 <title>[% meta.page_title %]</title>
 
-<link rel="stylesheet" href="http://gerikson.com/stylesheets/hnlo.css"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"> 
+[% INCLUDE common.tt %]
 
-<meta charset="utf-8"/>
 <script src="http://gerikson.com/js/pretty.js"></script>
 
 <script>
@@ -19,8 +17,6 @@ window.onload = function(){
 		}
 };
 </script>
-
-
 
 </head>
 <body>
