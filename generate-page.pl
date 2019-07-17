@@ -11,8 +11,10 @@ use DateTime::Format::Strptime;
 use Data::Dumper;
 
 use HNLtracker qw/get_dbh get_ua/;
-binmode STDOUT, ':utf8';
+use open qw/ :std :encoding(utf8) /;
 
+#binmode STDOUT, ':utf8';
+#binmode STDERR, ':utf8';
 my $update_score;
 GetOptions( 'update_score' => \$update_score );
 
@@ -77,7 +79,9 @@ sub get_item_from_source {
         return undef;
     }
     return undef unless $r->is_success();
-    my $json = decode_json( $r->decoded_content() );
+    return undef unless $r->header('Content-Type') =~ m{application/json};
+    my $content = $r->decoded_content();
+    my $json    = decode_json($content);
 
     # we only return stuff that we're interested in
     return {
@@ -111,7 +115,7 @@ while ( my $r = $sth->fetchrow_hashref ) {
     }
     $pair->{diff} = $r->{diff};
 
-    foreach my $tag ( 'lo', 'hn' ) {
+    foreach my $tag ( keys %{$feeds} ) {
         foreach my $field (qw(id time title submitter score comments )) {
             $data->{$tag}->{$field} = $r->{ $tag . '_' . $field };
         }
@@ -123,17 +127,6 @@ while ( my $r = $sth->fetchrow_hashref ) {
         $data->{$tag}->{tag}  = $tag;
 
         # scores and comments
-
-        if (
-            $data->{$tag}->{score} > 0
-            and ( $data->{$tag}->{score} + $data->{$tag}->{comments} >
-                $ratio_limit )
-          )
-        {
-            $data->{$tag}->{ratio} = sprintf( '%.02f',
-                $data->{$tag}->{comments} / $data->{$tag}->{score} );
-
-        }
 
         # date munging
         my $dt = DateTime->from_epoch( epoch => $data->{$tag}->{time} );
@@ -168,8 +161,6 @@ while ( my $r = $sth->fetchrow_hashref ) {
 }
 $sth->finish();
 
-@pairs = reverse @pairs;
-
 # update items if that option is set
 if ($update_score) {
     $ua = get_ua();
@@ -185,16 +176,18 @@ if ($update_score) {
               ;    # might be problem accessing the API, try later
                    # if it's Lobsters, assume it's gone
             if ( !defined $res and $item->{tag} eq 'lo' ) {
-                say "Delete scheduled for $item->{site} ID $item->{id}";
+                say "!! Delete scheduled for $item->{site} ID $item->{id}";
                 push @{ $lists->{ $item->{tag} }->{delete} }, $item->{id};
 
                 next;
             }
             if ( !defined $res->{title} and $item->{tag} eq 'hn' )
             {      # assume item has been deleted
-                 # TODO this will not remove it from the current output, however
-                say "Delete scheduled for $item->{site} ID $item->{id}";
+                    # TODO this will not remove it from the current
+                    # output, however
+                say "!! Delete scheduled for $item->{site} ID $item->{id}";
                 push @{ $lists->{ $item->{tag} }->{delete} }, $item->{id};
+		$pair->{$seq}->{delete} = 1;
 
                 next;
             }
@@ -230,7 +223,7 @@ if ($update_score) {
             my $sth = $dbh->prepare( $feeds->{$tag}->{delete_sql} )
               or die $dbh->errstr;
             foreach my $id ( @{ $lists->{$tag}->{delete} } ) {
-                say "deleting $tag $id ...";
+                say "!! deleting $tag $id ...";
                 my $rv = $sth->execute($id) or warn $sth->errstr;
             }
             $sth->finish();
@@ -239,13 +232,36 @@ if ($update_score) {
             my $sth = $dbh->prepare( $feeds->{$tag}->{update_sql} )
               or die $dbh->errstr;
             foreach my $item ( @{ $lists->{$tag}->{update} } ) {
-                say "updating $feeds->{$tag}->{site} ID $item->[-1]";
+                say
+                  "updating $feeds->{$tag}->{site} ID $item->[-1] '$item->[0]'";
                 my $rv = $sth->execute( @{$item} ) or warn $sth->errstr;
             }
             $sth->finish();
         }
     }
 }
+
+# calculate scores - we do this at this stage because the scores and
+# comments can have been updated
+
+
+foreach my $pair (@pairs) {
+    foreach my $seq ( 'first', 'then' ) {
+        my $item  = $pair->{$seq};
+        my $ratio = undef;
+        if ( $item->{score} > 0
+            and ( $item->{score} + $item->{comments} > $ratio_limit ) )
+        {
+            $ratio = sprintf( '%.02f', $item->{comments} / $item->{score} );
+
+        }
+        $pair->{$seq}->{ratio} = $ratio if defined $ratio;
+
+    }
+}
+
+# generate the page from the data
+@pairs = grep {!exists $_->{'first'}->{deleted} and !exists $_->{'then'}->{deleted} } reverse @pairs;
 
 my $dt_now =
   DateTime->from_epoch( epoch => $now, time_zone => 'Europe/Stockholm' );

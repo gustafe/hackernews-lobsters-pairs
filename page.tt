@@ -4,7 +4,7 @@
 <p>This page shows the URLs submitted to both <a
 href="https://news.ycombinator.com/">Hacker News</a> and <a
 href="https://lobste.rs">Lobste.rs</a> in the last <strong>[%
-meta.no_of_days_to_show %]</strong> 24-hour periods.<p>
+meta.no_of_days_to_show %]</strong> days.<p>
 
 <p>Each entry contains links to the submission on each site, and the
 submission's <strong>S</strong>core, number of <strong>C</strong>omments, and

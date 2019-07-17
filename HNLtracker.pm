@@ -13,14 +13,9 @@ $VERSION = 1.00;
 @ISA = qw/Exporter/;
 @EXPORT = ();
 @EXPORT_OK = qw/get_dbh get_ua/;
-%EXPORT_TAGS = (DEFAULT => [qw/&signature/]);
+%EXPORT_TAGS = (DEFAULT => [qw/&get_dbh &get_ua/]);
 
 my $cfg = Config::Simple->new('/home/gustaf/prj/HN-Lobsters-Tracker/hnltracker.ini');
-
-sub signature {
-return 1;
-}
-
 
 #### DBH
 
