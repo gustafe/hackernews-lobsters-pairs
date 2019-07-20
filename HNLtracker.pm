@@ -1,18 +1,18 @@
 package HNLtracker;
-
-use strict;
+use Modern::Perl '2015';
 use Exporter;
 #use Digest::SHA qw/hmac_sha256_hex/;
 use Config::Simple;
 use DBI;
 use LWP::UserAgent;
-
+use JSON;
+use DateTime;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS/;
 
 $VERSION = 1.00;
 @ISA = qw/Exporter/;
 @EXPORT = ();
-@EXPORT_OK = qw/get_dbh get_ua get_all_pairs $feeds/ ;
+@EXPORT_OK = qw/get_dbh get_ua get_all_pairs $feeds update_scores $debug $sql/ ;
 %EXPORT_TAGS = (DEFAULT => [qw/&get_dbh &get_ua/]);
 
 
@@ -27,8 +27,30 @@ my $dbpass = $cfg->param('DB.password');
 my $dsn = "DBI:$driver:dbname=$database";
 
 my %seen;
+our $ua;
+our $debug =0;
+
+our $sql = {
+    get_pairs => "select hn.url, 
+strftime('%s',lo.created_time)-strftime('%s',hn.created_time) as diff,
+hn.id as hn_id,
+strftime('%s',hn.created_time) as hn_time,
+hn.title as hn_title , hn.submitter as hn_submitter,hn.score as hn_score, hn.comments as hn_comments,
+lo.id as lo_id,
+strftime('%s',lo.created_time) as lo_time,
+lo.title as lo_title, lo.submitter as lo_submitter,lo.score as lo_score, lo.comments as lo_comments
+from hackernews hn
+inner join lobsters lo
+on lo.url = hn.url
+where hn.url is not null
+order by hn.created_time",
+	   get_hn_count => "select count(*) from hackernews where url is not null",
+	   get_lo_count => "select count(*) from lobsters where url is not null",
+};
+
 
 our $feeds;
+
 $feeds->{lo} = {
     comments       => 'comment_count',
     api_item_href  => 'https://lobste.rs/s/',
@@ -65,7 +87,7 @@ sub get_ua {
 
 sub get_all_pairs {
     my ( $sth ) = @_;
-#    my $sth = $dbh->prepare( $sql->{get_pairs} );
+#    $sth = $dbh->prepare( $sql->{get_pairs} );
     $sth->execute;
     my $return;
     while ( my $r = $sth->fetchrow_hashref ) {
@@ -148,6 +170,111 @@ sub sec_to_human_time {
 
     return $out;
 }
+sub get_item_from_source {
+    my ( $tag, $id ) = @_;
 
+    # this is fragile, it relies on all feed APIs having the same structure!
+    my $href = $feeds->{$tag}->{api_item_href} . $id . '.json';
+    my $r    = $ua->get($href);
+    if ( !$r->is_success() ) {
+
+        #	warn "==> fetch failed for $tag $id: ";
+        #	warn Dumper $r;
+        return undef;
+    }
+    return undef unless $r->is_success();
+    return undef unless $r->header('Content-Type') =~ m{application/json};
+    my $content = $r->decoded_content();
+    my $json    = decode_json($content);
+
+    # we only return stuff that we're interested in
+    return {
+        title    => $json->{title},
+        score    => $json->{score},
+        comments => $json->{ $feeds->{$tag}->{comments} }
+    };
+}
+
+sub update_scores{
+    my ($dbh, $pairs_ref ) = @_;
+    $ua = get_ua();
+    my $lists;
+
+    # find changes, if any
+    foreach my $pair (@{$pairs_ref}) {
+        foreach my $seq ( 'first', 'then' ) {
+            my $item = $pair->{$seq};
+            my $res = get_item_from_source( $item->{tag}, $item->{id} );
+
+            if ( !defined $res and $item->{tag} eq 'hn' ) {
+
+                # might be problem accessing the API, try later
+                next;
+            }
+
+            # if it's Lobsters, assume it's gone
+            if ( !defined $res and $item->{tag} eq 'lo' ) {
+                say "!! Delete scheduled for $item->{site} ID $item->{id}";
+                push @{ $lists->{ $item->{tag} }->{delete} }, $item->{id};
+                $pair->{$seq}->{delete} = 1;
+                next;
+            }
+            if ( !defined $res->{title} and $item->{tag} eq 'hn' )
+            {    # assume item has been deleted
+                say "!! Delete scheduled for $item->{site} ID $item->{id}";
+                push @{ $lists->{ $item->{tag} }->{delete} }, $item->{id};
+                $pair->{$seq}->{delete} = 1;
+
+                next;
+            }
+            say "$feeds->{$item->{tag}}->{site} ID $item->{id}" if $debug;
+            if (   $res->{title} ne $item->{title}
+                or $res->{comments} != $item->{comments}
+                or $res->{score} != $item->{score} )
+            {
+
+                if ($debug) {
+
+                    say "T: $item->{title} -> $res->{title}";
+                    say "S: $item->{score} -> $res->{score}";
+                    say "C: $item->{comments} -> $res->{comments}";
+                }
+                $pair->{$seq}->{title}    = $res->{title};
+                $pair->{$seq}->{score}    = $res->{score};
+                $pair->{$seq}->{comments} = $res->{comments};
+                push @{ $lists->{ $item->{tag} }->{update} },
+                  [
+                    $res->{title},    $res->{score},
+                    $res->{comments}, $item->{id}
+                  ];
+            }
+        }
+    }
+
+    # execute changes
+    foreach my $tag ( keys %{$feeds} ) {
+        if ( defined $lists->{$tag}->{delete} ) {
+
+            my $sth = $dbh->prepare( $feeds->{$tag}->{delete_sql} )
+              or die $dbh->errstr;
+            foreach my $id ( @{ $lists->{$tag}->{delete} } ) {
+                say "!! deleting $tag $id ...";
+                my $rv = $sth->execute($id) or warn $sth->errstr;
+            }
+            $sth->finish();
+        }
+        if ( defined $lists->{$tag}->{update} ) {
+            my $sth = $dbh->prepare( $feeds->{$tag}->{update_sql} )
+              or die $dbh->errstr;
+            foreach my $item ( @{ $lists->{$tag}->{update} } ) {
+                say
+                  "updating $feeds->{$tag}->{site} ID $item->[-1] '$item->[0]'";
+                my $rv = $sth->execute( @{$item} ) or warn $sth->errstr;
+            }
+            $sth->finish();
+        }
+    }
+    return $pairs_ref;
+}
 
 1;
