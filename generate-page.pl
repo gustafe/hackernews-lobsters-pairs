@@ -10,7 +10,7 @@ use DateTime::Format::Strptime;
 
 use Data::Dumper;
 
-use HNLtracker qw/get_dbh get_ua/;
+use HNLtracker qw/get_ua get_dbh get_all_pairs $feeds/;
 use open qw/ :std :encoding(utf8) /;
 
 #binmode STDOUT, ':utf8';
@@ -23,29 +23,8 @@ my $debug              = 0;
 my $page_title         = 'HN&&LO';
 my $no_of_days_to_show = 3;
 my $ratio_limit        = 9;
-my $feeds;
-my $ua;
-$feeds->{lo} = {
-    comments       => 'comment_count',
-    api_item_href  => 'https://lobste.rs/s/',
-    table_name     => 'lobsters',
-    site           => 'Lobste.rs',
-    title_href     => 'https://lobste.rs/s/',
-    submitter_href => 'https://lobste.rs/u/',
-    update_sql => "update lobsters set title=?,score=?,comments=? where id=?",
-    delete_sql => "delete from lobsters where id=?",
 
-};
-$feeds->{hn} = {
-    comments       => 'descendants',
-    api_item_href  => 'https://hacker-news.firebaseio.com/v0/item/',
-    table_name     => 'hackernews',
-    site           => 'Hacker News',
-    title_href     => 'https://news.ycombinator.com/item?id=',
-    submitter_href => 'https://news.ycombinator.com/user?id=',
-    update_sql => "update hackernews set title=?,score=?,comments=? where id=?",
-    delete_sql => "delete from hackernews where id=?",
-};
+my $ua;
 
 my $sql = {
     get_pairs => "select hn.url, 
@@ -61,103 +40,34 @@ inner join lobsters lo
 on lo.url = hn.url
 where hn.url is not null
 order by hn.created_time",
+	   get_hn_count => "select count(*) from hackernews where url is not null",
+	   get_lo_count => "select count(*) from lobsters where url is not null",
 };
+my $dbh = get_dbh;
+#my $dbh= HNLtracker->new()  ;
+$dbh->{sqlite_unicode} = 1;
 
 #### subs
 sub sec_to_human_time;
-
-sub get_item_from_source {
-    my ( $tag, $id ) = @_;
-
-    # this is fragile, it relies on all feed APIs having the same structure!
-    my $href = $feeds->{$tag}->{api_item_href} . $id . '.json';
-    my $r    = $ua->get($href);
-    if ( !$r->is_success() ) {
-
-        #	warn "==> fetch failed for $tag $id: ";
-        #	warn Dumper $r;
-        return undef;
-    }
-    return undef unless $r->is_success();
-    return undef unless $r->header('Content-Type') =~ m{application/json};
-    my $content = $r->decoded_content();
-    my $json    = decode_json($content);
-
-    # we only return stuff that we're interested in
-    return {
-        title    => $json->{title},
-        score    => $json->{score},
-        comments => $json->{ $feeds->{$tag}->{comments} }
-    };
-}
+sub get_item_from_source;
+sub get_all_pairs;
 #### setup
-my $dbh = get_dbh();
-$dbh->{sqlite_unicode} = 1;
-my @pairs;
-my %seen;
+
+
 
 #### CODE ####
 
+my $now   = time();
+# get all pairs from the DB
 my $sth = $dbh->prepare( $sql->{get_pairs} );
-$sth->execute;
-my $now = time();
-while ( my $r = $sth->fetchrow_hashref ) {
+my @pairs = @{ get_all_pairs($sth) };
 
-    #    print Dumper $r;
-    my $pair;
-    my $data;
-    $pair->{url} = $r->{url};
-    if ( exists $seen{ $pair->{url} } ) {
-        next;
-    }
-    else {
-        $seen{ $pair->{url} }++;
-    }
-    $pair->{diff} = $r->{diff};
-
-    foreach my $tag ( keys %{$feeds} ) {
-        foreach my $field (qw(id time title submitter score comments )) {
-            $data->{$tag}->{$field} = $r->{ $tag . '_' . $field };
-        }
-        $data->{$tag}->{title_href} =
-          $feeds->{$tag}->{title_href} . $data->{$tag}->{id};
-        $data->{$tag}->{submitter_href} =
-          $feeds->{$tag}->{submitter_href} . $data->{$tag}->{submitter};
-        $data->{$tag}->{site} = $feeds->{$tag}->{site};
-        $data->{$tag}->{tag}  = $tag;
-
-        # date munging
-        my $dt = DateTime->from_epoch( epoch => $data->{$tag}->{time} );
-        $data->{$tag}->{dt} = $dt;
-
-        $data->{$tag}->{timestamp} = $dt->strftime('%Y-%m-%d %H:%M:%SZ');
-
-        $data->{$tag}->{pretty_date} = $dt->strftime('%d %b %Y');
-    }
-    # exclude older entries
-    if (   $now - $data->{lo}->{time} > $no_of_days_to_show * 24 * 3600
-        or $now - $data->{hn}->{time} > $no_of_days_to_show * 24 * 3600 )
-    {
-        next;
-    }
-
-    if ( $pair->{diff} < 0 ) {
-        $pair->{order} = [ 'lo', 'hn' ];
-    }
-    else {
-        $pair->{order} = [ 'hn', 'lo' ];
-
-    }
-    $pair->{heading_url} = $pair->{url};
-    $pair->{heading}     = $data->{ $pair->{order}->[0] }->{title};
-    $pair->{later}       = sec_to_human_time( abs $pair->{diff} );
-    $pair->{logo}  = $pair->{order}->[0] . '_' . $pair->{order}->[1] . '.png';
-    $pair->{first} = $data->{ $pair->{order}->[0] };
-    $pair->{then}  = $data->{ $pair->{order}->[1] };
-
-    push @pairs, $pair;
-}
-$sth->finish();
+# filter entries older than the retention time
+my $limit_seconds = $no_of_days_to_show * 24 * 3600;
+@pairs = grep {
+    ( $now - $_->{first}->{time} <= $limit_seconds )
+      and ( $now - $_->{then}->{time} <= $limit_seconds )
+} @pairs;
 
 # update items if that option is set
 if ($update_score) {
@@ -169,24 +79,25 @@ if ($update_score) {
         foreach my $seq ( 'first', 'then' ) {
             my $item = $pair->{$seq};
             my $res = get_item_from_source( $item->{tag}, $item->{id} );
-            
-	    if ( !defined $res and $item->{tag} eq 'hn' ) {
-		# might be problem accessing the API, try later
-		next              ;
-	    }
-	    
-	    # if it's Lobsters, assume it's gone
+
+            if ( !defined $res and $item->{tag} eq 'hn' ) {
+
+                # might be problem accessing the API, try later
+                next;
+            }
+
+            # if it's Lobsters, assume it's gone
             if ( !defined $res and $item->{tag} eq 'lo' ) {
                 say "!! Delete scheduled for $item->{site} ID $item->{id}";
                 push @{ $lists->{ $item->{tag} }->{delete} }, $item->{id};
-		$pair->{$seq}->{delete} = 1;
+                $pair->{$seq}->{delete} = 1;
                 next;
             }
             if ( !defined $res->{title} and $item->{tag} eq 'hn' )
-            {      # assume item has been deleted
+            {    # assume item has been deleted
                 say "!! Delete scheduled for $item->{site} ID $item->{id}";
                 push @{ $lists->{ $item->{tag} }->{delete} }, $item->{id};
-		$pair->{$seq}->{delete} = 1;
+                $pair->{$seq}->{delete} = 1;
 
                 next;
             }
@@ -257,10 +168,12 @@ foreach my $pair (@pairs) {
     }
 }
 
-# generate the page from the data
-# filter deleted stuff, and reverse time order 
-@pairs = grep {!exists $_->{'first'}->{deleted} and !exists $_->{'then'}->{deleted} } reverse @pairs;
+# filter deleted stuff, and reverse time order
+@pairs =
+  grep { !exists $_->{'first'}->{deleted} and !exists $_->{'then'}->{deleted} }
+  reverse @pairs;
 
+# generate the page from the data
 my $dt_now =
   DateTime->from_epoch( epoch => $now, time_zone => 'Europe/Stockholm' );
 my %data = (
@@ -283,29 +196,28 @@ $tt->process(
 ) || die $tt->error;
 
 ### SUBS ###
+sub get_item_from_source {
+    my ( $tag, $id ) = @_;
 
-sub sec_to_human_time {
-    my ($sec) = @_;
-    my $days = int( $sec / ( 24 * 60 * 60 ) );
-    my $hours   = ( $sec / ( 60 * 60 ) ) % 24;
-    my $mins    = ( $sec / 60 ) % 60;
-    my $seconds = $sec % 60;
-    my $out;
-    if ( $days > 0 ) {
-        if ( $days == 1 ) {
-            $out .= '1 day';
-        }
-        else {
-            $out .= "$days days";
-        }
-        return $out;
+    # this is fragile, it relies on all feed APIs having the same structure!
+    my $href = $feeds->{$tag}->{api_item_href} . $id . '.json';
+    my $r    = $ua->get($href);
+    if ( !$r->is_success() ) {
+
+        #	warn "==> fetch failed for $tag $id: ";
+        #	warn Dumper $r;
+        return undef;
     }
-    if ( $hours == 0 and $mins == 0 ) {
-        return "less than a minute";
-    }
+    return undef unless $r->is_success();
+    return undef unless $r->header('Content-Type') =~ m{application/json};
+    my $content = $r->decoded_content();
+    my $json    = decode_json($content);
 
-    $out .= $hours > 0 ? $hours . 'h' : '';
-    $out .= $mins . 'm';
-
-    return $out;
+    # we only return stuff that we're interested in
+    return {
+        title    => $json->{title},
+        score    => $json->{score},
+        comments => $json->{ $feeds->{$tag}->{comments} }
+    };
 }
+
