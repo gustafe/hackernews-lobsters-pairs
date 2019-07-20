@@ -126,8 +126,6 @@ while ( my $r = $sth->fetchrow_hashref ) {
         $data->{$tag}->{site} = $feeds->{$tag}->{site};
         $data->{$tag}->{tag}  = $tag;
 
-        # scores and comments
-
         # date munging
         my $dt = DateTime->from_epoch( epoch => $data->{$tag}->{time} );
         $data->{$tag}->{dt} = $dt;
@@ -136,7 +134,7 @@ while ( my $r = $sth->fetchrow_hashref ) {
 
         $data->{$tag}->{pretty_date} = $dt->strftime('%d %b %Y');
     }
-
+    # exclude older entries
     if (   $now - $data->{lo}->{time} > $no_of_days_to_show * 24 * 3600
         or $now - $data->{hn}->{time} > $no_of_days_to_show * 24 * 3600 )
     {
@@ -171,20 +169,21 @@ if ($update_score) {
         foreach my $seq ( 'first', 'then' ) {
             my $item = $pair->{$seq};
             my $res = get_item_from_source( $item->{tag}, $item->{id} );
-            next
-              if ( !defined $res and $item->{tag} eq 'hn' )
-              ;    # might be problem accessing the API, try later
-                   # if it's Lobsters, assume it's gone
+            
+	    if ( !defined $res and $item->{tag} eq 'hn' ) {
+		# might be problem accessing the API, try later
+		next              ;
+	    }
+	    
+	    # if it's Lobsters, assume it's gone
             if ( !defined $res and $item->{tag} eq 'lo' ) {
                 say "!! Delete scheduled for $item->{site} ID $item->{id}";
                 push @{ $lists->{ $item->{tag} }->{delete} }, $item->{id};
-
+		$pair->{$seq}->{delete} = 1;
                 next;
             }
             if ( !defined $res->{title} and $item->{tag} eq 'hn' )
             {      # assume item has been deleted
-                    # TODO this will not remove it from the current
-                    # output, however
                 say "!! Delete scheduled for $item->{site} ID $item->{id}";
                 push @{ $lists->{ $item->{tag} }->{delete} }, $item->{id};
 		$pair->{$seq}->{delete} = 1;
@@ -219,7 +218,6 @@ if ($update_score) {
     foreach my $tag ( keys %{$feeds} ) {
         if ( defined $lists->{$tag}->{delete} ) {
 
-            # TODO implement deletions
             my $sth = $dbh->prepare( $feeds->{$tag}->{delete_sql} )
               or die $dbh->errstr;
             foreach my $id ( @{ $lists->{$tag}->{delete} } ) {
@@ -244,7 +242,6 @@ if ($update_score) {
 # calculate scores - we do this at this stage because the scores and
 # comments can have been updated
 
-
 foreach my $pair (@pairs) {
     foreach my $seq ( 'first', 'then' ) {
         my $item  = $pair->{$seq};
@@ -261,6 +258,7 @@ foreach my $pair (@pairs) {
 }
 
 # generate the page from the data
+# filter deleted stuff, and reverse time order 
 @pairs = grep {!exists $_->{'first'}->{deleted} and !exists $_->{'then'}->{deleted} } reverse @pairs;
 
 my $dt_now =
@@ -278,7 +276,6 @@ my %data = (
 my $tt =
   Template->new( { INCLUDE_PATH => '/home/gustaf/prj/HN-Lobsters-Tracker' } );
 
-#$tt->process('header.tt') || die $tt->error;
 $tt->process(
     'page.tt', \%data,
     '/home/gustaf/public_html/hnlo/index.html',
@@ -286,6 +283,7 @@ $tt->process(
 ) || die $tt->error;
 
 ### SUBS ###
+
 sub sec_to_human_time {
     my ($sec) = @_;
     my $days = int( $sec / ( 24 * 60 * 60 ) );

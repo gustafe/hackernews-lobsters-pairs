@@ -19,4 +19,6 @@ It only matches URLs exactly, so if there are extraneous elements in a submissio
 
 Hackernews has the most content, so that site is treated as "the source" for comparisons.
 
+While the HN API offers a list of the latest 500 entries, the script only scan the /newest page on Lobste.rs, and if the number of new entries manages to replace the page entirely between reads, the script might miss entries.
+
 The scores and comments are only updated occasionally as I don't want to overload the API endpoints.

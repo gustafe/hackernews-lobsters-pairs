@@ -4,3 +4,16 @@ HNL_LIB=/home/gustaf/prj/HN-Lobsters-Tracker
 08 0,4,8,12,16,20 * * * perl -I $HNL_LIB $HNL_LIB/Lo-get-new-items-load-store.pl
 12 0,4,8,12,16,20 * * * perl -I $HNL_LIB $HNL_LIB/generate-page.pl --update_score > /home/gustaf/public_html/hnlo/index.html
 
+
+### Monthly summary page
+
+* All pairs - updated
+
+* Stats:
+** total number of submissions, % of pairs
+** number of pairs
+** directions (HN->LO, vv)
+** top submitters
+** top domains  ?
+
+* List of pairs 
