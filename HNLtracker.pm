@@ -7,6 +7,7 @@ use DBI;
 use LWP::UserAgent;
 use JSON;
 use DateTime;
+use URI;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS/;
 
 $VERSION = 1.00;
@@ -102,6 +103,11 @@ sub get_all_pairs {
         else {
             $seen{ $pair->{url} }++;
         }
+	my $uri = URI->new( $r->{url} );
+	my $host = $uri->host;
+	$host =~ s/^www\.//;
+
+	$pair->{domain} = $host;
         $pair->{diff} = $r->{diff};
 
         foreach my $tag ( keys %{$feeds} ) {

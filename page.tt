@@ -20,7 +20,7 @@ updates hourly. <a href="about.html">About</a>.</p>
 
 <h2 class="link">
 <img src="http://gerikson.com/img/[% pair.logo %]"/>&nbsp;
-<a href="[% pair.heading_url %]">[% pair.heading %]</a></h2>
+<a href="[% pair.heading_url %]">[% pair.heading %]</a>&nbsp;<span class="domain">[% pair.domain %]</span></h2>
 
 
 <p>

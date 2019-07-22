@@ -22,15 +22,26 @@ my @pairs = @{get_all_pairs( $sth )};
 # gather stats
 my $pair_count;
 foreach my $pair (@pairs) {
+	$stats{all}->{domains}->{$pair->{domain}}++;
     foreach my $seq ('first','then') {
 #	say "$pair->{$seq}->{tag} $pair->{$seq}->{submitter}";
 	$stats{$pair->{$seq}->{tag}}->{submitter}->{$pair->{$seq}->{submitter}}++;
+
 	$stats{$pair->{$seq}->{tag}}->{seq}->{$seq}++;
     }
 
     $pair_count++;
 }
-say $pair_count;
+    say $pair_count;
+
+my $ten = 10;
+my $count=0;
+foreach my $dom (sort {$stats{all}->{domains}->{$b} <=> $stats{all}->{domains}->{$a}}  keys %{$stats{all}->{domains}} ){
+    next if $count > $ten;
+    say "$dom $stats{all}->{domains}->{$dom}";
+    $count++;
+
+}
 foreach my $tag ('hn','lo') {
     say $feeds->{$tag}->{site};
     say "Total (%): ", sprintf("%d %.02f%%", $stats{$tag}->{count},100*$pair_count/$stats{$tag}->{count});
