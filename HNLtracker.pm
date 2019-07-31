@@ -13,7 +13,7 @@ use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS/;
 $VERSION = 1.00;
 @ISA = qw/Exporter/;
 @EXPORT = ();
-@EXPORT_OK = qw/get_dbh get_ua get_all_pairs $feeds update_scores $debug $sql/ ;
+@EXPORT_OK = qw/get_dbh get_ua get_all_pairs get_item_from_source $feeds update_scores $debug $sql/ ;
 %EXPORT_TAGS = (DEFAULT => [qw/&get_dbh &get_ua/]);
 
 
@@ -235,7 +235,7 @@ sub update_scores{
             }
             say "$feeds->{$item->{tag}}->{site} ID $item->{id}" if $debug;
             if (   $res->{title} ne $item->{title}
-                or $res->{comments} != $item->{comments}
+                or $res->{comments}?$res->{comments}:0 != $item->{comments}
                 or $res->{score} != $item->{score} )
             {
 
@@ -273,8 +273,9 @@ sub update_scores{
             my $sth = $dbh->prepare( $feeds->{$tag}->{update_sql} )
               or die $dbh->errstr;
             foreach my $item ( @{ $lists->{$tag}->{update} } ) {
-                say
-                  "updating $feeds->{$tag}->{site} ID $item->[-1] '$item->[0]'";
+                printf("%s %8s %.67s%s\n", $tag, $item->[-1], $item->[0],
+		      length( $item->[0])>67?'\\':' ');
+#                  "$tag $item->[-1] '$item->[0]'";
                 my $rv = $sth->execute( @{$item} ) or warn $sth->errstr;
             }
             $sth->finish();
