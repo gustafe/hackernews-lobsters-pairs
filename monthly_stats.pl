@@ -32,10 +32,11 @@ foreach my $pair (@pairs) {
 
     $pair_count++;
 }
-    say $pair_count;
+    say "Total pairs: $pair_count";
 
 my $ten = 10;
 my $count=0;
+say "Most common domains:";
 foreach my $dom (sort {$stats{all}->{domains}->{$b} <=> $stats{all}->{domains}->{$a}}  keys %{$stats{all}->{domains}} ){
     next if $count > $ten;
     say "$dom $stats{all}->{domains}->{$dom}";
@@ -48,6 +49,7 @@ foreach my $tag ('hn','lo') {
     say "First (%): ", sprintf("%d %.02f%%", $stats{$tag}->{seq}->{first},100*$stats{$tag}->{seq}->{first}/$pair_count); 
     my $max = 5;
     my $count = 0;
+    say "Top $max submitters:";
     foreach my $submitter  ( sort {$stats{$tag}->{submitter}->{$b} <=> $stats{$tag}->{submitter}->{$a} }keys %{$stats{$tag}->{submitter}}) {
 	next if $count > $max;
 	say "$submitter $stats{$tag}->{submitter}->{$submitter}";
