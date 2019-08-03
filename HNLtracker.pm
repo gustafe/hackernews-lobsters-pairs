@@ -13,7 +13,7 @@ use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS/;
 $VERSION = 1.00;
 @ISA = qw/Exporter/;
 @EXPORT = ();
-@EXPORT_OK = qw/get_dbh get_ua get_all_pairs get_item_from_source $feeds update_scores $debug $sql/ ;
+@EXPORT_OK = qw/get_dbh get_ua get_all_pairs get_item_from_source $feeds update_scores $debug $sql $ua/ ;
 %EXPORT_TAGS = (DEFAULT => [qw/&get_dbh &get_ua/]);
 
 
@@ -178,7 +178,7 @@ sub sec_to_human_time {
 }
 sub get_item_from_source {
     my ( $tag, $id ) = @_;
-
+    $ua = get_ua();
     # this is fragile, it relies on all feed APIs having the same structure!
     my $href = $feeds->{$tag}->{api_item_href} . $id . '.json';
     my $r    = $ua->get($href);
@@ -203,7 +203,7 @@ sub get_item_from_source {
 
 sub update_scores{
     my ($dbh, $pairs_ref ) = @_;
-    $ua = get_ua();
+#    $ua = get_ua();
     my $lists;
 
     # find changes, if any

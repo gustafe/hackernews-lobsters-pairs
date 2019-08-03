@@ -3,19 +3,19 @@ use Modern::Perl '2015';
 ###
 
 use JSON;
-use HNLtracker qw/get_dbh get_ua $feeds/;
+use HNLtracker qw/get_dbh get_ua $feeds get_item_from_source $ua/;
 use IO::Handle;
 STDOUT->autoflush(1);
 use open qw/ :std :encoding(utf8) /;
 
-my $sql = { all_items => qq/select id, title, score, comments from hackernews order by id/,
+my $sql = { all_items => qq/select id, title, score, comments from hackernews order by id limit 20/,
 	    update_item => qq/update hackernews set title=?, score=?, comments=? where id = ?/,
 	    delete_item=> qq/delete from hackernews where id = ?/,
 	    };
 my $dbh = get_dbh();
 $dbh->{sqlite_unicode} = 1;
-my $ua = get_ua();
-sub  get_item_from_source;
+#my $ua = get_ua();
+#sub  get_item_from_source;
 
 
 sub read_item {
@@ -75,6 +75,7 @@ foreach my $i (@to_delete) {
     my $rv = $sth->execute( $i ) or warn $sth->errstr;
 }
 }
+__END__ 
 sub get_item_from_source {
     my ( $tag, $id ) = @_;
 

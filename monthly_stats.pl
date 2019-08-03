@@ -38,7 +38,7 @@ my $ten = 10;
 my $count=0;
 say "Most common domains:";
 foreach my $dom (sort {$stats{all}->{domains}->{$b} <=> $stats{all}->{domains}->{$a}}  keys %{$stats{all}->{domains}} ){
-    next if $count > $ten;
+    next if $stats{all}->{domains}->{$dom}<3;
     say "$dom $stats{all}->{domains}->{$dom}";
     $count++;
 
