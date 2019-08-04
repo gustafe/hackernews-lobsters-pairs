@@ -8,6 +8,8 @@ use LWP::UserAgent;
 use JSON;
 use DateTime;
 use URI;
+use open qw/ :std :encoding(utf8) /;
+
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS/;
 
 $VERSION = 1.00;
@@ -21,7 +23,7 @@ $VERSION = 1.00;
 
 my $cfg = Config::Simple->new('/home/gustaf/prj/HN-Lobsters-Tracker/hnltracker.ini');
 
-    my $driver = $cfg->param('DB.driver');
+my $driver = $cfg->param('DB.driver');
 my $database = $cfg->param('DB.database');
 my $dbuser = $cfg->param('DB.user');
 my $dbpass = $cfg->param('DB.password');
@@ -44,6 +46,8 @@ from hackernews hn
 inner join lobsters lo
 on lo.url = hn.url
 where hn.url is not null
+and hn_time >= strftime('%s', date('now','-7 day'))
+or lo_time >= strftime('%s', date('now','-7 day'))
 order by hn.created_time",
 	   get_hn_count => "select count(*) from hackernews where url is not null",
 	   get_lo_count => "select count(*) from lobsters where url is not null",
@@ -235,15 +239,16 @@ sub update_scores{
             }
             say "$feeds->{$item->{tag}}->{site} ID $item->{id}" if $debug;
             if (   $res->{title} ne $item->{title}
-                or $res->{comments}?$res->{comments}:0 != $item->{comments}
+                or ($res->{comments}?$res->{comments}:0) != $item->{comments}
                 or $res->{score} != $item->{score} )
             {
 
                 if ($debug) {
 
-                    say "T: $item->{title} -> $res->{title}";
+                    say "T: >$item->{title}<\n-> >$res->{title}<";
+#		    say "H: ", md5_hex($item->{title}),"\n"," ->", md5_hex($res->{title});
                     say "S: $item->{score} -> $res->{score}";
-                    say "C: $item->{comments} -> $res->{comments}";
+		    say "C: $item->{comments} -> $res->{comments}";
                 }
                 $pair->{$seq}->{title}    = $res->{title};
                 $pair->{$seq}->{score}    = $res->{score};
