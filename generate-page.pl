@@ -5,39 +5,24 @@ use Modern::Perl '2015';
 use Getopt::Long;
 
 use Template;
-use DateTime;
-use DateTime::Format::Strptime;
 
-use Data::Dumper;
+use HNLtracker qw/get_dbh get_all_pairs $feeds update_scores $sql/;
 
-use HNLtracker qw/get_ua get_dbh get_all_pairs $feeds update_scores $sql/;
 use open qw/ :std :encoding(utf8) /;
 
-#binmode STDOUT, ':utf8';
-#binmode STDERR, ':utf8';
 my $update_score;
 GetOptions( 'update_score' => \$update_score );
 
 ### Definitions and constants
 my $debug              = 0;
-my $page_title         = 'HN&&LO';
+my $page_title         = 'HN&amp;&amp;LO';
 my $no_of_days_to_show = 3;
 my $ratio_limit        = 9;
 
 my $ua;
 
 my $dbh = get_dbh;
-#my $dbh= HNLtracker->new()  ;
 $dbh->{sqlite_unicode} = 1;
-
-#### subs
-#sub sec_to_human_time;
-#sub get_item_from_source;
-#sub get_all_pairs;
-#sub update_scores;
-#### setup
-
-
 
 #### CODE ####
 
@@ -88,7 +73,7 @@ my $dt_now =
 my %data = (
     pairs => \@pairs,
     meta  => {
-        generate_time      => $dt_now->strftime('%Y-%m-%d %H:%M:%S'),
+        generate_time      => $dt_now->strftime('%Y-%m-%d %H:%M:%S%z'),
         page_title         => $page_title,
         no_of_days_to_show => $no_of_days_to_show,
         ratio_limit        => $ratio_limit,
