@@ -19,7 +19,7 @@ updates hourly. <a href="about.html">About</a>.</p>
 [% FOREACH pair=pairs %]
 
 <h2 class="link">
-<img src="http://gerikson.com/img/[% pair.logo %]"/>&nbsp;
+<img src="http://gerikson.com/img/[% pair.logo %]" alt="[% IF pair.logo == 'hn_lo.png '%]Hackernews to Lobste.rs[% ELSE %]Lobste.rs to Hackernews"[% END %]/>&nbsp;
 <a href="[% pair.heading_url %]">[% pair.heading %]</a>&nbsp;<span class="domain">[% pair.domain %]</span></h2>
 
 
@@ -38,7 +38,7 @@ Then appeared on <strong>[% pair.then.site %]</strong>
 <span class="tooltip" title="[% pair.then.timestamp %]">[%pair.later %]</span> later
 as <a href="[% pair.then.title_href %]">[% pair.then.title%]</a>
 submitted by <a href="[% pair.then.submitter_href%]">[% pair.then.submitter %]</a>.</span>
-&nbsp
+&nbsp;
 <span class="tooltip" title="Score | Comments | &lt;Ratio c/s&gt;"><code>S:[% pair.then.score %] C:[% pair.then.comments %] [% IF pair.then.ratio %]R:[% pair.then.ratio %][% END %]</code></span></p>
 
 [% END %]
