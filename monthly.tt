@@ -1,0 +1,40 @@
+[% INCLUDE header.tt %]
+<h1>[% meta.page_title %]</h1>
+[% FILTER html_para %]
+There are [% stats.pair_count %] pairs this month. Of these, [% stats.first.hn %] ([% FILTER format ('%.01f%%') %][% stats.first.hn / stats.pair_count * 100 %][% END %]) were first seen on  Hackernews, out of a total of [% stats.total.hn %]. This represents a percentage of [% FILTER format ('%.02f%%') %][% stats.first.hn / stats.total.hn * 100 %][% END %].
+
+The number of pairs first seen on Lobste.rs was [% stats.first.lo %] ([% FILTER format ('%.01f%%') %][% stats.first.lo / stats.pair_count * 100 %][% END %]), out of a total of [% stats.total.lo %] ([% FILTER format ('%.02f%%') %][% stats.first.lo / stats.total.lo * 100 %][% END %]).
+
+[% END %]
+
+[% FOREACH date IN dates.keys.sort  %]
+<h1 class="date">[% date %]</h1>
+[% FOREACH pair IN dates.$date %]
+<h2 class="link">
+<img src="http://gerikson.com/img/[% pair.logo %]" alt="[% IF pair.logo == 'hn_lo.png '%]Hackernews to Lobste.rs[% ELSE %]Lobste.rs to Hackernews"[% END %]/>&nbsp;
+<a href="[% pair.heading_url %]">[% pair.heading %]</a>&nbsp;<span class="domain">[% pair.domain %]</span></h2>
+
+
+<p>
+<span class="[% pair.first.tag %]">
+First seen on <strong>[% pair.first.site %]</strong>
+as <a href="[% pair.first.title_href %]">[% pair.first.title %]</a>
+on <span class="tooltip" title="[% pair.first.timestamp %]">[% pair.first.pretty_date%]</span>, 
+submitted by <a href="[% pair.first.submitter_href %]">[% pair.first.submitter %]</a>.</span>&nbsp;
+<span class="tooltip" title="Score | Comments | &lt;Ratio c/s&gt;"><code>S:[% pair.first.score %] C:[% pair.first.comments %] [% IF pair.first.ratio %]R:[% pair.first.ratio %][% END %]</code></span></p>
+
+
+<p>
+<span class="[% pair.then.tag %]">
+Then appeared on <strong>[% pair.then.site %]</strong>
+<span class="tooltip" title="[% pair.then.timestamp %]">[%pair.later %]</span> later
+as <a href="[% pair.then.title_href %]">[% pair.then.title%]</a>
+submitted by <a href="[% pair.then.submitter_href%]">[% pair.then.submitter %]</a>.</span>
+&nbsp;
+<span class="tooltip" title="Score | Comments | &lt;Ratio c/s&gt;"><code>S:[% pair.then.score %] C:[% pair.then.comments %] [% IF pair.then.ratio %]R:[% pair.then.ratio %][% END %]</code></span></p>
+
+[% END %]
+
+[% END %]
+<p>This page generated on [% meta.generate_time %].</p>
+[% INCLUDE footer.tt %]
