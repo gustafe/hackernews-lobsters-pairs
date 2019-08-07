@@ -46,11 +46,12 @@ from hackernews hn
 inner join lobsters lo
 on lo.url = hn.url
 where hn.url is not null
-and hn_time >= strftime('%s', date('now','-7 day'))
-or lo_time >= strftime('%s', date('now','-7 day'))
 order by hn.created_time",
-	   get_hn_count => "select count(*) from hackernews where url is not null",
-	   get_lo_count => "select count(*) from lobsters where url is not null",
+	    # and hn_time >= strftime('%s', date('now','-7 day'))
+	    # or lo_time >= strftime('%s', date('now','-7 day'))
+
+	   get_hn_count => "select count(*) from hackernews where url is not null and created_time between ? and ?",
+	   get_lo_count => "select count(*) from lobsters where url is not null and created_time between ? and ?",
 };
 
 
@@ -196,7 +197,8 @@ sub get_item_from_source {
     return undef unless $r->header('Content-Type') =~ m{application/json};
     my $content = $r->decoded_content();
     my $json    = decode_json($content);
-
+    # special case for HN, if link is flagged "dead" after it's been included in the DB
+    return undef if ( $tag eq 'hn' and defined ($json->{dead}));
     # we only return stuff that we're interested in
     return {
         title    => $json->{title},
@@ -240,7 +242,7 @@ sub update_scores{
             say "$feeds->{$item->{tag}}->{site} ID $item->{id}" if $debug;
             if (   $res->{title} ne $item->{title}
                 or ($res->{comments}?$res->{comments}:0) != $item->{comments}
-                or $res->{score} != $item->{score} )
+                or ($res->{score}?$res->{score}:0) != $item->{score} )
             {
 
                 if ($debug) {
