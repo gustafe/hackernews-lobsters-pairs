@@ -17,7 +17,7 @@ A script is run hourly, reading the latest entries from both sites. Then the pag
 
 It only matches URLs exactly, so if there are extraneous elements in a submission to one site, it won't show up.
 
-Hackernews has the most content, so that site is treated as "the source" for comparisons.
+Hackernews has the most content, so that site is treated as "the source" for comparisons. However, I find the title moderation on Lobste.rs more consistent, so the title of the submission from that site is shown for each pair.
 
 While the HN API offers a list of the latest 500 entries, the script only scan the /newest page on Lobste.rs, and if the number of new entries manages to replace the page entirely between reads, the script might miss entries.
 
