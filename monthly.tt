@@ -1,17 +1,59 @@
 [% INCLUDE header.tt %]
 <h1>[% meta.page_title %]</h1>
-[% FILTER html_para %]
-There are [% stats.pair_count %] pairs this month. Of these, [% stats.first.hn %] ([% FILTER format ('%.01f%%') %][% stats.first.hn / stats.pair_count * 100 %][% END %]) were first seen on  Hackernews, out of a total of [% stats.total.hn %]. This represents a percentage of [% FILTER format ('%.02f%%') %][% stats.first.hn / stats.total.hn * 100 %][% END %].
 
-The number of pairs first seen on Lobste.rs was [% stats.first.lo %] ([% FILTER format ('%.01f%%') %][% stats.first.lo / stats.pair_count * 100 %][% END %]), out of a total of [% stats.total.lo %] ([% FILTER format ('%.02f%%') %][% stats.first.lo / stats.total.lo * 100 %][% END %]).
+<a href="index.html">Today's links</a>.
+
+<a name="top"/>
+[% FILTER html_para %]
+There are [% stats.pair_count %] pairs this month.
+
+On Hacker News, [% stats.first.hn %] pairs appeared first ([% FILTER
+format ('%.01f%%') %][% stats.first.hn / stats.pair_count * 100 %][%
+END %]). In total, [% stats.total.hn %] posts with URLs were submitted
+during the time period.<a href="#count"><sup>*</sup></a> The pairs here represent [% FILTER format
+('%.02f%%') %][% stats.pair_count / stats.total.hn * 100 %][% END %]
+of those.
+
+On Lobste.rs, [% stats.first.lo %] pairs appeared first ([% FILTER
+format ('%.01f%%') %][% stats.first.lo / stats.pair_count * 100 %][%
+END %]). In total, [% stats.total.lo %] posts with URLs were submitted
+during the time period.<a href="#count"><sup>*</sup></a> The
+pairs here represent [% FILTER format ('%.02f%%') %][%
+stats.pair_count / stats.total.lo * 100 %][% END %] of those.
+
+
 
 [% END %]
+
+<h3>Top submitters</h3>
+<table>
+<tr>  <th>Hacker News</th> <th>Lobste.rs</th> </tr>
+<tr><td>
+[% FOREACH line IN submitters.hn %]
+<a href="https://news.ycombinator.com/user?id=[% line.name %]">[% line.name %]</a> ([% line.count %])<br/>
+[% END %]
+</td>
+<td>
+[% FOREACH line IN submitters.lo %]
+<a href="https://lobste.rs/u/[% line.name %]">[% line.name %]</a> ([% line.count %])<br/>
+[% END %]
+</td></tr>
+</table>
+
+<h3>Domains with more than 2 submissions</h3>
+
+<p>
+[% FOREACH line IN domains %]
+<a href="http://[% line.domain %]">[% line.domain %]</a> ([% line.count %])<br/>
+[% END %]
+</p>
 
 [% FOREACH date IN dates.keys.sort  %]
 <h1 class="date">[% date %]</h1>
 [% FOREACH pair IN dates.$date %]
+<a name="[% pair.first.id _ '_' _ pair.then.id %]"/>
 <h2 class="link">
-<img src="http://gerikson.com/img/[% pair.logo %]" alt="[% IF pair.logo == 'hn_lo.png '%]Hackernews to Lobste.rs[% ELSE %]Lobste.rs to Hackernews"[% END %]/>&nbsp;
+<a href="[% '#' _ pair.first.id _ '_' _ pair.then.id %]"><img src="http://gerikson.com/img/[% pair.logo %]" alt="[% IF pair.logo == 'hn_lo.png '%]Hackernews to Lobste.rs[% ELSE %]Lobste.rs to Hackernews"[% END %]/></a>&nbsp;
 <a href="[% pair.heading_url %]">[% pair.heading %]</a>&nbsp;<span class="domain">[% pair.domain %]</span></h2>
 
 
@@ -36,5 +78,10 @@ submitted by <a href="[% pair.then.submitter_href%]">[% pair.then.submitter %]</
 [% END %]
 
 [% END %]
-<p>This page generated on [% meta.generate_time %].</p>
+
+<p>
+<a name="count"/>
+<sup>*</sup> Note: only those submissions that form a pair are checked of existence after a certain time period since they are first read (to read updated scores, etc.) This means that the total count noted here may be higher than the actual current count on each site. <a href="#top"><sup>^</sup></a>
+</p>
+<p>This page was generated on [% meta.generate_time %].</p>
 [% INCLUDE footer.tt %]
