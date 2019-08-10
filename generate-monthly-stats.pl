@@ -5,7 +5,7 @@ use Modern::Perl '2015';
 use Getopt::Long;
 use DateTime;
 use Template;
-
+use Data::Dumper;
 use HNLtracker qw/get_dbh get_all_pairs $feeds update_scores $sql/;
 
 use open qw/ :std :encoding(utf8) /;
@@ -94,13 +94,32 @@ foreach my $pair (@pairs) {
     push @{$dates{$posted_day}}, $pair;
 
 }
+my $max_subs= 5;
+my %submitters;
+foreach my $tag ('hn','lo') {
+    my $count = 0;
+    foreach my $name (sort { $stats{submitters}->{$tag}->{$b} <=>
+			       $stats{submitters}->{$tag}->{$a} || $a cmp $b
+			   } keys %{$stats{submitters}->{$tag}}) {
+	next if $count > $max_subs;
+	push @{$submitters{$tag}}, {name=>$name,count=>$stats{submitters}->{$tag}->{$name}};
+	$count++;
+    }
+}
+my @domains;
 
+foreach my $domain (sort {$stats{domains}->{$b}<=>$stats{domains}->{$a}} keys %{$stats{domains}}) {
+    next if $stats{domains}->{$domain} <= 2;
+    push @domains, {domain=>$domain,count=> $stats{domains}->{$domain}};
+}
 # generate the page from the data
 my $dt_now =
   DateTime->from_epoch( epoch => $now, time_zone => 'Europe/Stockholm' );
 my %data = (
 	    dates => \%dates,
 	    stats=>\%stats,
+	    submitters=>\%submitters,
+	    domains=>\@domains,
     meta  => {
         generate_time      => $dt_now->strftime('%Y-%m-%d %H:%M:%S%z'),
         page_title         => $page_title,
@@ -118,6 +137,7 @@ $tt->process(
     { binmode => ':utf8' }
 ) || die $tt->error;
 
+#print Dumper \%submitters;
 ### SUBS ###
 
 sub usage {
