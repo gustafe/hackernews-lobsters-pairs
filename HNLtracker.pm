@@ -114,11 +114,15 @@ sub get_all_pairs {
 
 	$pair->{domain} = $host;
         $pair->{diff} = $r->{diff};
-
+	my $title;
         foreach my $tag ( keys %{$feeds} ) {
             foreach my $field (qw(id time title submitter score comments )) {
                 $data->{$tag}->{$field} = $r->{ $tag . '_' . $field };
             }
+
+	    if ($tag eq 'lo') {
+		$title = $data->{$tag}->{title};
+	    }
             $data->{$tag}->{title_href} =
               $feeds->{$tag}->{title_href} . $data->{$tag}->{id};
             $data->{$tag}->{submitter_href} =
@@ -143,7 +147,9 @@ sub get_all_pairs {
 
         }
         $pair->{heading_url} = $pair->{url};
-        $pair->{heading}     = $data->{ $pair->{order}->[0] }->{title};
+	# ensure Lobsters titles are what are shown
+	$pair->{heading} = $title;
+#        $pair->{heading}     = $data->{ $pair->{order}->[0] }->{title};
         $pair->{later}       = sec_to_human_time( abs $pair->{diff} );
         $pair->{logo} =
           $pair->{order}->[0] . '_' . $pair->{order}->[1] . '.png';
