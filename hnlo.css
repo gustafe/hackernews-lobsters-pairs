@@ -11,6 +11,21 @@ h1, h2, h3, h4 , h5, h6 {
 /*	margin-top: 1.286em;
 	margin-bottom: 1.286em; */
 }
+table {
+    border-collapse: collapse;
+}
+
+td {
+    vertical-align: top;
+}
+th,td {
+    padding: 10px;
+    text-align: left;
+}
+
+table, th, td {
+/*     border: 1px solid black; */
+}
 
 
 .tooltip { 
@@ -39,6 +54,10 @@ h2.link a {
 h2.link a:hover {
  	text-decoration: underline; 
 }
+.date {
+    font-size: 16pt;
+}
+
 
 .domain {
     font-size: 11pt;
@@ -48,3 +67,4 @@ h2.link a:hover {
     font-weight: normal;
     font-family: "helvetica neue", arial, sans-serif;    
 }
+
