@@ -271,7 +271,7 @@ sub update_scores{
     }
 
     # execute changes
-    foreach my $tag ( keys %{$feeds} ) {
+    foreach my $tag ( sort keys %{$feeds} ) {
         if ( defined $lists->{$tag}->{delete} ) {
 
             my $sth = $dbh->prepare( $feeds->{$tag}->{delete_sql} )
