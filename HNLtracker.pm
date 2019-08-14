@@ -103,7 +103,7 @@ sub get_all_pairs {
         my $data;
         $pair->{url} = $r->{url};
         if ( exists $seen{ $pair->{url} } ) {
-            next;
+             next;
         }
         else {
             $seen{ $pair->{url} }++;
