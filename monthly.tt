@@ -51,6 +51,10 @@ stats.pair_count / stats.total.lo * 100 %][% END %] of those.
 [% FOREACH date IN dates.keys.sort  %]
 <h1 class="date">[% date %]</h1>
 [% FOREACH pair IN dates.$date %]
+   [% INCLUDE pair_contents.tt %]
+[% END %]
+[% END %]
+<!--
 <a name="[% pair.first.id _ '_' _ pair.then.id %]"/>
 <h2 class="link">
 <a href="[% '#' _ pair.first.id _ '_' _ pair.then.id %]"><img src="http://gerikson.com/img/[% pair.logo %]" alt="[% IF pair.logo == 'hn_lo.png '%]Hackernews to Lobste.rs[% ELSE %]Lobste.rs to Hackernews"[% END %]/></a>&nbsp;
@@ -75,10 +79,7 @@ submitted by <a href="[% pair.then.submitter_href%]">[% pair.then.submitter %]</
 &nbsp;
 <span class="tooltip" title="Score | Comments | &lt;Ratio c/s&gt;"><code>S:[% pair.then.score %] C:[% pair.then.comments %] [% IF pair.then.ratio %]R:[% pair.then.ratio %][% END %]</code></span></p>
 
-[% END %]
-
-[% END %]
-
+-->
 <p>
 <a name="count"/>
 <sup>*</sup> Note: only those submissions that form a pair are checked of existence after a certain time period since they are first read (to read updated scores, etc.) This means that the total count noted here may be higher than the actual current count on each site. <a href="#top"><sup>^</sup></a>

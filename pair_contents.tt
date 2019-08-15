@@ -1,0 +1,48 @@
+
+   [% SWITCH pair.logo -%]
+      [% CASE 'hn_lo.png' -%]
+         [% SET alt = 'Hacker News to Lobste.rs' -%]
+      [% CASE 'lo_hn.png' -%]
+         [% SET alt = 'Lobste.rs to Hacker News' -%]
+      [% CASE -%]
+         [% SET alt='Multiple source' -%]
+   [% END %]
+   <a name="[% pair.anchor %]"/>
+   <h2 class="link">
+   <a href="[% '#' _ pair.anchor %]">
+      <img src="img/[% pair.logo %]" alt="[% alt %]"/></a>&nbsp;
+   <a href="[% pair.heading_url %]">[% pair.heading %]</a>&nbsp;<span class="domain">[% pair.domain %]</span></h2>
+
+
+   [% FOREACH entry IN pair.sequence %]
+
+      [% SET site = entry.site -%]
+      [% SET title_href = entry.title_href -%]
+      [% SET title = entry.title -%]
+      [% SET timestamp = entry.timestamp -%]
+      [% SET pretty_date = entry.pretty_date -%]
+      [% SET submitter_href = entry.submitter_href -%]
+      [% SET submitter = entry.submitter -%]
+      [% SET score = entry.score -%]
+      [% SET comments = entry.comments -%]
+
+      <p>
+      [% IF entry.first == 1 -%]
+      <span class="[% entry.tag %]">
+      First seen on <strong>[% site %]</strong> 
+      as <a href="[% title_href %]">[% title %]</a>
+      on <span class="tooltip" title="[% timestamp %]">[% pretty_date %]</span>,
+      submitted by <a href="[% submitter_href %]">[% submitter %]</a>.</span>
+      [% ELSE -%]
+      <span class="[% entry.tag %]">
+      Then appeared on <strong>[% site %]</strong>
+      <span class="tooltip" title="[% timestamp %]">[% entry.then %]</span> later
+      as <a href="[% title_href %]">[% title %]</a>,
+      submitted by <a href="[% submitter_href %]">[% submitter %]</a>.</span>
+      [% END -%]
+      <span class="tooltip" title="Score | Comments | &lt;Ratio C/S&gt;"><code>
+      S:[% score %]&nbsp;C:[% comments %][% IF entry.ratio %]&nbsp;R:[% entry.ratio %][% END %]
+      </code></span>
+      </p>
+
+   [% END -%] 
