@@ -14,6 +14,11 @@ upvotes), the number of comments, and the comment/score ratio. The
 ratio is only printed if the sum of the score and comments is 10 or
 more.
 
+<a name="changelog"/>
+## Changelog
+
+* 2019-08-15 - Link  now show multiple entries, if they're present. Items are often reposted on HN , and previously just the first occurence in time was presented. 
+
 ## How it works
 
 A script is run hourly, reading the latest entries from both

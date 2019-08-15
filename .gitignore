@@ -9,3 +9,6 @@ out
 /Lo-get-single-item.pl
 /pairs.sql
 /ratio-stats.pl
+/otu
+*.csv
+*.sql

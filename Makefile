@@ -6,16 +6,16 @@ MD=$(HOME)/bin/Markdown_1.0.1/Markdown.pl
 build:
 	perl -I $(BIN) $(BIN)/HN-get-new-items-load-store.pl
 	perl -I $(BIN) $(BIN)/Lo-get-new-items-load-store.pl
-	perl -I $(BIN) $(BIN)/generate-page.pl --update_score
+	perl -I $(BIN) $(BIN)/generate-hourly.pl --update_score
 
 
 .PHONY: refresh
 refresh:	
-	perl -I $(BIN) $(BIN)/generate-page.pl 
+	perl -I $(BIN) $(BIN)/generate-hourly.pl 
 
 .PHONY: scores
 scores:
-	perl -I $(BIN) $(BIN)/generate-page.pl --update_score 
+	perl -I $(BIN) $(BIN)/generate-hourly.pl --update_score 
 
 about.html: about.header common.tt footer.tt about.md todo.md hnlo.css
 	cat about.header > $(WWW)/about.html
