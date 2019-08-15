@@ -33,7 +33,9 @@ table, th, td {
 	 }
 .lo {
     	font-family: "helvetica neue", arial, sans-serif;
-		font-size: 11pt;
+	font-size: 11pt;
+	background-color; #CCCCCC;
+/*	display: block;  */
 	/*	line-height: 1.45em; 
 color: #333; */
 }
