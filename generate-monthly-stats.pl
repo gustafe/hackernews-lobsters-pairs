@@ -6,7 +6,7 @@ use Getopt::Long;
 use DateTime;
 use Template;
 use Data::Dumper;
-use HNLtracker qw/get_dbh get_all_pairs $feeds update_scores $sql/;
+use HNLOlib qw/get_dbh get_all_sets $feeds update_scores $sql/;
 
 use open qw/ :std :encoding(utf8) /;
 sub usage;
@@ -41,14 +41,19 @@ $dbh->{sqlite_unicode} = 1;
 my $now   = time();
 # get all pairs from the DB
 my $sth = $dbh->prepare( $sql->{get_pairs} );
-my @pairs = @{ get_all_pairs($sth) };
+my $sets = get_all_sets($sth) ;
 
 # filter entries older than the retention time
 
-@pairs = grep {
-    ( $_->{first}->{time} >= $from_dt->strftime('%s') )
-      and ( $_->{first}->{time} <= $to_dt->strftime('%s') )
-} @pairs;
+my @pairs;
+foreach my $url (sort { $sets->{$a}->{first_seen} <=> $sets->{$b}->{first_seen} }
+		 keys %{$sets}) {
+    if ($sets->{$url}->{first_seen} <= $from_dt->strftime('%s') or
+	$sets->{$url}->{first_seen} >= $to_dt->strftime( '%s' )) {
+	next;
+    }
+    push @pairs, $sets->{$url};
+}
 
 # update items if that option is set
 
@@ -72,10 +77,12 @@ foreach my $tag ('hn','lo') {
 
 
 foreach my $pair (@pairs) {
-    next if ( exists $pair->{first}->{deleted} or exists $pair->{then}->{deleted});
+    #    next if ( exists $pair->{}->{deleted} or exists $pair->{then}->{deleted});
+#
 
-    foreach my $seq ( 'first', 'then' ) {
-        my $item  = $pair->{$seq};
+    foreach my $item ( @{$pair->{sequence}} ) {
+	#        my $item  = $pair->{$seq};
+	# we will double-count here sometimes
 	$stats{submitters}->{$item->{tag}}->{$item->{submitter}}++;
 
         my $ratio = undef;
@@ -85,12 +92,12 @@ foreach my $pair (@pairs) {
             $ratio = sprintf( '%.02f', $item->{comments} / $item->{score} );
 
         }
-        $pair->{$seq}->{ratio} = $ratio if defined $ratio;
-	$stats{first}->{$item->{tag}}++ if $seq eq 'first';
+        $item->{ratio} = $ratio if defined $ratio;
+	$stats{first}->{$item->{tag}}++ if $item->{first};
     }
     $stats{domains}->{$pair->{domain}}++;
 
-    my $posted_day = (split(' ',$pair->{first}->{timestamp}))[0];
+    my $posted_day = (split(' ',$pair->{sequence}->[0]->{timestamp}))[0];
     push @{$dates{$posted_day}}, $pair;
 
 }
@@ -112,6 +119,8 @@ foreach my $domain (sort {$stats{domains}->{$b}<=>$stats{domains}->{$a}} keys %{
     next if $stats{domains}->{$domain} <= 2;
     push @domains, {domain=>$domain,count=> $stats{domains}->{$domain}};
 }
+# print Dumper \%dates;
+
 # generate the page from the data
 my $dt_now =
   DateTime->from_epoch( epoch => $now, time_zone => 'Europe/Stockholm' );
