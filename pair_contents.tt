@@ -11,7 +11,8 @@
    <h2 class="link">
    <a href="[% '#' _ pair.anchor %]">
       <img src="img/[% pair.logo %]" alt="[% alt %]"/></a>&nbsp;
-   <a href="[% pair.heading_url %]">[% pair.heading %]</a>&nbsp;<span class="domain">[% pair.domain %]</span></h2>
+   <a href="[% pair.heading_url %]">[% pair.heading %]</a>&nbsp;<span class="domain">[% pair.domain %]</span>&nbsp;   <span class='tags' title='tags for this entry on Lobste.rs'>[% FOREACH tag IN pair.tags_list -%] [% tag -%]
+   [%- END %]</span></h2>
 
 
    [% FOREACH entry IN pair.sequence %]
@@ -45,4 +46,7 @@
       </code></span>
       </p>
 
+
    [% END -%] 
+
+

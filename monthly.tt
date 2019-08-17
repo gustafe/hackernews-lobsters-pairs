@@ -21,8 +21,6 @@ during the time period.<a href="#count"><sup>*</sup></a> The
 pairs here represent [% FILTER format ('%.02f%%') %][%
 stats.pair_count / stats.total.lo * 100 %][% END %] of those.
 
-
-
 [% END %]
 
 <h3>Top submitters</h3>
@@ -49,37 +47,14 @@ stats.pair_count / stats.total.lo * 100 %][% END %] of those.
 </p>
 
 [% FOREACH date IN dates.keys.sort  %]
-<h1 class="date">[% date %]</h1>
-[% FOREACH pair IN dates.$date %]
+<h1 class="date">[% dates.$date.display_date %]</h1>
+[% FOREACH pair IN dates.$date.pairs %]
    [% INCLUDE pair_contents.tt %]
+
 [% END %]
+
 [% END %]
-<!--
-<a name="[% pair.first.id _ '_' _ pair.then.id %]"/>
-<h2 class="link">
-<a href="[% '#' _ pair.first.id _ '_' _ pair.then.id %]"><img src="http://gerikson.com/img/[% pair.logo %]" alt="[% IF pair.logo == 'hn_lo.png '%]Hackernews to Lobste.rs[% ELSE %]Lobste.rs to Hackernews"[% END %]/></a>&nbsp;
-<a href="[% pair.heading_url %]">[% pair.heading %]</a>&nbsp;<span class="domain">[% pair.domain %]</span></h2>
-
-
-<p>
-<span class="[% pair.first.tag %]">
-First seen on <strong>[% pair.first.site %]</strong>
-as <a href="[% pair.first.title_href %]">[% pair.first.title %]</a>
-on <span class="tooltip" title="[% pair.first.timestamp %]">[% pair.first.pretty_date%]</span>, 
-submitted by <a href="[% pair.first.submitter_href %]">[% pair.first.submitter %]</a>.</span>&nbsp;
-<span class="tooltip" title="Score | Comments | &lt;Ratio c/s&gt;"><code>S:[% pair.first.score %] C:[% pair.first.comments %] [% IF pair.first.ratio %]R:[% pair.first.ratio %][% END %]</code></span></p>
-
-
-<p>
-<span class="[% pair.then.tag %]">
-Then appeared on <strong>[% pair.then.site %]</strong>
-<span class="tooltip" title="[% pair.then.timestamp %]">[%pair.later %]</span> later
-as <a href="[% pair.then.title_href %]">[% pair.then.title%]</a>
-submitted by <a href="[% pair.then.submitter_href%]">[% pair.then.submitter %]</a>.</span>
-&nbsp;
-<span class="tooltip" title="Score | Comments | &lt;Ratio c/s&gt;"><code>S:[% pair.then.score %] C:[% pair.then.comments %] [% IF pair.then.ratio %]R:[% pair.then.ratio %][% END %]</code></span></p>
-
--->
+<hr />
 <p>
 <a name="count"/>
 <sup>*</sup> Note: only those submissions that form a pair are checked of existence after a certain time period since they are first read (to read updated scores, etc.) This means that the total count noted here may be higher than the actual current count on each site. <a href="#top"><sup>^</sup></a>

@@ -12,3 +12,7 @@ out
 /otu
 *.csv
 *.sql
+*.bak
+/all-tags
+/Lo-get-all-tags-from-source.pl
+/analyze-tags.pl
