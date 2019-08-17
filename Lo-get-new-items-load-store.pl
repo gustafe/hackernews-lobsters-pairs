@@ -24,10 +24,10 @@ my $latest_id = $sth->fetchrow_array;
 $sth->finish();
 
 my $insert_sql = qq{insert into lobsters (
-id, created_time, url, title, submitter, score,comments
+id, created_time, url, title, submitter, score,comments, tags
 )
 values
-(?, ?,?,?,?,?,?)};
+(?, ?,?,?,?,?,?,?)};
 $sth = $dbh->prepare( $insert_sql );
 my $count = 0;
 for my $item (@{$list}) {
@@ -42,7 +42,8 @@ for my $item (@{$list}) {
 		  $item->{title},
 		  $item->{submitter_user}->{username},
 		  $item->{score},
-		  $item->{comment_count}
+		  $item->{comment_count},
+		  join(',', @{$item->{tags}}),
 		 );
     $count++;
 }

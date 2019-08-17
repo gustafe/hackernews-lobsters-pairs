@@ -24,11 +24,11 @@ $dbh->{sqlite_unicode} = 1;
 #sub  get_item_from_source;
 sub usage;
 sub read_item;
-my $target_month;
+my $target_day;
 my $delete_id;
 my $debug;
-GetOptions( 'target_day=i' => \$target_month, 'delete_id=i' => \$delete_id );
-if ( !defined $target_month and !defined $delete_id ) {
+GetOptions( 'target_day=i' => \$target_day, 'delete_id=i' => \$delete_id );
+if ( !defined $target_day and !defined $delete_id ) {
     usage;
 }
 if ($delete_id) {
@@ -39,7 +39,7 @@ if ($delete_id) {
 }
 else {
 
-    my ( $year, $month, $day ) = $target_month =~ m/(\d{4})(\d{2})(\d{2})/;
+    my ( $year, $month, $day ) = $target_day =~ m/(\d{4})(\d{2})(\d{2})/;
     usage unless ( $month >= 1 and $month <= 12 );
 
     my $from_dt = DateTime->new(

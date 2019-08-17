@@ -2,68 +2,88 @@
 use Modern::Perl '2015';
 ###
 
+use Getopt::Long;
 use JSON;
-use HNLtracker qw/get_dbh get_ua/;
+use HNLOlib qw/get_dbh get_ua $feeds  $ua get_all_sets  update_scores/;
 use IO::Handle;
 STDOUT->autoflush(1);
-binmode STDOUT, ":utf8";
-
-my $sql = { all_items => qq/select id, title, score, comments from lobsters order by created_time/,
-	    update_item => qq/update lobsters set title=?, score=?, comments=? where id = ?/,
-	    };
+use open qw/ :std :encoding(utf8) /;
+use Data::Dumper;
+my $sql = {
+    all_items =>
+qq/select id, title, score, comments from lobsters where created_time >=?  
+and created_time<?/,
+    update_item =>
+      qq/update lobsters set title=?, score=?, comments=? where id = ?/,
+    delete_item => qq/delete from lobsters where id = ?/,
+};
 my $dbh = get_dbh();
-my $ua = get_ua();
+$dbh->{sqlite_unicode} = 1;
 
-
-sub read_item {
-    my ( $id ) = @_;
-    my $url = 'https://lobste.rs/s/' . $id . '.json';
-    my $r = $ua->get( $url );
-    return  $r->status_line() unless $r->is_success();
-    my $content = $r->decoded_content();
-    return decode_json( $content );
+#my $ua = get_ua();
+#sub  get_item_from_source;
+sub usage;
+sub read_item;
+my $target_day;
+my $delete_id;
+my $debug;
+GetOptions( 'target_day=i' => \$target_day, 'delete_id=i' => \$delete_id );
+if ( !defined $target_day and !defined $delete_id ) {
+    usage;
 }
+if ($delete_id) {
+    my $sth = $dbh->prepare( $sql->{delete_item} ) or die $dbh->errstr;
+    my $rv  = $sth->execute($delete_id)            or warn $sth->errstr;
+    $sth->finish;
+    exit 0;
+}
+else {
 
-my $sth = $dbh->prepare( $sql->{all_items} ) or die $dbh->errstr;
-my @update_list;
-my @failed;
-$sth->execute();
-while (my @r = $sth->fetchrow_array) {
-    
-    #    say join(',', map {$_?$_:''} @row);
-    my $item = read_item( $r[0] );
-    print "$r[0]: ";
-    if (!defined $item->{title}) {
-	# error in read from API
-	print "can't get info from API!\n";
-	push @failed, $r[0];
+    my ( $year, $month, $day ) = $target_day =~ m/(\d{4})(\d{2})(\d{2})/;
+    usage unless ( $month >= 1 and $month <= 12 );
+
+    my $from_dt = DateTime->new(
+        year   => $year,
+        month  => $month,
+        day    => $day,
+        hour   => 0,
+        minute => 0,
+        second => 0
+    );
+    my $to_dt = DateTime->new(
+        year   => $year,
+        month  => $month,
+        day    => $day,
+        hour   => 0,
+        minute => 0,
+        second => 0
+    )->add( days => 1 );
+
+    say "$from_dt -- $to_dt";
+
+    my $sth = $dbh->prepare( $sql->{all_items} ) or die $dbh->errstr;
+    my @update_list;
+    my @failed;
+    my @not_read;
+    my @to_delete;
+    my @items;
+    $sth->execute( $from_dt->ymd, $to_dt->ymd );
+    my $ids;
+    while ( my $r = $sth->fetchrow_hashref ) {
+	push @{$ids->{sequence}},
+	  { tag =>'lo',
+	    map { $_, $r->{$_}} qw/id title score comments/ };
     }
-    elsif ($item->{title} ne $r[1] or
-	$item->{score} != $r[2] or
-	$item->{comment_count} != $r[3] ) {
-	push @update_list, [$r[0], map {$item->{$_}} qw/title score comment_count/];
-	print "will be updated\n";
-    } else {
-	print "no change\n";
-    }
-    
-    sleep 1;
+
+    $sth->finish;
+#    print Dumper $ids;
+#    exit 0;
+    my @result= @{update_scores($dbh, [$ids])};
+
 }
 
-$sth->finish;
-say "### Updating database ###";
-$sth = $dbh->prepare( $sql->{update_item});
-foreach my $a (@update_list ) {
-    my $rv = $sth->execute( $a->[1],$a->[2],$a->[3],$a->[0] );
-    
+sub usage {
+    say "usage: $0 [--delete_id=ID] --target_day=YYYYMMDD";
+    exit 1;
 }
-if (scalar @failed>0 ) {
-   say "### Failed to get info ###";
-foreach my $id (@failed) {
 
- 
-    say "$id | https://lobste.rs/s/$id.json"; 
-
-    say "delete from lobsters where id = $id;";
-}
-}

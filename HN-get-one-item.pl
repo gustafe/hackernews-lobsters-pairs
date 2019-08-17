@@ -7,7 +7,7 @@ use JSON;
 use HNLtracker qw/get_dbh get_ua/;
 use Data::Dumper;
 # get item from STDIN
-my $id =20385679;
+my $id =20583214;
 
 my $item_url = 'https://hacker-news.firebaseio.com/v0/item/'.$id.'.json';
 say $item_url;
