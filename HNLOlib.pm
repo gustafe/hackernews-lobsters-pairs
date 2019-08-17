@@ -68,7 +68,7 @@ $feeds->{lo} = {
     site           => 'Lobste.rs',
     title_href     => 'https://lobste.rs/s/',
     submitter_href => 'https://lobste.rs/u/',
-    update_sql => "update lobsters set title=?,score=?,comments=? where id=?",
+    update_sql => "update lobsters set title=?,score=?,comments=?,tags=? where id=?",
     delete_sql => "delete from lobsters where id=?",
     select_all_sql => "select * from lobsters",
 
@@ -297,29 +297,15 @@ sub update_scores {
                 next;
             }
             say "$feeds->{$item->{tag}}->{site} ID $item->{id}" if $debug;
-            if ( $res->{title} ne $item->{title}
-                or ( $res->{comments} ? $res->{comments} : 0 ) !=
-                $item->{comments}
-                or ( $res->{score} ? $res->{score} : 0 ) != $item->{score} )
-            {
-
-                if ($debug) {
-
-                    say "T: >$item->{title}<\n-> >$res->{title}<";
-                    say "S: $item->{score} -> $res->{score}";
-                    say "C: $item->{comments} -> $res->{comments}";
-                }
-                $item->{title}    = $res->{title};
-                $item->{score}    = $res->{score};
-                $item->{comments} = $res->{comments};
-                push @{ $lists->{ $item->{tag} }->{update} },
-                  [
-                    $res->{title},    $res->{score},
-                    $res->{comments}, $item->{id}
-                  ];
-            }
-        }
+	    my @bind_vars = ( $res->{title},    $res->{score},
+			      $res->{comments});
+	    push @bind_vars, $res->{tags} if $item->{tag} eq 'lo';
+	    push @bind_vars, $item->{id};
+	    
+	    push @{ $lists->{ $item->{tag} }->{update} }, \@bind_vars;
+	}
     }
+
 
     # execute changes
     foreach my $label ( sort keys %{$feeds} ) {
@@ -334,15 +320,15 @@ sub update_scores {
             $sth->finish();
         }
         if ( defined $lists->{$label}->{update} ) {
+#	    say "updating items for $label: ";
             my $sth = $dbh->prepare( $feeds->{$label}->{update_sql} )
               or die $dbh->errstr;
+	    my $count = 0;
             foreach my $item ( @{ $lists->{$label}->{update} } ) {
-                printf( "%s %8s %.67s%s\n",
-                    $label, $item->[-1], $item->[0],
-                    length( $item->[0] ) > 67 ? '\\' : ' ' );
-
                 my $rv = $sth->execute( @{$item} ) or warn $sth->errstr;
+		$count++;
             }
+	    say "$label: $count items updated";
             $sth->finish();
         }
     }

@@ -11,10 +11,10 @@ use open qw/ :std :encoding(utf8) /;
 use Data::Dumper;
 my $sql = {
     all_items =>
-qq/select id, title, score, comments from lobsters where created_time >=?  
+qq/select id, title, score, comments,tags from lobsters where created_time >=?  
 and created_time<?/,
     update_item =>
-      qq/update lobsters set title=?, score=?, comments=? where id = ?/,
+      qq/update lobsters set title=?, score=?, comments=? tags=? where id = ?/,
     delete_item => qq/delete from lobsters where id = ?/,
 };
 my $dbh = get_dbh();
@@ -72,7 +72,7 @@ else {
     while ( my $r = $sth->fetchrow_hashref ) {
 	push @{$ids->{sequence}},
 	  { tag =>'lo',
-	    map { $_, $r->{$_}} qw/id title score comments/ };
+	    map { $_, $r->{$_}} qw/id title score comments tags/ };
     }
 
     $sth->finish;
