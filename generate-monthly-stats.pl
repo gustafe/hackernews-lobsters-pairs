@@ -5,6 +5,7 @@ use Modern::Perl '2015';
 use Getopt::Long;
 use DateTime;
 use Template;
+use DateTime::Format::Strptime qw/strftime strptime/;
 use Data::Dumper;
 use HNLOlib qw/get_dbh get_all_sets $feeds update_scores $sql/;
 
@@ -98,7 +99,14 @@ foreach my $pair (@pairs) {
     $stats{domains}->{$pair->{domain}}++;
 
     my $posted_day = (split(' ',$pair->{sequence}->[0]->{timestamp}))[0];
-    push @{$dates{$posted_day}}, $pair;
+    #    my ( $year, $month, $day ) = split('-',$posted_day);
+#    my $strp = DateTime::Format::Strptime->new(pattern=>'%F');
+#    my $dt = strptime('%F',$posted_day);
+    my $display_date = strftime('%A, %d %b %Y', strptime('%F',$posted_day));
+#    say $display_date;
+    push @{$dates{$posted_day}->{pairs}}, $pair;
+    $dates{$posted_day}->{display_date} = $display_date;
+    
 
 }
 my $max_subs= 5;
@@ -119,7 +127,7 @@ foreach my $domain (sort {$stats{domains}->{$b}<=>$stats{domains}->{$a}} keys %{
     next if $stats{domains}->{$domain} <= 2;
     push @domains, {domain=>$domain,count=> $stats{domains}->{$domain}};
 }
-# print Dumper \%dates;
+
 
 # generate the page from the data
 my $dt_now =
@@ -146,10 +154,24 @@ $tt->process(
     { binmode => ':utf8' }
 ) || die $tt->error;
 
-#print Dumper \%submitters;
 ### SUBS ###
 
 sub usage {
     say "usage: $0 [--update_score] --target_month=YYYYMM";
     exit 1;
+}
+__END__
+foreach my $tag ('hn','lo') {
+    my %rankings;
+    foreach my $user (sort {$stats{submitters}->{$tag}->{$b} <=>
+			      $stats{submitters}->{$tag}->{$a} ||
+			      $a cmp $b }
+		      keys %{$stats{submitters}->{$tag}}) {
+	#	say "$tag $user $stats{submitters}->{$tag}->{$user}";
+	push @{$rankings{$stats{submitters}->{$tag}->{$user}}}, $user;
+    }
+    foreach my $rank (sort {$b<=>$a} keys %rankings) {
+	say "$rank ", join(',', @{$rankings{$rank}});
+    }
+
 }
