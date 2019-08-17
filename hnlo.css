@@ -39,7 +39,14 @@ table, th, td {
 	/*	line-height: 1.45em; 
 color: #333; */
 }
+.tags {
+        vertical-align: middle;
 
+    font-weight: normal;
+    font-family: "helvetica neue", arial, sans-serif;
+    font-size: 9pt;
+    color: #888;
+}
 .hn {
  font-family:Verdana, Geneva, sans-serif;
  font-size:10pt; 
@@ -56,9 +63,9 @@ h2.link a {
 h2.link a:hover {
  	text-decoration: underline; 
 }
-.date {
+/*.date {
     font-size: 16pt;
-}
+}*/
 
 
 .domain {
