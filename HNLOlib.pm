@@ -68,8 +68,9 @@ $feeds->{lo} = {
     site           => 'Lobste.rs',
     title_href     => 'https://lobste.rs/s/',
     submitter_href => 'https://lobste.rs/u/',
-    update_sql => "update lobsters set title=?,score=?,comments=?,tags=? where id=?",
-    delete_sql => "delete from lobsters where id=?",
+    update_sql =>
+      "update lobsters set title=?,score=?,comments=?,tags=? where id=?",
+    delete_sql     => "delete from lobsters where id=?",
     select_all_sql => "select * from lobsters",
 
 };
@@ -103,6 +104,8 @@ sub get_ua {
 }
 
 sub get_all_sets {
+    # get all urls submitted from the sources
+    # return an ordered list, along with the linked submissions
     my ($sth) = @_;
 
     $sth->execute;
@@ -117,17 +120,18 @@ sub get_all_sets {
         $host =~ s/^www\.//;
 
         my $title;
-	my $tags_string;
+        my $tags_string;
         my $current_set;
         foreach my $label ( keys %{$feeds} ) {
             my $data;
-            foreach my $field (qw(id time title submitter score comments tags)) {
+            foreach my $field (qw(id time title submitter score comments tags))
+            {
                 $data->{$field} = $r->{ $label . '_' . $field };
             }
 
             if ( $label eq 'lo' ) {
-                $title = $data->{title};
-		$tags_string = $data->{tags};
+                $title       = $data->{title};
+                $tags_string = $data->{tags};
             }
             $data->{title_href} =
               $feeds->{$label}->{title_href} . $data->{id};
@@ -145,21 +149,21 @@ sub get_all_sets {
             $current_set->{ $data->{time} } = $data;
         }
 
-
         if ( !exists $sets->{$url} ) {
 
             # initialize new entry
             $sets->{$url} = {
                 heading     => $title,
                 domain      => $host,
-			     heading_url => $url,
-			     tags_list => [split(',',$tags_string)],
+                heading_url => $url,
+                tags_list   => [ split( ',', $tags_string ) ],
 
                 # first seen entry
                 first_seen => ( sort keys %{$current_set} )[0],
             };
 
         }
+	# add entries, keyed by timestamp
         foreach my $ts ( keys %{$current_set} ) {
             $sets->{$url}->{entries}->{$ts} = $current_set->{$ts};
         }
@@ -240,26 +244,23 @@ sub get_item_from_source {
     # this is fragile, it relies on all feed APIs having the same structure!
     my $href = $feeds->{$label}->{api_item_href} . $id . '.json';
     my $r    = $ua->get($href);
-    if ( !$r->is_success() ) {
 
-        #	warn "==> fetch failed for $label $id: ";
-        #	warn Dumper $r;
-        return undef;
-    }
     return undef unless $r->is_success();
     return undef unless $r->header('Content-Type') =~ m{application/json};
     my $content = $r->decoded_content();
     my $json    = decode_json($content);
 
-# special case for HN, if link is flagged "dead" after it's been included in the DB
+    # special case for HN, if link is flagged "dead" after it's been
+    # included in the DB
     return undef if ( $label eq 'hn' and defined( $json->{dead} ) );
 
-    # we only return stuff that we're interested in
+    # returns stuff common to both sources
     my $hashref = {
         title    => $json->{title},
         score    => $json->{score},
         comments => $json->{ $feeds->{$label}->{comments} }
-    };
+		  };
+    # lobsters has the tags
     if ( $label eq 'lo' ) {
         $hashref->{tags} = join( ',', @{ $json->{tags} } );
     }
@@ -297,15 +298,13 @@ sub update_scores {
                 next;
             }
             say "$feeds->{$item->{tag}}->{site} ID $item->{id}" if $debug;
-	    my @bind_vars = ( $res->{title},    $res->{score},
-			      $res->{comments});
-	    push @bind_vars, $res->{tags} if $item->{tag} eq 'lo';
-	    push @bind_vars, $item->{id};
-	    
-	    push @{ $lists->{ $item->{tag} }->{update} }, \@bind_vars;
-	}
-    }
+            my @bind_vars = ( $res->{title}, $res->{score}, $res->{comments} );
+            push @bind_vars, $res->{tags} if $item->{tag} eq 'lo';
+            push @bind_vars, $item->{id};
 
+            push @{ $lists->{ $item->{tag} }->{update} }, \@bind_vars;
+        }
+    }
 
     # execute changes
     foreach my $label ( sort keys %{$feeds} ) {
@@ -320,15 +319,16 @@ sub update_scores {
             $sth->finish();
         }
         if ( defined $lists->{$label}->{update} ) {
-#	    say "updating items for $label: ";
+
+            #	    say "updating items for $label: ";
             my $sth = $dbh->prepare( $feeds->{$label}->{update_sql} )
               or die $dbh->errstr;
-	    my $count = 0;
+            my $count = 0;
             foreach my $item ( @{ $lists->{$label}->{update} } ) {
                 my $rv = $sth->execute( @{$item} ) or warn $sth->errstr;
-		$count++;
+                $count++;
             }
-	    say "$label: $count items updated";
+            say "$label: $count items updated";
             $sth->finish();
         }
     }
