@@ -16,3 +16,6 @@ out
 /all-tags
 /Lo-get-all-tags-from-source.pl
 /analyze-tags.pl
+/gather-sets.pl
+/new-monthly.pl
+/proggit-test.pl

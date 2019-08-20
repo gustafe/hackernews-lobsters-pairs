@@ -1,10 +1,10 @@
 [% INCLUDE header.tt %]
 <h1>[% meta.page_title %]</h1>
 
-<p>This page shows the URLs submitted to both <a
-href="https://news.ycombinator.com/">Hacker News</a> and <a
-href="https://lobste.rs">Lobste.rs</a> in the last <strong>[%
-meta.no_of_days_to_show %]</strong> days.<p>
+<p>Links shared between <a href="https://lobste.rs">Lobste.rs</a>, 
+<a href="https://news.ycombinator.com/">Hacker News</a>, and 
+<a href="https://www.reddit.com/r/programming/">/r/Programming</a> 
+in the last [% meta.no_of_days_to_show %]</strong> days.<p>
 
 <p>Each entry contains links to the submission on each site, and the
 submission's <strong>S</strong>core, number of <strong>C</strong>omments, and
@@ -19,7 +19,7 @@ updates hourly.</p>
 <p><a href="about.html">About this project</a>.
 <a href="about.html#changelog">Changelog</a>.</p>
 
-<p><strong>New!</strong> <a href="archives.html">Monthly archives</a>.</p>
+<p><strong>New!</strong> Links from /r/Programming. <a href="archives.html">Monthly archives</a>.</p>
 
 [% FOREACH pair=pairs %]
    [% INCLUDE pair_contents.tt %]
