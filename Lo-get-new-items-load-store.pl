@@ -16,7 +16,10 @@ if (!$response->is_success) {
 }
 
 my $list = decode_json($response->decoded_content);
-my $dbh = get_dbh();
+
+my $dbh = get_dbh;
+$dbh->{sqlite_unicode} = 1;
+
 my $latest_sql = qq{select id from lobsters order by created_time desc limit 1};
 my $sth = $dbh->prepare( $latest_sql );
 $sth->execute();

@@ -9,6 +9,7 @@ use LWP::UserAgent;
 use JSON;
 use DateTime;
 use URI;
+use Reddit::Client;
 use open qw/ :std :encoding(utf8) /;
 
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS/;
@@ -17,18 +18,19 @@ $VERSION = 1.00;
 @ISA     = qw/Exporter/;
 @EXPORT  = ();
 @EXPORT_OK =
-  qw/get_dbh get_ua get_all_sets get_item_from_source $feeds update_scores $debug $sql $ua/;
+  qw/get_dbh get_ua get_all_sets get_item_from_source $feeds update_scores $debug $sql $ua get_reddit/;
 %EXPORT_TAGS = ( DEFAULT => [qw/&get_dbh &get_ua/] );
 
 #### DBH
 
 my $cfg =
   Config::Simple->new('/home/gustaf/prj/HN-Lobsters-Tracker/hnltracker.ini');
-
+my $creds = Config::Simple->new('/home/gustaf/prj/HN-Lobsters-Tracker/credentials.ini');
 my $driver   = $cfg->param('DB.driver');
 my $database = $cfg->param('DB.database');
 my $dbuser   = $cfg->param('DB.user');
 my $dbpass   = $cfg->param('DB.password');
+
 my $dsn      = "DBI:$driver:dbname=$database";
 
 my %seen;
@@ -36,27 +38,23 @@ our $ua;
 our $debug = 0;
 
 our $sql = {
-    get_pairs => "select hn.url, 
-strftime('%s',lo.created_time)-strftime('%s',hn.created_time) as diff,
-hn.id as hn_id,
-strftime('%s',hn.created_time) as hn_time,
-hn.title as hn_title , hn.submitter as hn_submitter,hn.score as hn_score, hn.comments as hn_comments, null as hn_tags,
-lo.id as lo_id,
-strftime('%s',lo.created_time) as lo_time,
-lo.title as lo_title, lo.submitter as lo_submitter,lo.score as lo_score, lo.comments as lo_comments, lo.tags as lo_tags
-from hackernews hn
-inner join lobsters lo
-on lo.url = hn.url
-where hn.url is not null
-order by hn.created_time",
-
-    # and hn_time >= strftime('%s', date('now','-7 day'))
-    # or lo_time >= strftime('%s', date('now','-7 day'))
-
+	    get_pairs =>
+qq{select lo.url, 
+lo.id as lo_id,strftime('%s',lo.created_time) as lo_time,lo.title as lo_title, lo.submitter as lo_submitter,lo.score as lo_score, lo.comments as lo_comments, lo.tags as lo_tags,
+hn.id as hn_id,strftime('%s',hn.created_time) as hn_time,hn.title as hn_title , hn.submitter as hn_submitter,hn.score as hn_score, hn.comments as hn_comments, null as hn_tags,
+pr.id as pr_id, strftime('%s',pr.created_time) as pr_time,pr.title as pr_title, pr.submitter as pr_submitter,pr.score as pr_score, pr.comments as pr_comments, null as pr_tags
+from lobsters  lo
+left outer  join hackernews hn
+on lo.url = hn.url 
+left outer join proggit pr
+on pr.url = lo.url 
+order by lo.created_time },
+	    
     get_hn_count =>
 "select count(*) from hackernews where url is not null and created_time between ? and ?",
     get_lo_count =>
-"select count(*) from lobsters where url is not null and created_time between ? and ?",
+	    "select count(*) from lobsters where url is not null and created_time between ? and ?",
+	    get_pr_count=> qq{select count(*) from proggit where urls is not null and created_time between ? and ?},
 };
 
 our $feeds;
@@ -83,25 +81,45 @@ $feeds->{hn} = {
     submitter_href => 'https://news.ycombinator.com/user?id=',
     update_sql => "update hackernews set title=?,score=?,comments=? where id=?",
     delete_sql => "delete from hackernews where id=?",
-};
+	       };
+$feeds->{pr} = {
+		comments => 'num_comments',
+		site => '/r/Programming',
+		update_sql => "update proggit set title=?, score=?, comments=? where id=?",
+		table_name=>'proggit',
+		title_href=>'https://www.reddit.com/r/programming/comments/',
+	       submitter_href=>'https://www.reddit.com/user/'};
 
 sub get_dbh {
 
     my $dbh = DBI->connect( $dsn, $dbuser, $dbpass, { PrintError => 0 } )
       or die $DBI::errstr;
+    $dbh->{sqlite_unicode} = 1;
     return $dbh;
 }
 
 #### User agent
-my $version = '1.1';
+
 
 sub get_ua {
     my $ua =
-      LWP::UserAgent->new( agent =>
-          "HNLO agent $version; http://gerikson.com/hnlo; gerikson on Lobste.rs"
-      );
+      LWP::UserAgent->new( agent => $cfg->param('UserAgent.string'));
+
     return $ua;
 }
+
+##### Reddit
+
+sub get_reddit {
+    my $reddit = new Reddit::Client(user_agent => $cfg->param('UserAgent.string'),
+				client_id => $creds->param('Reddit.client_id'),
+				secret => $creds->param('Reddit.secret'),
+				username=>$creds->param('Reddit.username'),
+				    password => $creds->param('Reddit.password'));
+    return $reddit;
+}
+
+
 
 sub get_all_sets {
     # get all urls submitted from the sources
@@ -112,11 +130,21 @@ sub get_all_sets {
     my $return;
     my $sets;
     while ( my $r = $sth->fetchrow_hashref ) {
-
+	next unless defined $r->{url};
         my $url = $r->{url};    # key
-
+#	say $url;
         my $uri  = URI->new( $r->{url} );
-        my $host = $uri->host;
+	my $host;
+	eval {
+	    $host = $uri->host;
+	    1;}
+	  or do {
+	      # silently discard error, we can't handle the URI
+	      my $error = $@;
+	      $host ='www';
+#	      warn "call to URI host returned failure: $error";
+	      };
+	
         $host =~ s/^www\.//;
 
         my $title;
@@ -125,7 +153,7 @@ sub get_all_sets {
         foreach my $label ( keys %{$feeds} ) {
             my $data;
             foreach my $field (qw(id time title submitter score comments tags))
-            {
+	      {
                 $data->{$field} = $r->{ $label . '_' . $field };
             }
 
@@ -133,6 +161,8 @@ sub get_all_sets {
                 $title       = $data->{title};
                 $tags_string = $data->{tags};
             }
+	    if (defined $data->{time}) {
+
             $data->{title_href} =
               $feeds->{$label}->{title_href} . $data->{id};
             $data->{submitter_href} =
@@ -147,6 +177,7 @@ sub get_all_sets {
 
             $data->{pretty_date} = $dt->strftime('%d %b %Y');
             $current_set->{ $data->{time} } = $data;
+	}
         }
 
         if ( !exists $sets->{$url} ) {
@@ -175,6 +206,8 @@ sub get_all_sets {
     foreach my $url ( keys %{$sets} ) {
         my $entries = $sets->{$url}->{entries};
         my @times   = sort keys %{$entries};
+	# skip single entries
+	next unless scalar @times>1;
         my @shift   = ( 0, @times );
         my @diffs   = ( 0, map { $times[$_] - $shift[$_] } ( 1 .. $#times ) );
 
@@ -198,9 +231,13 @@ sub get_all_sets {
             {
                 $sets->{$url}->{logo} = 'hn_lo.png';
             }
-            else {
+            elsif (   $sets->{$url}->{sequence}->[0]->{tag} eq 'lo'
+                and $sets->{$url}->{sequence}->[1]->{tag} eq 'hn') {
+	    
                 $sets->{$url}->{logo} = 'lo_hn.png';
-            }
+            } else {
+		$sets->{$url}->{logo} = 'multi.png';
+	    }
         }
         else {
             $sets->{$url}->{logo} = 'multi.png';
@@ -272,8 +309,14 @@ sub update_scores {
     my $lists;
 
     # find changes, if any
+    my @proggit_changes;
     foreach my $set ( @{$pairs_ref} ) {
         foreach my $item ( @{ $set->{sequence} } ) {
+	    if ($item->{tag} eq 'pr') {
+		push @proggit_changes, $item->{id};
+		next;
+	    }
+	    
             my $res = get_item_from_source( $item->{tag}, $item->{id} );
 
             if ( !defined $res and $item->{tag} eq 'hn' ) {
@@ -332,7 +375,23 @@ sub update_scores {
             $sth->finish();
         }
     }
+    # handle Reddit stuff
+
     return $pairs_ref;
 }
 
 1;
+__END__
+    get_pairs => "select hn.url, 
+strftime('%s',lo.created_time)-strftime('%s',hn.created_time) as diff,
+hn.id as hn_id,
+strftime('%s',hn.created_time) as hn_time,
+hn.title as hn_title , hn.submitter as hn_submitter,hn.score as hn_score, hn.comments as hn_comments, null as hn_tags,
+lo.id as lo_id,
+strftime('%s',lo.created_time) as lo_time,
+lo.title as lo_title, lo.submitter as lo_submitter,lo.score as lo_score, lo.comments as lo_comments, lo.tags as lo_tags
+from hackernews hn
+inner join lobsters lo
+on lo.url = hn.url
+where hn.url is not null
+order by hn.created_time",

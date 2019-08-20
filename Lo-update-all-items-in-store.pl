@@ -20,8 +20,6 @@ and created_time<?/,
 my $dbh = get_dbh();
 $dbh->{sqlite_unicode} = 1;
 
-#my $ua = get_ua();
-#sub  get_item_from_source;
 sub usage;
 sub read_item;
 my $target_day;
@@ -76,8 +74,6 @@ else {
     }
 
     $sth->finish;
-#    print Dumper $ids;
-#    exit 0;
     my @result= @{update_scores($dbh, [$ids])};
 
 }
