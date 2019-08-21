@@ -2,7 +2,7 @@
 use Modern::Perl '2015';
 ###
 
-use HNLOlib qw/get_dbh get_reddit/;
+use HNLOlib qw/get_dbh get_reddit $feeds/ ;
 my $debug=0;
 
 
@@ -18,19 +18,11 @@ foreach my $el (@{$latest_ids}) {
 }
 
 
-my $sql = {
-	   insert => qq{ insert into proggit 
-(id, created_time,             url ,title, submitter, score,comments ) values 
-(?,  datetime( ?,'unixepoch'), ?,   ?,     ?,         ?,    ? )},
-
-	   update=>qq{update proggit set score=?, comments=? where id=?},
-
-	   select_older => qq{select id from proggit where id	  }
-	  };
+#my $sql = {	   insert => qq{ insert into proggit (id, created_time,             url ,title, submitter, score,comments ) values (?,  datetime( ?,'unixepoch'), ?,   ?,     ?,         ?,    ? )},	   update=>qq{update proggit set score=?, comments=? where id=?},	   select_older => qq{select id from proggit where id	  }	  };
 
 
 	   
-my $sth = $dbh->prepare( $sql->{insert} )  or die $dbh->errstr;
+my $sth = $dbh->prepare( $feeds->{pr}->{insert_sql} )  or die $dbh->errstr;
 
 my $posts = $reddit->get_links( subreddit=>'programming', limit => undef, view=>'new', );
 my $count = 0;
@@ -40,7 +32,7 @@ foreach my $post (@{$posts}) {
     my $current_id = $post->{id};
     if ($seen{$current_id}) {
 	say "$current_id already seen, pushing to updates" if $debug;
-	push @updates, [$post->{score},$post->{num_comments}, $current_id];
+	push @updates, [$post->{title}, $post->{score},$post->{num_comments}, $current_id];
     } else {
     say "$current_id $post->{title}" if $debug;
     $sth->execute( $current_id,
@@ -59,7 +51,7 @@ say "\nNew Proggit items added: $count\n";
 $sth->finish();
 # update
 $count = 0;
-$sth = $dbh->prepare( $sql->{update} ) or die $dbh->errstr;
+$sth = $dbh->prepare( $feeds->{pr}->{update_sql} ) or die $dbh->errstr;
 foreach my $item (@updates) {
     $sth->execute( @{$item} ) or warn $sth->errstr;
     $count++;

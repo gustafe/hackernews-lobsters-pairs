@@ -48,13 +48,14 @@ left outer  join hackernews hn
 on lo.url = hn.url 
 left outer join proggit pr
 on pr.url = lo.url 
+where (lo.url is not null and lo.url !='')
 order by lo.created_time },
 	    
     get_hn_count =>
 "select count(*) from hackernews where url is not null and created_time between ? and ?",
     get_lo_count =>
 	    "select count(*) from lobsters where url is not null and created_time between ? and ?",
-	    get_pr_count=> qq{select count(*) from proggit where urls is not null and created_time between ? and ?},
+	    get_pr_count=> qq{select count(*) from proggit where url is not null and created_time between ? and ?},
 };
 
 our $feeds;
@@ -86,6 +87,9 @@ $feeds->{pr} = {
 		comments => 'num_comments',
 		site => '/r/Programming',
 		update_sql => "update proggit set title=?, score=?, comments=? where id=?",
+		insert_sql => qq{ insert into proggit 
+(id, created_time,             url ,title, submitter, score,comments ) values 
+(?,  datetime( ?,'unixepoch'), ?,   ?,     ?,         ?,    ? )},
 		table_name=>'proggit',
 		title_href=>'https://www.reddit.com/r/programming/comments/',
 	       submitter_href=>'https://www.reddit.com/user/'};
