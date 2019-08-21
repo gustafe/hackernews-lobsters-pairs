@@ -3,11 +3,13 @@
 
 # What's all this about, then?
 
-This is a little page that scrapes the APIs for Hackernews and
-Lobsters, compares URLs for submissions, and prints a match if the
-URLs are the same.
+This is a little page that scrapes the APIs for 
+[Lobste.rs](https://lobste.rs), 
+[Hacker News](https://news.ycombinator.com/), and 
+[Reddit's /r/Programming](https://www.reddit.com/r/programming/), 
+compares URLs for submissions, and prints a match if the URLs are the same.
 
-I wrote it to follow discussions on both sites more easily.
+I wrote it to give more depth to the  discussions on Lobste.rs.
 
 The numbers at the end of each submission is the score (net number of
 upvotes), the number of comments, and the comment/score ratio. The
@@ -25,15 +27,18 @@ more.
 A script is run hourly, reading the latest entries from both
 sites. Then the page is generated.
 
+The SQL is basically 
+
+   select lo.url from lobsters lo
+   left outer  join hackernews hn 
+   on hn.url = lo.url
+   left outer join proggit pr
+   on pr.url = lo.url
+
 ## Limitations
 
 It only matches URLs exactly, so if there are extraneous elements in a
 submission to one site, it won't show up.
-
-Hackernews has the most content, so that site is treated as "the
-source" for comparisons. However, I find the title moderation on
-Lobste.rs more consistent, so the title of the submission from that
-site is shown for each pair.
 
 While the HN API offers a list of the latest 500 entries, the script
 only scan the [`/newest`](https://lobste.rs/newest) page on Lobste.rs,
