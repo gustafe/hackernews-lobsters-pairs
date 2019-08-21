@@ -50,7 +50,7 @@ while (@{$list}) {
     my $payload = $res->decoded_content;
     
     if ($payload eq 'null') {
-	say "++> $id has null content\n";
+	say "++> $id has null content";
 	next;
     }
     my $item = decode_json( $payload );

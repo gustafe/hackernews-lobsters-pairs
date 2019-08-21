@@ -19,3 +19,4 @@ out
 /gather-sets.pl
 /new-monthly.pl
 /proggit-test.pl
+/backfill-proggit.pl
