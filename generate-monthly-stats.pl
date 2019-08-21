@@ -8,7 +8,7 @@ use Template;
 use DateTime::Format::Strptime qw/strftime strptime/;
 use Data::Dumper;
 use HNLOlib qw/get_dbh get_all_sets $feeds update_scores $sql/;
-
+use List::Util qw/all/;
 use open qw/ :std :encoding(utf8) /;
 sub usage;
 
@@ -49,8 +49,9 @@ my $sets = get_all_sets($sth) ;
 my @pairs;
 foreach my $url (sort { $sets->{$a}->{first_seen} <=> $sets->{$b}->{first_seen} }
 		 keys %{$sets}) {
-    if ($sets->{$url}->{first_seen} <= $from_dt->strftime('%s') or
-	$sets->{$url}->{first_seen} >= $to_dt->strftime( '%s' )) {
+    #    if ($sets->{$url}->{first_seen} <= $from_dt->strftime('%s') or	$sets->{$url}->{first_seen} >= $to_dt->strftime( '%s' )) {
+    if ( all {$_->{time}<=$from_dt->strftime('%s') or
+	      $_->{time}>=$to_dt->strftime('%s') } @{$sets->{$url}->{sequence}}) {
 	next;
     }
     push @pairs, $sets->{$url};
@@ -67,7 +68,14 @@ if ($update_score) {
 my %stats;
 my %dates;
 $stats{pair_count} = scalar @pairs;
-foreach my $tag ('hn','lo') {
+if ($debug) {
+    say $from_dt->strftime('%Y-%m-%d %H:%M:%S');
+    say $to_dt->strftime('%Y-%m-%d %H:%M:%S');
+}
+foreach my $tag (keys %{$feeds}) {
+    if ($debug ) {      say $tag;
+    say $sql->{'get_'.$tag.'_count'};
+   }
     $sth = $dbh->prepare( $sql->{'get_'.$tag.'_count'} );
     $sth->execute($from_dt->strftime('%Y-%m-%d %H:%M:%S'),
 		 $to_dt->strftime('%Y-%m-%d %H:%M:%S'));
@@ -75,12 +83,12 @@ foreach my $tag ('hn','lo') {
     $stats{total}->{$tag} = $rv->[0];
 
 }
-
+print Dumper \@pairs if $debug;
 
 foreach my $pair (@pairs) {
     #    next if ( exists $pair->{}->{deleted} or exists $pair->{then}->{deleted});
 #
-
+    next unless ( defined $pair->{sequence});
     foreach my $item ( @{$pair->{sequence}} ) {
 	#        my $item  = $pair->{$seq};
 	# we will double-count here sometimes
@@ -97,7 +105,7 @@ foreach my $pair (@pairs) {
 	$stats{first}->{$item->{tag}}++ if $item->{first};
     }
     $stats{domains}->{$pair->{domain}}++;
-
+    warn "can't parse date for $pair->{heading_url} " unless defined $pair->{sequence}->[0]->{timestamp};
     my $posted_day = (split(' ',$pair->{sequence}->[0]->{timestamp}))[0];
     #    my ( $year, $month, $day ) = split('-',$posted_day);
 #    my $strp = DateTime::Format::Strptime->new(pattern=>'%F');

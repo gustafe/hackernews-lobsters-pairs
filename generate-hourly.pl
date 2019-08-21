@@ -7,7 +7,7 @@ use Getopt::Long;
 use Template;
 use Data::Dumper;
 use HNLOlib qw/get_dbh get_all_sets $feeds update_scores $sql/;
-
+use List::Util qw/all/;
 use open qw/ :std :encoding(utf8) /;
 
 my $update_score;
@@ -35,7 +35,8 @@ my %sets = %{ get_all_sets($sth) };
 my @pairs;
 my $limit_seconds = $no_of_days_to_show * 24 * 3600;
 foreach my $url (sort {$sets{$b}->{first_seen} <=> $sets{$a}->{first_seen}} keys %sets) {
-    next if ( $now - $sets{$url}->{first_seen} > $limit_seconds );
+    #    next if ( $now - $sets{$url}->{first_seen} > $limit_seconds );
+    next if all {$now - $_->{time}>$limit_seconds } @{$sets{$url}->{sequence}};
     # filter single entries
     #    next unless @{$sets{$url}->{sequence}}>1;
     next unless exists $sets{$url}->{sequence};
