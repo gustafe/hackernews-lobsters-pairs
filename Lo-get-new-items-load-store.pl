@@ -1,55 +1,88 @@
 #! /usr/bin/env perl
 use Modern::Perl '2015';
 ###
-
-
 use JSON;
-use Data::Dumper;
-use HNLtracker qw/get_dbh get_ua/;
-use open IO => ':utf8';
-#binmode STDOUT, ':utf8';
-my $newest_url = 'https://lobste.rs/newest.json';
-my $ua = get_ua();
-my $response = $ua->get($newest_url);
-if (!$response->is_success) {
-    die $response->status_line;
-}
+use HNLOlib qw/$feeds get_ua get_dbh/;
+my $debug    = 1;
+my $template = 'https://lobste.rs/newest/page/';
 
-my $list = decode_json($response->decoded_content);
+my $entries;
+my $ua = get_ua();
+foreach my $day ( 1 .. 6 ) {
+
+    my $url      = $template . $day . '.json';
+    my $response = $ua->get($url);
+    if ( !$response->is_success ) {
+        warn "could not fetch newest entries day $day: $response->status_line";
+    }
+
+    my $list = decode_json( $response->decoded_content );
+    push @{$entries}, @{$list};
+}
 
 my $dbh = get_dbh;
-$dbh->{sqlite_unicode} = 1;
 
-my $latest_sql = qq{select id from lobsters order by created_time desc limit 1};
-my $sth = $dbh->prepare( $latest_sql );
-$sth->execute();
-my $latest_id = $sth->fetchrow_array;
-$sth->finish();
-
-my $insert_sql = qq{insert into lobsters (
-id, created_time, url, title, submitter, score,comments, tags
-)
-values
-(?, ?,?,?,?,?,?,?)};
-$sth = $dbh->prepare( $insert_sql );
-my $count = 0;
-for my $item (@{$list}) {
-    my $current_id = $item->{short_id};
-    if ($current_id eq $latest_id) {
-	last; 
-    }
-    #    say join('|', map { $item->{$_} } qw/short_id url created_at/);
-    $sth->execute($current_id,
-		  $item->{created_at},
-		  $item->{url},
-		  $item->{title},
-		  $item->{submitter_user}->{username},
-		  $item->{score},
-		  $item->{comment_count},
-		  join(',', @{$item->{tags}}),
-		 );
-    $count++;
+my $all_ids = $dbh->selectall_arrayref("select id from lobsters")
+  or die $dbh->errstr;
+my %seen_ids;
+foreach my $id ( @{$all_ids} ) {
+    $seen_ids{ $id->[0] }++;
 }
-say "\nNew Lobste.rs items added: $count\n";
-$sth->finish();
-$dbh->disconnect();
+my @updates;
+my @inserts;
+foreach my $entry ( @{$entries} ) {
+    my $current_id = $entry->{short_id};
+    if ( exists $seen_ids{$current_id} ) {
+
+        push @updates,
+          [
+            $entry->{title}, $entry->{score},
+            $entry->{comment_count}, join( ',', @{ $entry->{tags} } ),
+            $current_id
+          ];
+    }
+    else {
+        say "new $current_id, inserting" if $debug;
+        push @inserts,
+          [
+            $current_id,
+            $entry->{created_at},
+            $entry->{url} ? $entry->{url} : '',
+            $entry->{title},
+            $entry->{submitter_user}->{username},
+            $entry->{comment_count},
+            $entry->{score},
+            @{ $entry->{tags} } ? join( ',', @{ $entry->{tags} } ) : ''
+          ];
+
+    }
+}
+
+my $sth;
+my $count = 0;
+if (@inserts) {
+
+    $sth = $dbh->prepare( $feeds->{lo}->{insert_sql} ) or die $dbh->errstr;
+    foreach my $values (@inserts) {
+        say join( ' ', @{$values} ) if $debug;
+        $sth->execute( @{$values} ) or warn $sth->errstr;
+        $count++;
+    }
+    $sth->finish();
+    say "$count items inserted" if $debug;
+
+}
+
+if (@updates) {
+    $count = 0;
+    $sth = $dbh->prepare( $feeds->{lo}->{update_sql} ) or die $dbh->errstr;
+    foreach my $values (@updates) {
+
+        #	say join(' ', @{$values});
+        $sth->execute( @{$values} ) or warn $sth->errstr;
+        $count++;
+    }
+    say "$count items updated" if $debug;
+
+    $sth->finish;
+}

@@ -66,7 +66,11 @@ $feeds->{lo} = {
     table_name     => 'lobsters',
     site           => 'Lobste.rs',
     title_href     => 'https://lobste.rs/s/',
-    submitter_href => 'https://lobste.rs/u/',
+		submitter_href => 'https://lobste.rs/u/',
+		insert_sql=>
+"insert into lobsters 
+(id, created_time, url,title,submitter,comments,score,tags) values 
+( ?,            ?,   ?,    ?,        ?,       ?,    ?,   ?)",
     update_sql =>
       "update lobsters set title=?,score=?,comments=?,tags=? where id=?",
     delete_sql     => "delete from lobsters where id=?",
@@ -316,11 +320,7 @@ sub update_scores {
     my @proggit_changes;
     foreach my $set ( @{$pairs_ref} ) {
         foreach my $item ( @{ $set->{sequence} } ) {
-	    if ($item->{tag} eq 'pr') {
-		push @proggit_changes, $item->{id};
-		next;
-	    }
-	    
+	    next unless $item->{tag} eq 'hn'; # we've moved the reload to the load script
             my $res = get_item_from_source( $item->{tag}, $item->{id} );
 
             if ( !defined $res and $item->{tag} eq 'hn' ) {
