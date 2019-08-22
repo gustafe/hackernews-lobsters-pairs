@@ -4,6 +4,8 @@
 <a href="index.html">Today's links</a>.
 
 <a name="top"/>
+<h3>Stats are under development</h3>
+<!-- 
 [% FILTER html_para %]
 There are [% stats.pair_count %] pairs this month.
 
@@ -45,7 +47,7 @@ stats.pair_count / stats.total.lo * 100 %][% END %] of those.
 <a href="http://[% line.domain %]">[% line.domain %]</a> ([% line.count %])<br/>
 [% END %]
 </p>
-
+-->
 [% FOREACH date IN dates.keys.sort  %]
 <h1 class="date">[% dates.$date.display_date %]</h1>
 [% FOREACH pair IN dates.$date.pairs %]
