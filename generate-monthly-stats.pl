@@ -24,8 +24,8 @@ usage unless ($month >=1  and $month<=12);
 
 my $from_dt = DateTime->new(year=>$year,month=>$month,day=>1,hour=>0,minute=>0,second=>0);
 my $to_dt = DateTime->last_day_of_month(year=>$year, month=>$month,hour=>23,minute=>59,second=>59);
-
-
+my @epoch_range = map {$_->strftime('%s')} ( $from_dt, $to_dt);
+my @iso_range = map{$_->strftime('%Y-%m-%d %H:%M:%S')} ( $from_dt, $to_dt );
 ### Definitions and constants
 my $debug              = 0;
 my $page_title         = "HN&amp;&amp;LO monthly stats for ".$from_dt->month_name." $year";
@@ -50,8 +50,8 @@ my @pairs;
 foreach my $url (sort { $sets->{$a}->{first_seen} <=> $sets->{$b}->{first_seen} }
 		 keys %{$sets}) {
     #    if ($sets->{$url}->{first_seen} <= $from_dt->strftime('%s') or	$sets->{$url}->{first_seen} >= $to_dt->strftime( '%s' )) {
-    if ( all {$_->{time}<=$from_dt->strftime('%s') or
-	      $_->{time}>=$to_dt->strftime('%s') } @{$sets->{$url}->{sequence}}) {
+    if ( all {$_->{time}<=$epoch_range[0] or
+	      $_->{time}>=$epoch_range[1] } @{$sets->{$url}->{sequence}}) {
 	next;
     }
     push @pairs, $sets->{$url};
@@ -68,17 +68,13 @@ if ($update_score) {
 my %stats;
 my %dates;
 $stats{pair_count} = scalar @pairs;
-if ($debug) {
-    say $from_dt->strftime('%Y-%m-%d %H:%M:%S');
-    say $to_dt->strftime('%Y-%m-%d %H:%M:%S');
-}
+
 foreach my $tag (keys %{$feeds}) {
     if ($debug ) {      say $tag;
     say $sql->{'get_'.$tag.'_count'};
    }
     $sth = $dbh->prepare( $sql->{'get_'.$tag.'_count'} );
-    $sth->execute($from_dt->strftime('%Y-%m-%d %H:%M:%S'),
-		 $to_dt->strftime('%Y-%m-%d %H:%M:%S'));
+    $sth->execute( @iso_range );
     my $rv = $sth->fetchrow_arrayref();
     $stats{total}->{$tag} = $rv->[0];
 
@@ -90,7 +86,7 @@ foreach my $pair (@pairs) {
 #
     next unless ( defined $pair->{sequence});
     foreach my $item ( @{$pair->{sequence}} ) {
-	#        my $item  = $pair->{$seq};
+	next unless ( $item->{time} >= $epoch_range[0] and $item->{time} <= $epoch_range[1]);
 	# we will double-count here sometimes
 	$stats{submitters}->{$item->{tag}}->{$item->{submitter}}++;
 
