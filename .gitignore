@@ -20,3 +20,7 @@ out
 /new-monthly.pl
 /proggit-test.pl
 /backfill-proggit.pl
+/statstest.tt
+/tie-refhash.pl
+tmp/*
+*.out

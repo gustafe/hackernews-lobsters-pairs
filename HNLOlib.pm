@@ -320,7 +320,9 @@ sub update_scores {
     my @proggit_changes;
     foreach my $set ( @{$pairs_ref} ) {
         foreach my $item ( @{ $set->{sequence} } ) {
-	    next unless $item->{tag} eq 'hn'; # we've moved the reload to the load script
+	    # next if $item->{tag} eq 'pr'; # not part of this update script
+	    	    next unless $item->{tag} eq 'hn'; # we've moved the reload to the load script
+
             my $res = get_item_from_source( $item->{tag}, $item->{id} );
 
             if ( !defined $res and $item->{tag} eq 'hn' ) {
@@ -360,8 +362,10 @@ sub update_scores {
             my $sth = $dbh->prepare( $feeds->{$label}->{delete_sql} )
               or die $dbh->errstr;
             foreach my $id ( @{ $lists->{$label}->{delete} } ) {
-                say "!! deleting $label $id ...";
-                my $rv = $sth->execute($id) or warn $sth->errstr;
+#                say "!! deleting $label $id ...";
+		say "select * from $feeds->{$label}->{table_name} where id='$id';";
+		say "delete from $feeds->{$label}->{table_name} where id='$id;'";
+#                my $rv = $sth->execute($id) or warn $sth->errstr;
             }
             $sth->finish();
         }
@@ -385,17 +389,3 @@ sub update_scores {
 }
 
 1;
-__END__
-    get_pairs => "select hn.url, 
-strftime('%s',lo.created_time)-strftime('%s',hn.created_time) as diff,
-hn.id as hn_id,
-strftime('%s',hn.created_time) as hn_time,
-hn.title as hn_title , hn.submitter as hn_submitter,hn.score as hn_score, hn.comments as hn_comments, null as hn_tags,
-lo.id as lo_id,
-strftime('%s',lo.created_time) as lo_time,
-lo.title as lo_title, lo.submitter as lo_submitter,lo.score as lo_score, lo.comments as lo_comments, lo.tags as lo_tags
-from hackernews hn
-inner join lobsters lo
-on lo.url = hn.url
-where hn.url is not null
-order by hn.created_time",

@@ -5,6 +5,14 @@ use JSON;
 use HNLOlib qw/$feeds get_ua get_dbh/;
 my $debug    = 1;
 my $template = 'https://lobste.rs/newest/page/';
+sub dump_entry {
+    my ($entry) = @_;
+    print "\n";
+    say join(' ',@{$entry}[0, 4, 1,6,7]);
+    say $entry->[3];
+    say $entry->[2];
+say '-' x 75;
+}
 
 my $entries;
 my $ua = get_ua();
@@ -42,7 +50,7 @@ foreach my $entry ( @{$entries} ) {
           ];
     }
     else {
-        say "new $current_id, inserting" if $debug;
+#        say "new $current_id, inserting" if $debug;
         push @inserts,
           [
             $current_id,
@@ -64,7 +72,8 @@ if (@inserts) {
 
     $sth = $dbh->prepare( $feeds->{lo}->{insert_sql} ) or die $dbh->errstr;
     foreach my $values (@inserts) {
-        say join( ' ', @{$values} ) if $debug;
+#        say join( ' ', @{$values} ) if $debug;
+	dump_entry( $values ) if $debug;
         $sth->execute( @{$values} ) or warn $sth->errstr;
         $count++;
     }
@@ -79,6 +88,7 @@ if (@updates) {
     foreach my $values (@updates) {
 
         #	say join(' ', @{$values});
+
         $sth->execute( @{$values} ) or warn $sth->errstr;
         $count++;
     }
