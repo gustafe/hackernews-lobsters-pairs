@@ -4,50 +4,43 @@
 <a href="index.html">Today's links</a>.
 
 <a name="top"/>
-<h3>Stats are under development</h3>
-<!-- 
-[% FILTER html_para %]
-There are [% stats.pair_count %] pairs this month.
+[% USE Markdown -%]
+[% FILTER markdown %]
 
-On Hacker News, [% stats.first.hn %] pairs appeared first ([% FILTER
-format ('%.01f%%') %][% stats.first.hn / stats.pair_count * 100 %][%
-END %]). In total, [% stats.total.hn %] posts with URLs were submitted
-during the time period.<a href="#count"><sup>*</sup></a> The pairs here represent [% FILTER format
-('%.02f%%') %][% stats.pair_count / stats.total.hn * 100 %][% END %]
-of those.
+Number of sets this month: [% stats.pair_count %].
 
-On Lobste.rs, [% stats.first.lo %] pairs appeared first ([% FILTER
-format ('%.01f%%') %][% stats.first.lo / stats.pair_count * 100 %][%
-END %]). In total, [% stats.total.lo %] posts with URLs were submitted
-during the time period.<a href="#count"><sup>*</sup></a> The
-pairs here represent [% FILTER format ('%.02f%%') %][%
-stats.pair_count / stats.total.lo * 100 %][% END %] of those.
 
+<table><tr>
+[% FOREACH site IN ['hn','lo','pr'] -%]
+<td valign="top">
+[% FILTER markdown -%]
+__[% sites.$site %]__
+
+During this time period, [% stats.first.$site %] entries from this site were first in a set. This represents [% FILTER format ('%.01f%%') %][% stats.first.$site / stats.pair_count * 100 %][% END %] of the sets.
+
+In total, [% stats.total.$site %] links were submitted to the site during the same time. [% stats.count.$site %] links ([% FILTER format ('%.01f%%') %][% stats.count.$site / stats.total.$site * 100 %][% END %]) are included here as entries in sets.
+
+__Top submitters__
+
+[% FOREACH rank IN submitters.$site.keys.nsort.reverse -%]
+* [%  FOREACH entry IN submitters.$site.$rank -%] 
+[% entry -%]
+[% END %] - [% rank %] 
 [% END %]
-
-<h3>Top submitters</h3>
-<table>
-<tr>  <th>Hacker News</th> <th>Lobste.rs</th> </tr>
-<tr><td>
-[% FOREACH line IN submitters.hn %]
-<a href="https://news.ycombinator.com/user?id=[% line.name %]">[% line.name %]</a> ([% line.count %])<br/>
 [% END %]
 </td>
-<td>
-[% FOREACH line IN submitters.lo %]
-<a href="https://lobste.rs/u/[% line.name %]">[% line.name %]</a> ([% line.count %])<br/>
 [% END %]
-</td></tr>
+</tr>
+
 </table>
 
-<h3>Domains with more than 2 submissions</h3>
+### Domains with more than 2 submissions
 
-<p>
-[% FOREACH line IN domains %]
-<a href="http://[% line.domain %]">[% line.domain %]</a> ([% line.count %])<br/>
+[% FOREACH line IN domains -%]
+ * [[% line.domain %]](http://[% line.domain %]) - [% line.count %]
 [% END %]
-</p>
--->
+[% END %]
+<hr />
 [% FOREACH date IN dates.keys.sort  %]
 <h1 class="date">[% dates.$date.display_date %]</h1>
 [% FOREACH pair IN dates.$date.pairs %]
@@ -62,4 +55,4 @@ stats.pair_count / stats.total.lo * 100 %][% END %] of those.
 <sup>*</sup> Note: only those submissions that form a pair are checked of existence after a certain time period since they are first read (to read updated scores, etc.) This means that the total count noted here may be higher than the actual current count on each site. <a href="#top"><sup>^</sup></a>
 </p>
 <p>This page was generated on [% meta.generate_time %].</p>
-[% INCLUDE footer.tt %]
+[% INCLUDE static_footer.tt %]
