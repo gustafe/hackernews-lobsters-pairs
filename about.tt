@@ -1,0 +1,53 @@
+[% INCLUDE header.tt -%]
+[% USE Markdown -%]
+[% FILTER markdown %]
+
+# What's all this about, then?
+
+This is a little page that scrapes the APIs for 
+[Lobste.rs](https://lobste.rs), 
+[Hacker News](https://news.ycombinator.com/), and 
+[Reddit's /r/Programming](https://www.reddit.com/r/programming/), 
+compares URLs for submissions, and prints a match if the URLs are the same.
+
+I wrote it to give more depth to the  discussions on Lobste.rs.
+
+The numbers at the end of each submission is the score (net number of
+upvotes), the number of comments, and the comment/score ratio. The
+ratio is only printed if the sum of the score and comments is 10 or
+more.
+
+[% INCLUDE changelog.md %]
+
+## How it works
+
+A script is run hourly, reading the latest entries from both
+sites. Then the page is generated.
+
+The SQL is basically 
+
+    select lo.url from lobsters lo
+    left outer  join hackernews hn 
+    on hn.url = lo.url
+    left outer join proggit pr
+    on pr.url = lo.url
+
+## Limitations
+
+It only matches URLs exactly, so if there are extraneous elements in a
+submission to one site, it won't show up.
+
+While the HN API offers a list of the latest 500 entries, the script
+only scan the [`/newest`](https://lobste.rs/newest) page on Lobste.rs,
+and if the number of new entries manages to replace the page entirely
+between reads, the script might miss entries.
+
+The scores and comments are only updated occasionally as I don't want to overload the API endpoints.
+
+[% INCLUDE todo.md %]
+
+This page was generated on *[% meta.generate_time %]*.
+[% END %]
+
+[% INCLUDE static_footer.tt %]
+

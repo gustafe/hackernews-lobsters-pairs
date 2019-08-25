@@ -18,12 +18,8 @@ refresh:
 scores:
 	perl -I $(BIN) $(BIN)/generate-hourly.pl --update_score 
 
-about.html: about.header common.tt footer.tt about.md todo.md hnlo.css
-	cat about.header > $(WWW)/about.html
-	cat common.tt >> $(WWW)/about.html
-	cat about.md | $(MD) >> $(WWW)/about.html
-	cat todo.md | $(MD) >> $(WWW)/about.html
-	cat footer.tt >> $(WWW)/about.html
+about.html: about.header common.tt footer.tt changelog.md todo.md hnlo.css
+	perl -I $(BIN) $(BIN)/generate-docs.pl
 	cp hnlo.css $(HOME)/public_html/stylesheets/hnlo.css
 
 archives.html: archives.header archives.md common.tt footer.tt
