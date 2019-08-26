@@ -25,7 +25,7 @@ $VERSION = 1.00;
 
 my $cfg =
   Config::Simple->new('/home/gustaf/prj/HN-Lobsters-Tracker/hnltracker.ini');
-my $creds = Config::Simple->new('/home/gustaf/prj/HN-Lobsters-Tracker/credentials.ini');
+my $creds = Config::Simple->new('/home/gustaf/prj/HN-Lobsters-Tracker/reddit.ini');
 my $driver   = $cfg->param('DB.driver');
 my $database = $cfg->param('DB.database');
 my $dbuser   = $cfg->param('DB.user');

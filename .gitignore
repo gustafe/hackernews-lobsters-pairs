@@ -25,3 +25,4 @@ out
 tmp/*
 *.out
 credentials.ini
+reddit.ini
