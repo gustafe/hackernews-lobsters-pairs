@@ -24,3 +24,4 @@ out
 /tie-refhash.pl
 tmp/*
 *.out
+credentials.ini
