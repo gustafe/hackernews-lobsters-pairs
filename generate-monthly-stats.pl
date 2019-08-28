@@ -235,30 +235,10 @@ $tt->process(
     '/home/gustaf/public_html/hnlo/' . $year . '-' . $month . '.html',
     { binmode => ':utf8' }
 ) || die $tt->error;
-$tt->process(
-    'statstest.tt', \%data,
-    '/home/gustaf/public_html/hnlo/stats.html',
-    { binmode => ':utf8' }
-) || die $tt->error;
 
 ### SUBS ###
 
 sub usage {
     say "usage: $0 [--update_score] --target_month=YYYYMM";
     exit 1;
-}
-__END__
-foreach my $tag ('hn','lo') {
-    my %rankings;
-    foreach my $user (sort {$stats{submitters}->{$tag}->{$b} <=>
-			      $stats{submitters}->{$tag}->{$a} ||
-			      $a cmp $b }
-		      keys %{$stats{submitters}->{$tag}}) {
-	#	say "$tag $user $stats{submitters}->{$tag}->{$user}";
-	push @{$rankings{$stats{submitters}->{$tag}->{$user}}}, $user;
-    }
-    foreach my $rank (sort {$b<=>$a} keys %rankings) {
-	say "$rank ", join(',', @{$rankings{$rank}});
-    }
-
 }
