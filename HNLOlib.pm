@@ -86,6 +86,10 @@ $feeds->{hn} = {
     submitter_href => 'https://news.ycombinator.com/user?id=',
     update_sql => "update hackernews set title=?,score=?,comments=? where id=?",
     delete_sql => "delete from hackernews where id=?",
+insert_sql=>"insert into hackernews (
+id, created_time, url, title, submitter, score, comments)
+values
+(?, datetime(?,'unixepoch'),?,?,?,?,?)",
 	       };
 $feeds->{pr} = {
 		comments => 'num_comments',
@@ -94,6 +98,7 @@ $feeds->{pr} = {
 		insert_sql => qq{ insert into proggit 
 (id, created_time,             url ,title, submitter, score,comments ) values 
 (?,  datetime( ?,'unixepoch'), ?,   ?,     ?,         ?,    ? )},
+delete_sql=>"delete from proggit where id = ?",
 		table_name=>'proggit',
 		title_href=>'https://www.reddit.com/r/programming/comments/',
 	       submitter_href=>'https://www.reddit.com/user/'};
