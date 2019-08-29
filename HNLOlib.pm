@@ -25,21 +25,21 @@ $VERSION = 1.00;
 
 my $cfg =
   Config::Simple->new('/home/gustaf/prj/HN-Lobsters-Tracker/hnltracker.ini');
-my $creds = Config::Simple->new('/home/gustaf/prj/HN-Lobsters-Tracker/reddit.ini');
+my $creds =
+  Config::Simple->new('/home/gustaf/prj/HN-Lobsters-Tracker/reddit.ini');
 my $driver   = $cfg->param('DB.driver');
 my $database = $cfg->param('DB.database');
 my $dbuser   = $cfg->param('DB.user');
 my $dbpass   = $cfg->param('DB.password');
 
-my $dsn      = "DBI:$driver:dbname=$database";
+my $dsn = "DBI:$driver:dbname=$database";
 
 my %seen;
 our $ua;
 our $debug = 0;
 
 our $sql = {
-	    get_pairs =>
-qq{select lo.url, 
+    get_pairs => qq{select lo.url, 
 lo.id as lo_id,strftime('%s',lo.created_time) as lo_time,lo.title as lo_title, lo.submitter as lo_submitter,lo.score as lo_score, lo.comments as lo_comments, lo.tags as lo_tags,
 hn.id as hn_id,strftime('%s',hn.created_time) as hn_time,hn.title as hn_title , hn.submitter as hn_submitter,hn.score as hn_score, hn.comments as hn_comments, null as hn_tags,
 pr.id as pr_id, strftime('%s',pr.created_time) as pr_time,pr.title as pr_title, pr.submitter as pr_submitter,pr.score as pr_score, pr.comments as pr_comments, null as pr_tags
@@ -50,12 +50,10 @@ left outer join proggit pr
 on pr.url = lo.url 
 where (lo.url is not null and lo.url !='')
 order by lo.created_time },
-	    
-    get_hn_count =>
-"select count(*) from hackernews where url is not null and created_time between ? and ?",
-    get_lo_count =>
-	    "select count(*) from lobsters where url is not null and created_time between ? and ?",
-	    get_pr_count=> qq{select count(*) from proggit where url is not null and created_time between ? and ?},
+
+#    get_hn_count =>"select count(*) from hackernews where url is not null and created_time between ? and ?",
+#    get_lo_count =>	    "select count(*) from lobsters where url is not null and created_time between ? and ?",
+#	    get_pr_count=> qq{select count(*) from proggit where url is not null and created_time between ? and ?},
 };
 
 our $feeds;
@@ -66,9 +64,8 @@ $feeds->{lo} = {
     table_name     => 'lobsters',
     site           => 'Lobste.rs',
     title_href     => 'https://lobste.rs/s/',
-		submitter_href => 'https://lobste.rs/u/',
-		insert_sql=>
-"insert into lobsters 
+    submitter_href => 'https://lobste.rs/u/',
+    insert_sql     => "insert into lobsters 
 (id, created_time, url,title,submitter,comments,score,tags) values 
 ( ?,            ?,   ?,    ?,        ?,       ?,    ?,   ?)",
     update_sql =>
@@ -86,22 +83,23 @@ $feeds->{hn} = {
     submitter_href => 'https://news.ycombinator.com/user?id=',
     update_sql => "update hackernews set title=?,score=?,comments=? where id=?",
     delete_sql => "delete from hackernews where id=?",
-insert_sql=>"insert into hackernews (
+    insert_sql => qq{insert into hackernews (
 id, created_time, url, title, submitter, score, comments)
 values
-(?, datetime(?,'unixepoch'),?,?,?,?,?)",
-	       };
+(?, datetime(?,'unixepoch'),?,?,?,?,?)},
+};
 $feeds->{pr} = {
-		comments => 'num_comments',
-		site => '/r/Programming',
-		update_sql => "update proggit set title=?, score=?, comments=? where id=?",
-		insert_sql => qq{ insert into proggit 
+    comments   => 'num_comments',
+    site       => '/r/Programming',
+    update_sql => "update proggit set title=?, score=?, comments=? where id=?",
+    insert_sql => qq{ insert into proggit 
 (id, created_time,             url ,title, submitter, score,comments ) values 
 (?,  datetime( ?,'unixepoch'), ?,   ?,     ?,         ?,    ? )},
-delete_sql=>"delete from proggit where id = ?",
-		table_name=>'proggit',
-		title_href=>'https://www.reddit.com/r/programming/comments/',
-	       submitter_href=>'https://www.reddit.com/user/'};
+    delete_sql     => "delete from proggit where id = ?",
+    table_name     => 'proggit',
+    title_href     => 'https://www.reddit.com/r/programming/comments/',
+    submitter_href => 'https://www.reddit.com/user/'
+};
 
 sub get_dbh {
 
@@ -113,10 +111,8 @@ sub get_dbh {
 
 #### User agent
 
-
 sub get_ua {
-    my $ua =
-      LWP::UserAgent->new( agent => $cfg->param('UserAgent.string'));
+    my $ua = LWP::UserAgent->new( agent => $cfg->param('UserAgent.string') );
 
     return $ua;
 }
@@ -124,17 +120,18 @@ sub get_ua {
 ##### Reddit
 
 sub get_reddit {
-    my $reddit = new Reddit::Client(user_agent => $cfg->param('UserAgent.string'),
-				client_id => $creds->param('Reddit.client_id'),
-				secret => $creds->param('Reddit.secret'),
-				username=>$creds->param('Reddit.username'),
-				    password => $creds->param('Reddit.password'));
+    my $reddit = new Reddit::Client(
+        user_agent => $cfg->param('UserAgent.string'),
+        client_id  => $creds->param('Reddit.client_id'),
+        secret     => $creds->param('Reddit.secret'),
+        username   => $creds->param('Reddit.username'),
+        password   => $creds->param('Reddit.password')
+    );
     return $reddit;
 }
 
-
-
 sub get_all_sets {
+
     # get all urls submitted from the sources
     # return an ordered list, along with the linked submissions
     my ($sth) = @_;
@@ -143,21 +140,22 @@ sub get_all_sets {
     my $return;
     my $sets;
     while ( my $r = $sth->fetchrow_hashref ) {
-	next unless defined $r->{url};
+        next unless defined $r->{url};
         my $url = $r->{url};    # key
-#	say $url;
-        my $uri  = URI->new( $r->{url} );
-	my $host;
-	eval {
-	    $host = $uri->host;
-	    1;}
-	  or do {
-	      # silently discard error, we can't handle the URI
-	      my $error = $@;
-	      $host ='www';
-#	      warn "call to URI host returned failure: $error";
-	      };
-	
+
+        my $uri = URI->new( $r->{url} );
+        my $host;
+        eval {
+            $host = $uri->host;
+            1;
+        } or do {
+
+            # silently discard error, we can't handle the URI
+            my $error = $@;
+            $host = 'www';
+
+        };
+
         $host =~ s/^www\.//;
 
         my $title;
@@ -166,7 +164,7 @@ sub get_all_sets {
         foreach my $label ( keys %{$feeds} ) {
             my $data;
             foreach my $field (qw(id time title submitter score comments tags))
-	      {
+            {
                 $data->{$field} = $r->{ $label . '_' . $field };
             }
 
@@ -174,23 +172,23 @@ sub get_all_sets {
                 $title       = $data->{title};
                 $tags_string = $data->{tags};
             }
-	    if (defined $data->{time}) {
+            if ( defined $data->{time} ) {
 
-            $data->{title_href} =
-              $feeds->{$label}->{title_href} . $data->{id};
-            $data->{submitter_href} =
-              $feeds->{$label}->{submitter_href} . $data->{submitter};
-            $data->{site} = $feeds->{$label}->{site};
-            $data->{tag}  = $label;
+                $data->{title_href} =
+                  $feeds->{$label}->{title_href} . $data->{id};
+                $data->{submitter_href} =
+                  $feeds->{$label}->{submitter_href} . $data->{submitter};
+                $data->{site} = $feeds->{$label}->{site};
+                $data->{tag}  = $label;
 
-            # date munging
-            my $dt = DateTime->from_epoch( epoch => $data->{time} );
+                # date munging
+                my $dt = DateTime->from_epoch( epoch => $data->{time} );
 
-            $data->{timestamp} = $dt->strftime('%Y-%m-%d %H:%M:%SZ');
+                $data->{timestamp} = $dt->strftime('%Y-%m-%d %H:%M:%SZ');
 
-            $data->{pretty_date} = $dt->strftime('%d %b %Y');
-            $current_set->{ $data->{time} } = $data;
-	}
+                $data->{pretty_date} = $dt->strftime('%d %b %Y');
+                $current_set->{ $data->{time} } = $data;
+            }
         }
 
         if ( !exists $sets->{$url} ) {
@@ -207,7 +205,8 @@ sub get_all_sets {
             };
 
         }
-	# add entries, keyed by timestamp
+
+        # add entries, keyed by timestamp
         foreach my $ts ( keys %{$current_set} ) {
             $sets->{$url}->{entries}->{$ts} = $current_set->{$ts};
         }
@@ -219,10 +218,11 @@ sub get_all_sets {
     foreach my $url ( keys %{$sets} ) {
         my $entries = $sets->{$url}->{entries};
         my @times   = sort keys %{$entries};
-	# skip single entries
-	next unless scalar @times>1;
-        my @shift   = ( 0, @times );
-        my @diffs   = ( 0, map { $times[$_] - $shift[$_] } ( 1 .. $#times ) );
+
+        # skip single entries
+        next unless scalar @times > 1;
+        my @shift = ( 0, @times );
+        my @diffs = ( 0, map { $times[$_] - $shift[$_] } ( 1 .. $#times ) );
 
         my $seq_idx = 0;
         foreach my $ts ( sort keys %{$entries} ) {
@@ -244,13 +244,15 @@ sub get_all_sets {
             {
                 $sets->{$url}->{logo} = 'hn_lo.png';
             }
-            elsif (   $sets->{$url}->{sequence}->[0]->{tag} eq 'lo'
-                and $sets->{$url}->{sequence}->[1]->{tag} eq 'hn') {
-	    
+            elsif ( $sets->{$url}->{sequence}->[0]->{tag} eq 'lo'
+                and $sets->{$url}->{sequence}->[1]->{tag} eq 'hn' )
+            {
+
                 $sets->{$url}->{logo} = 'lo_hn.png';
-            } else {
-		$sets->{$url}->{logo} = 'multi.png';
-	    }
+            }
+            else {
+                $sets->{$url}->{logo} = 'multi.png';
+            }
         }
         else {
             $sets->{$url}->{logo} = 'multi.png';
@@ -309,7 +311,8 @@ sub get_item_from_source {
         title    => $json->{title},
         score    => $json->{score},
         comments => $json->{ $feeds->{$label}->{comments} }
-		  };
+    };
+
     # lobsters has the tags
     if ( $label eq 'lo' ) {
         $hashref->{tags} = join( ',', @{ $json->{tags} } );
@@ -325,8 +328,11 @@ sub update_scores {
     my @proggit_changes;
     foreach my $set ( @{$pairs_ref} ) {
         foreach my $item ( @{ $set->{sequence} } ) {
-	    # next if $item->{tag} eq 'pr'; # not part of this update script
-	    	    next unless $item->{tag} eq 'hn'; # we've moved the reload to the load script
+
+
+            next
+              unless $item->{tag} eq
+              'hn';    # we've moved the reload to the load script
 
             my $res = get_item_from_source( $item->{tag}, $item->{id} );
 
@@ -367,16 +373,19 @@ sub update_scores {
             my $sth = $dbh->prepare( $feeds->{$label}->{delete_sql} )
               or die $dbh->errstr;
             foreach my $id ( @{ $lists->{$label}->{delete} } ) {
-#                say "!! deleting $label $id ...";
-		say "select * from $feeds->{$label}->{table_name} where id='$id';";
-		say "delete from $feeds->{$label}->{table_name} where id='$id;'";
-#                my $rv = $sth->execute($id) or warn $sth->errstr;
+
+                say
+"select * from $feeds->{$label}->{table_name} where id='$id';";
+                say
+                  "delete from $feeds->{$label}->{table_name} where id='$id;'";
+
+
             }
             $sth->finish();
         }
         if ( defined $lists->{$label}->{update} ) {
 
-            #	    say "updating items for $label: ";
+
             my $sth = $dbh->prepare( $feeds->{$label}->{update_sql} )
               or die $dbh->errstr;
             my $count = 0;
@@ -388,9 +397,103 @@ sub update_scores {
             $sth->finish();
         }
     }
+
     # handle Reddit stuff
 
     return $pairs_ref;
+}
+my $get_items = {pr => \&get_reddit_items,
+		 hn=>\&get_web_items,
+		 lo=>\&get_web_items,
+		};
+
+sub update_from_list {
+    my ( $label, $ids ) = @_;
+    my ( $updates, $deletes ) = $get_items->{$label}->($label, $ids );
+    my $dbh= get_dbh();
+my $sth = $dbh->prepare( $feeds->{$label}->{update_sql}) or die $dbh->errstr;
+my $count = 0;
+foreach my $update (@$updates) {
+    $sth->execute( @$update ) or warn $sth->errstr;
+    #say join(' ', @$update[3,0,1,2]);
+    $count++;
+}
+say "$count items updated";
+$sth->finish;
+$count=0;
+$sth = $dbh->prepare( $feeds->{$label}->{delete_sql}) or die $dbh->errstr;
+#say "deletes: ",scalar @$deletes;
+foreach my $id (@$deletes) {
+    $sth->execute( $id );
+
+    $count++;
+}
+say "$count items deleted";
+
+}
+sub get_web_items {
+    my ($label, $items ) =@_;
+    my %not_seen;
+    my @updates;
+    my $ua = get_ua();
+    foreach my $id (@$items) {
+	say "fetching $id" if $debug;
+	my $href = $feeds->{$label}->{api_item_href} . $id . '.json';
+	my $r = $ua->get( $href );
+	if (!$r->is_success() or $r->header('Content-Type') !~ m{application/json}) {
+	    $not_seen{$id}++;
+	    next;
+	}
+	my $json = decode_json( $r->decoded_content() );
+	if (defined $json->{dead}) {
+	    $not_seen{$id}++ ;
+	    next;
+	}
+	my @binds = ( $json->{title},
+			$json->{score},
+		      $json->{$feeds->{$label}->{comments}});
+	if (defined  $json->{tags}) {
+	    push @binds, join(',',@{$json->{tags}})
+	}
+	push @binds, $id;
+	push @updates, \@binds;
+    }
+    my @deletes = keys %not_seen if scalar keys %not_seen > 0;
+    return ( \@updates, \@deletes );
+
+}
+
+sub get_reddit_items{
+    my ($label, $items ) = @_;
+    my @inputs;
+    my $count = 0;
+    my %seen;
+    my @updates;
+    my @deletes;
+    my $reddit = get_reddit();
+    foreach my $item (@$items) {
+	push @{$inputs[int($count/75)]}, $item;
+	$seen{$item} = 0;
+	$count++;
+    }
+    foreach my $list (@inputs) {
+	#	say scalar @{$list};
+	my $posts = $reddit->get_links_by_id(  @{$list} );
+	foreach my $post (@$posts) {
+
+	    push @updates, [ $post->{title},
+			     $post->{score},
+			     $post->{num_comments},
+			     $post->{id}
+			   ];
+	    $seen{$post->{id}}++;
+	}
+	    foreach my $id (sort keys %seen) {
+		push @deletes, $id if $seen{$id}>0;
+
+	    }
+    }
+    return ( \@updates, \@deletes );
 }
 
 1;

@@ -3,7 +3,7 @@ use Modern::Perl '2015';
 ###
 
 use JSON;
-use HNLtracker qw/get_dbh get_ua/;
+use HNLOlib qw/get_dbh get_ua $feeds $sql/ ;
 use Data::Dumper;
 use open IO => ':utf8';
 #binmode STDOUT, ':utf8';
@@ -11,16 +11,15 @@ use open IO => ':utf8';
 my @failed;
 my @items;
 my $ua =get_ua();
-my $insert_sql = qq{insert into hackernews (
-id, created_time, url, title, submitter, score, comments)
-values
-(?, datetime(?,'unixepoch'),?,?,?,?,?)};
+
+my $insert_sql = $feeds->{hn}->{insert_sql};
+
 my $latest_sql = qq{select max(id) from hackernews};
 my $dbh = get_dbh();
-my $sth = $dbh->prepare( $latest_sql);
-$sth->execute();
-my $latest_id = $sth->fetchrow_array;
-$sth->finish();  
+my $sth; # = $dbh->prepare( $latest_sql);
+
+my $latest_id = ($dbh->selectall_arrayref($latest_sql))->[0]->[0] or die $dbh->errstr;
+
 
 my $newest_url = 'https://hacker-news.firebaseio.com/v0/newstories.json';
 my $response = $ua->get($newest_url);
@@ -42,7 +41,7 @@ while (@{$list}) {
     my $res = $ua->get( $item_url );
     if (!$res->is_success) {
 	warn $res->status_line;
-	warn "~~> fetch for $id failed\n";
+	warn "--> fetch for $id failed\n";
 	push @failed, $id;
 	next;
     }
@@ -56,7 +55,11 @@ while (@{$list}) {
     my $item = decode_json( $payload );
     # skip items without URLs
     if (!defined $item->{url}) {
-	say "||> $id has no URL, skipping";
+	say "~~> $id has no URL, skipping";
+	next;
+    }
+    if (defined $item->{dead}) {
+	say "**> $id flagged 'dead', skipping";
 	next;
     }
     
@@ -68,12 +71,11 @@ while (@{$list}) {
 # add to store
 
 
-$sth = $dbh->prepare( $insert_sql );
+$sth = $dbh->prepare( $feeds->{hn}->{insert_sql} ) or die $dbh->errstr;
 foreach my $item (@items) {
-    $sth->execute( @{$item});
+    $sth->execute( @{$item}) or warn $sth->errstr;
 }
 $sth->finish();
-$dbh->disconnect();
 say "\nNew HN items added: $count\n";
 if (scalar @failed > 0) {
     say "### ITEMS NOT FOUND ###";
@@ -81,4 +83,26 @@ if (scalar @failed > 0) {
 	say $id;
     }
 }
+
+### update items that are part of sets
+
+$sth = $dbh->prepare( $sql->{get_pairs} );
+my %sets = %{ HNLOlib::get_all_sets($sth) };
+my @list;
+my $days=7;
+my $now= time();
+foreach my $url (keys %sets) {
+    foreach my $ts (keys %{$sets{$url}->{entries}}) {
+	my $entries = $sets{$url}->{entries}->{$ts};
+	if  ( $entries->{tag} eq 'hn' and $entries->{time}>=($now-$days*24*3600)){
+	    push @list, $entries->{id};
+	}
+    }
+}
+say "items in store in the last $days days: ", scalar @list;
+HNLOlib::update_from_list( 'hn',
+			   \@list);
+#say join("\n", sort @list);
+
+$dbh->disconnect();
 
