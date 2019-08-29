@@ -104,11 +104,7 @@ my %dates;
 $stats{pair_count} = scalar @pairs;
 
 foreach my $tag ( keys %{$feeds} ) {
-    if ($debug) {
-        say $tag;
-        say $sql->{ 'get_' . $tag . '_count' };
-    }
-    $sth = $dbh->prepare( $sql->{ 'get_' . $tag . '_count' } );
+    $sth = $dbh->prepare( "select count(*) from $feeds->{$tag}->{table_name} where url is not null and created_time between ? and ?" ) or die $dbh->errstr;
     $sth->execute(@iso_range);
     my $rv = $sth->fetchrow_arrayref();
     $stats{total}->{$tag} = $rv->[0];
@@ -226,7 +222,8 @@ my %data = (
     },
     sites => $sites,
 
-);
+	   );
+print Dumper \%stats if  $debug; 
 my $tt =
   Template->new( { INCLUDE_PATH => '/home/gustaf/prj/HN-Lobsters-Tracker' } );
 
