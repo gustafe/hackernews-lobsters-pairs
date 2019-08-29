@@ -223,7 +223,7 @@ my %data = (
     sites => $sites,
 
 	   );
-print Dumper \%stats if  $debug; 
+print Dumper \%stats if  $debug;
 my $tt =
   Template->new( { INCLUDE_PATH => '/home/gustaf/prj/HN-Lobsters-Tracker' } );
 

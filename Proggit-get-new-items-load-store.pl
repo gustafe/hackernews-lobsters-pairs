@@ -18,10 +18,6 @@ foreach my $el (@{$latest_ids}) {
 }
 
 
-#my $sql = {	   insert => qq{ insert into proggit (id, created_time,             url ,title, submitter, score,comments ) values (?,  datetime( ?,'unixepoch'), ?,   ?,     ?,         ?,    ? )},	   update=>qq{update proggit set score=?, comments=? where id=?},	   select_older => qq{select id from proggit where id	  }	  };
-
-
-	   
 my $sth = $dbh->prepare( $feeds->{pr}->{insert_sql} )  or die $dbh->errstr;
 
 my $posts = $reddit->get_links( subreddit=>'programming', limit => undef, view=>'new', );

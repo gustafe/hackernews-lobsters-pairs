@@ -489,7 +489,7 @@ sub get_reddit_items{
 	    $seen{$post->{id}}++;
 	}
 	    foreach my $id (sort keys %seen) {
-		push @deletes, $id if $seen{$id}>0;
+		push @deletes, $id if $seen{$id} == 0;
 
 	    }
     }
