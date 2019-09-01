@@ -22,6 +22,7 @@ my $latest_id = ($dbh->selectall_arrayref($latest_sql))->[0]->[0] or die $dbh->e
 
 
 my $newest_url = 'https://hacker-news.firebaseio.com/v0/newstories.json';
+my $topview_url = 'https://hacker-news.firebaseio.com/v0/topstories.json';
 my $response = $ua->get($newest_url);
 if (!$response->is_success) {
     die $response->status_line;
@@ -104,5 +105,18 @@ HNLOlib::update_from_list( 'hn',
 			   \@list);
 #say join("\n", sort @list);
 
+## grab the current front page
+$response = $ua->get($topview_url);
+if (!$response->is_success) {
+    die $response->status_line;
+}
+my $top_ids = decode_json($response->decoded_content);
+$sth = $dbh->prepare( "insert into hn_frontpage (id, rank, read_time) values (?,?,datetime('now'))") or die $dbh->errstr;;
+my $rank = 1;
+foreach my $id (@$top_ids) {
+    next if $rank > 60; # only first 2 pages
+    $sth->execute( $id, $rank) or warn $sth->errstr;
+    $rank++;
+}
 $dbh->disconnect();
 
