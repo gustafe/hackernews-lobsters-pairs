@@ -15,12 +15,11 @@ comments is greater than [% meta.ratio_limit %]).</p>
 <p>This page was generated <span id="generated" 
 timestamp="[% meta.generate_time %]" 
 title="[% meta.generate_time %]">[% meta.generate_time %]</span>. It usually
-updates hourly.</p>
-
-<p><a href="about.html">About this project</a>.
-<a href="about.html#changelog">Changelog</a>.</p>
-
-<p><a href="archives.html">Monthly archives</a>.</p>
+updates hourly.
+<a href="about.html">About this project</a>.
+<a href="about.html#changelog">Changelog</a>.
+<a href="archives.html">Monthly archives</a>.
+</p>
 
 [% FOREACH pair=pairs %]
    [% INCLUDE pair_contents.tt %]
