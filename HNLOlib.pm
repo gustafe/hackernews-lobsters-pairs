@@ -445,7 +445,7 @@ sub get_web_items {
 	    next;
 	}
 	my $json = decode_json( $r->decoded_content() );
-	if (defined $json->{dead}) {
+	if (defined $json->{dead} or defined $json->{deleted}) {
 	    $not_seen{$id}++ ;
 	    next;
 	}
