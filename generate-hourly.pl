@@ -49,20 +49,15 @@ foreach my $url (sort {$sets{$b}->{first_seen} <=> $sets{$a}->{first_seen}} keys
 
 if ($update_score) {
     my $list_of_ids;
-    #    @pairs = @{update_scores($dbh, \@pairs)};
     foreach my $pair (@pairs) {
 	foreach my $entry (@{$pair->{sequence}}) {
-#	    print Dumper $entry if $debug;
 	    push @{$list_of_ids->{$entry->{tag}}} ,$entry->{id};
 	    
 	}
     }
-#    print Dumper $list_of_ids;
     foreach my $label (sort keys %{$list_of_ids}) {
 	say "updating entries from $label. No. of IDs: ", scalar @{$list_of_ids->{$label}};
 		HNLOlib::update_from_list( $label, $list_of_ids->{$label} );
-	#print Dumper $label;
-#	print Dumper $list_of_ids->{$label};
     }
 }
 
