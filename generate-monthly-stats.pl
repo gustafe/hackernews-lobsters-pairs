@@ -93,9 +93,21 @@ foreach my $url (
 
 # update items if that option is set
 
+
 if ($update_score) {
-    @pairs = @{ update_scores( $dbh, \@pairs ) };
+    my $list_of_ids;
+    foreach my $pair (@pairs) {
+	foreach my $entry (@{$pair->{sequence}}) {
+	    push @{$list_of_ids->{$entry->{tag}}} ,$entry->{id};
+	    
+	}
+    }
+    foreach my $label (sort keys %{$list_of_ids}) {
+	say "updating entries from $label. No. of IDs: ", scalar @{$list_of_ids->{$label}};
+		HNLOlib::update_from_list( $label, $list_of_ids->{$label} );
+    }
 }
+
 
 # gather stats
 
@@ -115,6 +127,9 @@ print Dumper \@pairs if $debug;
 foreach my $pair (@pairs) {
 
     next unless ( defined $pair->{sequence} );
+    my $chain = join(' &xrarr; ',map {$_->{site}} @{$pair->{sequence}});
+    $stats{chains}->{$chain}++;
+#    say "$pair->{heading} ", join('-', @chain) if scalar @chain == 1;
     foreach my $item ( @{ $pair->{sequence} } ) {
         my $ratio = undef;
         if ( $item->{score} > 0
@@ -138,6 +153,7 @@ foreach my $pair (@pairs) {
         $stats{first}->{ $item->{tag} }++ if $item->{first};
         $stats{count}->{ $item->{tag} }++;
     }
+
     $stats{domains}->{ $pair->{domain} }++;
     warn "can't parse date for $pair->{heading_url} "
       unless defined $pair->{sequence}->[0]->{timestamp};
@@ -205,6 +221,21 @@ foreach my $domain (
 }
 my $sites = { map { $_, $feeds->{$_}->{site} } qw/hn lo pr/ };
 
+my $count = 0;
+my $sum = 0;
+my @chains;
+foreach my $chain (sort {
+    
+    $stats{chains}->{$b} <=> $stats{chains}->{$a}} keys %{$stats{chains}}) {
+    if ($count<10) {
+	push @chains, sprintf("%s - %d",$chain , $stats{chains}->{$chain});
+    } else {
+	$sum += $stats{chains}->{$chain};
+    }
+    $count++;
+
+}
+push @chains, sprintf("%s - %d", "Others", $sum);
 # generate the page from the data
 my $dt_now =
   DateTime->from_epoch( epoch => $now, time_zone => 'Europe/Stockholm' );
@@ -212,7 +243,8 @@ my %data = (
     dates      => \%dates,
     stats      => \%stats,
     submitters => \%submitters,
-    domains    => \@domains,
+	    domains    => \@domains,
+	    chains=>\@chains,
     meta       => {
         generate_time => $dt_now->strftime('%Y-%m-%d %H:%M:%S%z'),
         page_title    => $page_title,
@@ -223,7 +255,8 @@ my %data = (
     sites => $sites,
 
 	   );
-print Dumper \%stats if  $debug;
+
+
 my $tt =
   Template->new( { INCLUDE_PATH => '/home/gustaf/prj/HN-Lobsters-Tracker' } );
 

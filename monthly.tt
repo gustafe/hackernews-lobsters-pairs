@@ -1,13 +1,14 @@
 [% INCLUDE header.tt %]
+[% USE Markdown -%]
 <h1>[% meta.page_title %]</h1>
 
 <a href="index.html">Today's links</a>.
 
 <a name="top"/>
-[% USE Markdown -%]
-[% FILTER markdown %]
 
-Number of sets this month: [% stats.pair_count %].
+
+
+<p>Number of sets this month: [% stats.pair_count %].</p>
 
 
 <table><tr>
@@ -16,42 +17,56 @@ Number of sets this month: [% stats.pair_count %].
 <td valign="top">
 [% FILTER markdown -%]
 
-__[% sites.$site %]__
+### [% sites.$site %]
 
 During this time period, [% stats.first.$site %] entries from this site were first in a set. This represents [% FILTER format ('%.01f%%') %][% stats.first.$site / stats.pair_count * 100 %][% END %] of the sets.
 
 In total, [% stats.total.$site %] links were submitted to the site during the same time. [% stats.count.$site %] links ([% FILTER format ('%.01f%%') %][% stats.count.$site / stats.total.$site * 100 %][% END %]) are included here as entries in sets.
 
-__Top submitters__
+#### Top submitters
 
 [% FOREACH rank IN submitters.$site.keys.nsort.reverse -%]
 * [%  FOREACH entry IN submitters.$site.$rank -%] 
 [% entry -%]
-[% END %] - [% rank %] 
-[% END %]
-[% END %]
+[% END # entry %] - [% rank %] 
+[% END # rank %]
+[% END # markdown %]
 </td>
-[% END %]
+[% END # site %]
 [% END %]
 </tr>
 
 </table>
-
+<table><tr>
+<td valign="top">
+[% FILTER markdown %]
 ### Domains with more than 2 submissions
 
 [% FOREACH line IN domains -%]
  * [[% line.domain %]](http://[% line.domain %]) - [% line.count %]
+[% END #line %]
+[% END # markdown %]
+</td>
+<td>
+
+<h3>Submission chains</h3>
+
+<ul>
+[% FOREACH chain IN chains -%]
+<li>[% chain %]</li>
 [% END %]
-[% END %]
+</ul>
+
+</td></tr></table>
+
 <hr />
+
 [% FOREACH date IN dates.keys.sort  %]
 <h1 class="date">[% dates.$date.display_date %]</h1>
 [% FOREACH pair IN dates.$date.pairs %]
    [% INCLUDE pair_contents.tt %]
-
-[% END %]
-
-[% END %]
+[% END #pair %]
+[% END #date %]
 <hr />
 <p>
 <a name="count"/>
