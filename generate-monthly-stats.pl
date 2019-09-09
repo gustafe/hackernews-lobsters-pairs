@@ -212,7 +212,7 @@ foreach my $tag ( 'hn', 'lo', 'pr' ) {
 my @domains;
 
 foreach my $domain (
-    sort { $stats{domains}->{$b} <=> $stats{domains}->{$a} }
+    sort { $stats{domains}->{$b} <=> $stats{domains}->{$a} || $a cmp $b }
     keys %{ $stats{domains} }
   )
 {
@@ -226,8 +226,9 @@ my $sum = 0;
 my @chains;
 foreach my $chain (sort {
     
-    $stats{chains}->{$b} <=> $stats{chains}->{$a}} keys %{$stats{chains}}) {
-    if ($count<10) {
+    $stats{chains}->{$b} <=> $stats{chains}->{$a} || $a cmp $b }
+		   keys %{$stats{chains}}) {
+    if ($count<10 and $stats{chains}->{$chain}>1) {
 	push @chains, sprintf("%s - %d",$chain , $stats{chains}->{$chain});
     } else {
 	$sum += $stats{chains}->{$chain};
