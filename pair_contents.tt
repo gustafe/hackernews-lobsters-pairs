@@ -10,8 +10,8 @@
    <a name="[% pair.anchor %]"/>
    <h2 class="link">
    <a href="[% '#' _ pair.anchor %]">
-      <img src="img/[% pair.logo %]" alt="[% alt %]"/></a>&nbsp;
-   <a href="[% pair.heading_url %]">[% pair.heading %]</a>&nbsp;<span class="domain">[% pair.domain %]</span>&nbsp;   <span class='tags' title='tags for this entry on Lobste.rs'>[% FOREACH tag IN pair.tags_list -%] [% tag -%]
+      <img src="img/[% pair.logo %]" alt="[% alt -%]"/></a>&nbsp;
+   <a href="[% pair.heading_url %]">[% FILTER html -%][% pair.heading -%][% END -%]</a>&nbsp;<span class="domain">[% pair.domain %]</span>&nbsp;   <span class='tags' title='tags for this entry on Lobste.rs'>[% FOREACH tag IN pair.tags_list -%] [% tag -%]
    [%- END %]</span></h2>
 
 
@@ -31,7 +31,7 @@
       [% IF entry.first == 1 -%]
       <span class="[% entry.tag %]">
       First seen on <strong>[% site %]</strong> 
-      as <a href="[% title_href %]">[% title %]</a>
+      as <a href="[% title_href -%]">[% FILTER html -%][% title %][% END -%]</a>
       on <span class="tooltip" title="[% timestamp %]">[% pretty_date %]</span>,
       submitted by <a href="[% submitter_href %]">[% submitter %]</a>.</span>
       [% ELSE -%]
