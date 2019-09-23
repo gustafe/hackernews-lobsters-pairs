@@ -5,13 +5,14 @@ use Modern::Perl '2015';
 use HNLOlib qw/$feeds get_ua get_dbh get_reddit/;
 use Getopt::Long;
 use JSON;
+use Term::ProgressBar 2.00;
 sub usage {
     say "usage: $0 --label={hn,lo,pr} --days=N";
     exit 1;
 
 }
 my $debug=1;
-sub get_reddit_items;
+#sub get_reddit_items;
 my $get_items = {pr => \&get_reddit_items,
 		 hn=>\&get_web_items,
 		 lo=>\&get_web_items,
@@ -42,8 +43,18 @@ foreach my $update (@$updates) {
 say "$count items updated";
 $sth->finish;
 $count=0;
+if (@$deletes and $label ne 'pr') {
+    my $pholders = join(",", ("?") x @$deletes);
+    my $to_deletes = $dbh->selectall_arrayref( "select id, title from $feeds->{$label}->{table_name} where id in ($pholders)",{},@$deletes) or die $dbh->errstr;
+    say "The following items will be deleted:";
+    foreach my $line (@$to_deletes) {
+	say join("|", @$line);
+    }
+}
+
 $sth = $dbh->prepare( $feeds->{$label}->{delete_sql}) or die $dbh->errstr;
 #say "deletes: ",scalar @$deletes;
+
 foreach my $id (@$deletes) {
     $sth->execute( $id );
 
@@ -56,17 +67,25 @@ sub get_web_items {
     my %not_seen;
     my @updates;
     my $ua = get_ua();
+    my $progress = Term::ProgressBar->new({name=>'Items',
+					   count=>scalar @$items,
+					   ETA=>'linear'});
+    $progress->max_update_rate(1);
+    my $next_update=0;
+    my $count=0;
     foreach my $id (@$items) {
-	say "fetching $id" if $debug;
+#	say "fetching $id" if $debug;
 	my $href = $feeds->{$label}->{api_item_href} . $id . '.json';
 	my $r = $ua->get( $href );
 	if (!$r->is_success() or $r->header('Content-Type') !~ m{application/json}) {
 	    $not_seen{$id}++;
+	    $progress->message("no response for $id");
 	    next;
 	}
 	my $json = decode_json( $r->decoded_content() );
 	if (defined $json->{dead}) {
 	    $not_seen{$id}++ ;
+	    $progress->message("$id is dead");
 	    next;
 	}
 	my @binds = ( $json->{title},
@@ -75,9 +94,13 @@ sub get_web_items {
 	if (defined  $json->{tags}) {
 	    push @binds, join(',',@{$json->{tags}})
 	}
+	$next_update = $progress->update( $count ) if $count >= $next_update;
+
 	push @binds, $id;
 	push @updates, \@binds;
+	$count++;
     }
+    $progress->update( scalar @$items) if scalar @$items >= $next_update;
     my @deletes = keys %not_seen if scalar keys %not_seen > 0;
     return ( \@updates, \@deletes );
 
