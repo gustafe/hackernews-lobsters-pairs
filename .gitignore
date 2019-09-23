@@ -26,3 +26,4 @@ tmp/*
 *.out
 credentials.ini
 reddit.ini
+/selectall_test.pl
