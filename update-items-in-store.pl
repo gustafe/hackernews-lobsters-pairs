@@ -2,7 +2,7 @@
 use Modern::Perl '2015';
 ###
 
-use HNLOlib qw/$feeds get_ua get_dbh get_reddit/;
+use HNLOlib qw/$feeds get_ua get_dbh get_reddit get_web_items/;
 use Getopt::Long;
 use JSON;
 use Term::ProgressBar 2.00;
@@ -62,49 +62,8 @@ foreach my $id (@$deletes) {
 }
 say "$count items deleted";
 
-sub get_web_items {
-    my ( $items ) =@_;
-    my %not_seen;
-    my @updates;
-    my $ua = get_ua();
-    my $progress = Term::ProgressBar->new({name=>'Items',
-					   count=>scalar @$items,
-					   ETA=>'linear'});
-    $progress->max_update_rate(1);
-    my $next_update=0;
-    my $count=0;
-    foreach my $id (@$items) {
-#	say "fetching $id" if $debug;
-	my $href = $feeds->{$label}->{api_item_href} . $id . '.json';
-	my $r = $ua->get( $href );
-	if (!$r->is_success() or $r->header('Content-Type') !~ m{application/json}) {
-	    $not_seen{$id}++;
-	    $progress->message("no response for $id");
-	    next;
-	}
-	my $json = decode_json( $r->decoded_content() );
-	if (defined $json->{dead}) {
-	    $not_seen{$id}++ ;
-	    $progress->message("$id is dead");
-	    next;
-	}
-	my @binds = ( $json->{title},
-			$json->{score},
-		      $json->{$feeds->{$label}->{comments}});
-	if (defined  $json->{tags}) {
-	    push @binds, join(',',@{$json->{tags}})
-	}
-	$next_update = $progress->update( $count ) if $count >= $next_update;
 
-	push @binds, $id;
-	push @updates, \@binds;
-	$count++;
-    }
-    $progress->update( scalar @$items) if scalar @$items >= $next_update;
-    my @deletes = keys %not_seen if scalar keys %not_seen > 0;
-    return ( \@updates, \@deletes );
 
-}
 
 sub get_reddit_items{
     my ( $items ) = @_;
@@ -137,4 +96,53 @@ sub get_reddit_items{
 	    }
     }
     return ( \@updates, \@deletes );
+}
+
+
+
+sub get_web_items {
+    my ( $items ) =@_;
+    my %not_seen;
+    my @updates;
+    my $ua = get_ua();
+    my $progress = Term::ProgressBar->new({name=>'Items',
+					   count=>scalar @$items,
+					   ETA=>'linear'});
+    $progress->max_update_rate(1);
+    my $next_update=0;
+    my $count=0;
+    foreach my $id (@$items) {
+#	say "fetching $id" if $debug;
+	my $href = $feeds->{$label}->{api_item_href} . $id . '.json';
+	my $r = $ua->get( $href );
+	if (!$r->is_success() or $r->header('Content-Type') !~ m{application/json}) {
+	    $not_seen{$id}++;
+	    $progress->message("no response for $id");
+	    next;
+	}
+	my $json = decode_json( $r->decoded_content() );
+	if (defined $json->{dead} or defined $json->{deleted}) {
+	    $not_seen{$id}++ ;
+	    $progress->message("$id is dead or deleted");
+	    next;
+	}
+
+
+	my @binds = ( $json->{title},
+			$json->{score},
+		      $json->{$feeds->{$label}->{comments}});
+	if (defined  $json->{tags}) {
+	    push @binds, join(',',@{$json->{tags}}) }
+#	    $progress->message("no relevant data for URL: \n".$feeds->{$label}->{title_href}.$id."\n".$feeds->{$label}->{api_item_href}.$id.'.json');
+
+	$next_update = $progress->update( $count ) if $count >= $next_update;
+
+	push @binds, $id ;
+	push @updates, \@binds if scalar @binds > 1;
+	$count++;
+    }
+    $progress->update( scalar @$items) if scalar @$items >= $next_update;
+    my @deletes = keys %not_seen if scalar keys %not_seen > 0;
+    return ( \@updates, \@deletes );
+
 }

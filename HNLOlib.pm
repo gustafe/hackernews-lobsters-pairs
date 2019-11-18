@@ -18,7 +18,7 @@ $VERSION = 1.00;
 @ISA     = qw/Exporter/;
 @EXPORT  = ();
 @EXPORT_OK =
-  qw/get_dbh get_ua get_all_sets get_item_from_source $feeds update_scores $debug $sql $ua get_reddit/;
+  qw/get_dbh get_ua get_all_sets get_item_from_source $feeds update_scores $debug $sql $ua get_reddit get_web_items get_reddit_items/;
 %EXPORT_TAGS = ( DEFAULT => [qw/&get_dbh &get_ua/] );
 
 #### DBH

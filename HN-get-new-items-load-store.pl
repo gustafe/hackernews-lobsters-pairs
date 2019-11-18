@@ -10,6 +10,7 @@ use open IO => ':utf8';
 # read from list
 my @failed;
 my @items;
+my $debug =0;
 my $ua =get_ua();
 
 my $insert_sql = $feeds->{hn}->{insert_sql};
@@ -19,7 +20,7 @@ my $dbh = get_dbh();
 my $sth; # = $dbh->prepare( $latest_sql);
 
 my $latest_id = ($dbh->selectall_arrayref($latest_sql))->[0]->[0] or die $dbh->errstr;
-
+say "==> latest_id: $latest_id" if $debug;
 
 my $newest_url = 'https://hacker-news.firebaseio.com/v0/newstories.json';
 my $topview_url = 'https://hacker-news.firebaseio.com/v0/topstories.json';
@@ -34,7 +35,7 @@ my $count=0;
 while (@{$list}) {
     
     my $id =shift @{$list};
-
+    say "reading $id..." if $debug;
     if ($id<=$latest_id) {
 	next;
     }
@@ -61,6 +62,10 @@ while (@{$list}) {
     }
     if (defined $item->{dead}) {
 	say "**> $id flagged 'dead', skipping";
+	next;
+    }
+    if (defined $item->{deleted}) {
+	say "__> $id flagged 'deleted', skipping";
 	next;
     }
     
