@@ -27,3 +27,5 @@ tmp/*
 credentials.ini
 reddit.ini
 /selectall_test.pl
+/get_web_items1
+/get_web_items2
