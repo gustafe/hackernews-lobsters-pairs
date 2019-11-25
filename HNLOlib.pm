@@ -72,6 +72,9 @@ $feeds->{lo} = {
       "update lobsters set title=?,score=?,comments=?,tags=? where id=?",
     delete_sql     => "delete from lobsters where id=?",
     select_all_sql => "select * from lobsters",
+hot_level => 39,
+cool_level => 3,
+
 
 };
 $feeds->{hn} = {
@@ -87,6 +90,9 @@ $feeds->{hn} = {
 id, created_time, url, title, submitter, score, comments)
 values
 (?, datetime(?,'unixepoch'),?,?,?,?,?)},
+hot_level => 10,
+cool_level => 1,
+
 };
 $feeds->{pr} = {
     comments   => 'num_comments',
@@ -98,7 +104,11 @@ $feeds->{pr} = {
     delete_sql     => "delete from proggit where id = ?",
     table_name     => 'proggit',
     title_href     => 'https://www.reddit.com/r/programming/comments/',
-    submitter_href => 'https://www.reddit.com/user/'
+    submitter_href => 'https://www.reddit.com/user/',
+
+hot_level => 55,
+cool_level => 0,
+
 };
 
 sub get_dbh {
@@ -188,6 +198,15 @@ sub get_all_sets {
 
                 $data->{pretty_date} = $dt->strftime('%d %b %Y');
                 $current_set->{ $data->{time} } = $data;
+
+		# hot or not?
+		if ($data->{score} + $data->{comments} >= $feeds->{$label}->{hot_level}) {
+		    $data->{hotness} = 'hot'
+		} elsif ($data->{score}+$data->{comments}<=$feeds->{$label}->{cool_level}) {
+		    $data->{hotness} = 'cool'
+		} else {
+		    $data->{hotness} = '';
+		}
             }
         }
 
