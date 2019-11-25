@@ -31,7 +31,7 @@ foreach my $line(@$list) {
 my $upper = $count * 0.85;
 my $lower = $count * 0.25;
 my $running;
-say "$lower $upper" ;
+#say "$lower $upper" ;
 foreach my $sum (sort {$a<=>$b} keys %sums) {
     my $append;
     $running += $sums{$sum};
@@ -42,5 +42,5 @@ foreach my $sum (sort {$a<=>$b} keys %sums) {
     } else {
 	$append=''
     }
-    say "$sum $sums{$sum} $running ", $append;
+    say "$sum;$sums{$sum}"
 }
