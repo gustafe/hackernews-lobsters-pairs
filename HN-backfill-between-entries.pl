@@ -16,7 +16,7 @@ my $ua =get_ua();
 
 my $insert_sql = $feeds->{hn}->{insert_sql};
 
-my ( $start, $end) = (21105215,21105305);
+my ( $start, $end) = (23309002-500,23309002+500);
 
 
 my $list = [$start+1 .. $end-1];
@@ -51,8 +51,8 @@ while (@{$list}) {
 
     my $item = decode_json( $payload );
     # skip non-posts
-    if ($item->{type} ne 'post' or !defined $item->{url} or defined  $item->{dead} or defined $item->{deleted}) {
-#	say "^^> $id not post, skipping";
+    if (!defined $item->{url} or defined  $item->{dead} or defined $item->{deleted}) {
+#	say "^^> $id has no url, is dead, or is deleted - skipping";
 	next;
     }
 

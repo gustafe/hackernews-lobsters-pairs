@@ -2,7 +2,7 @@
 use Modern::Perl '2015';
 ###
 
-use HNLOlib qw/$feeds get_ua get_dbh get_reddit get_web_items/;
+use HNLOlib qw/$feeds get_ua get_dbh get_reddit get_reddit_items/;
 use Getopt::Long;
 use JSON;
 use Term::ProgressBar 2.00;
@@ -32,7 +32,7 @@ my $ids = [map {$_->[0]} @{$dbh->selectall_arrayref( "select id from $feeds->{$l
 
 #exit 0 unless $label eq 'pr';
 
-my ( $updates, $deletes ) = $get_items->{$label}->( $ids );
+my ( $updates, $deletes ) = $get_items->{$label}->( $label, $ids );
 my $sth = $dbh->prepare( $feeds->{$label}->{update_sql}) or die $dbh->errstr;
 my $count = 0;
 foreach my $update (@$updates) {
@@ -44,16 +44,18 @@ say "$count items updated";
 $sth->finish;
 $count=0;
 if (@$deletes and $label ne 'pr') {
+#if (@$deletes) {
+
     my $pholders = join(",", ("?") x @$deletes);
     my $to_deletes = $dbh->selectall_arrayref( "select id, title from $feeds->{$label}->{table_name} where id in ($pholders)",{},@$deletes) or die $dbh->errstr;
     say "The following items will be deleted:";
     foreach my $line (@$to_deletes) {
 	say join("|", @$line);
     }
-}
+
 
 $sth = $dbh->prepare( $feeds->{$label}->{delete_sql}) or die $dbh->errstr;
-#say "deletes: ",scalar @$deletes;
+say "deletes: ",join(' ', @$deletes);
 
 foreach my $id (@$deletes) {
     $sth->execute( $id );
@@ -61,47 +63,44 @@ foreach my $id (@$deletes) {
     $count++;
 }
 say "$count items deleted";
-
-
-
-
-sub get_reddit_items{
-    my ( $items ) = @_;
-    my @inputs;
-    my $count = 0;
-    my %seen;
-    my @updates;
-    my @deletes;
-    my $reddit = get_reddit();
-    foreach my $item (@$items) {
-	push @{$inputs[int($count/75)]}, $item;
-	$seen{$item} = 0;
-	$count++;
-    }
-    foreach my $list (@inputs) {
-	#	say scalar @{$list};
-	my $posts = $reddit->get_links_by_id(  @{$list} );
-	foreach my $post (@$posts) {
-
-	    push @updates, [ $post->{title},
-			     $post->{score},
-			     $post->{num_comments},
-			     $post->{id}
-			   ];
-	    $seen{$post->{id}}++;
-	}
-	    foreach my $id (sort keys %seen) {
-		push @$deletes, $id if $seen{$id}>0;
-
-	    }
-    }
-    return ( \@updates, \@deletes );
 }
+# sub get_reddit_items{
+#     my ( $items ) = @_;
+#     my @inputs;
+#     my $count = 0;
+#     my %seen;
+#     my @updates;
+#     my @deletes;
+#     my $reddit = get_reddit();
+#     foreach my $item (@$items) {
+# 	push @{$inputs[int($count/75)]}, $item;
+# 	$seen{$item} = 0;
+# 	$count++;
+#     }
+#     foreach my $list (@inputs) {
+# 	#	say scalar @{$list};
+# 	my $posts = $reddit->get_links_by_id(  @{$list} );
+# 	foreach my $post (@$posts) {
+
+# 	    push @updates, [ $post->{title},
+# 			     $post->{score},
+# 			     $post->{num_comments},
+# 			     $post->{id}
+# 			   ];
+# 	    $seen{$post->{id}}++;
+# 	}
+# 	    foreach my $id (sort keys %seen) {
+# 		push @$deletes, $id if $seen{$id}==0;
+
+# 	    }
+#     }
+#     return ( \@updates, \@deletes );
+# }
 
 
 
 sub get_web_items {
-    my ( $items ) =@_;
+    my ( $label,$items ) =@_;
     my %not_seen;
     my @updates;
     my $ua = get_ua();
