@@ -27,7 +27,7 @@
       [% SET score = entry.score -%]
       [% SET comments = entry.comments -%]
       [% SET hotness = entry.hotness -%]
-
+      [% SET ratio = entry.ratio -%]
       <p>
       [% IF entry.first == 1 -%]
       <span class="[% entry.tag %]">
@@ -43,7 +43,11 @@
       submitted by <a href="[% submitter_href %]">[% submitter %]</a>.</span>
       [% END -%]
       <span class="tooltip" title="Score | Comments | &lt;Ratio C/S&gt;"><code>
-      S:[% score %]&nbsp;C:[% comments %][% IF entry.ratio %]&nbsp;R:[% entry.ratio %][% END -%]
+      S:[% score %]&nbsp;C:[% comments %]
+      	   [% IF entry.ratio %]
+	      &nbsp;R:[% ratio %]
+	      [% IF ratio > 1.0 %] controversial [% END -%]
+	   [% END -%]
       </code></span>
       
       [% IF hotness == 'hot' -%]

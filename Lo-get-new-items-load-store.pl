@@ -10,7 +10,7 @@ sub dump_entry {
     print "\n";
     say join(' ',@{$entry}[0, 4, 1,6,7]);
     say $entry->[3];
-    say $entry->[2];
+    say $entry->[2], ' | https://lobste.rs/s/',$entry->[0];
 say '-' x 75;
 }
 

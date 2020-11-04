@@ -15,7 +15,7 @@ GetOptions( 'update_score' => \$update_score );
 
 ### Definitions and constants
 my $debug              = 0;
-my $page_title         = 'HN&amp;&amp;LO';
+my $page_title         = 'HN&amp;&amp;LO - show links shared between lobste.rs, Hacker News, and Proggit';
 my $no_of_days_to_show = 3;
 my $ratio_limit        = 9;
 
