@@ -57,6 +57,10 @@ color: #333; */
     font-family: "Noto Sans", sans-serif;
     font-size: 11pt;
 }
+.score_comments {
+    font-family: sans-serif;
+    font-size: 10pt;
+}
 h2.link a {
 /*    color:#999; */
  	color: #444;  
