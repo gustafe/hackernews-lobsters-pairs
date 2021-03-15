@@ -68,12 +68,14 @@ foreach my $pair (@pairs) {
 
 #        my $item  = $pair->{entries}->{$ts};
         my $ratio = undef;
-        if ( $item->{score} > 0
-            and ( $item->{score} + $item->{comments} > $ratio_limit ) )
+        if ( $item->{score} != 0
+            and ( abs($item->{score}) + $item->{comments} > $ratio_limit ) )
         {
-            $ratio = sprintf( '%.02f', $item->{comments} / $item->{score} );
-
-        }
+            $ratio = sprintf( '%.02f', $item->{comments} / abs($item->{score}) );
+	    
+        } elsif ($item->{score}==0 and $item->{comments} > $ratio_limit) {
+	    $ratio = 100
+	}
         $item->{ratio} = $ratio if defined $ratio;
 
     }

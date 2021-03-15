@@ -40,15 +40,13 @@
       Then appeared on <strong>[% site %]</strong>
       <span class="tooltip" title="[% timestamp %]">[% entry.then %]</span> later
       as <a href="[% title_href %]">[% title %]</a>,
-      submitted by <a href="[% submitter_href %]">[% submitter %]</a>.</span>
+      submitted by <a href="[% submitter_href %]">[% submitter %]</a>.</span>	   
       [% END -%]
-      <span class="tooltip" title="Score | Comments | &lt;Ratio C/S&gt;"><code>
-      S:[% score %]&nbsp;C:[% comments %]
-      	   [% IF entry.ratio %]
-	      &nbsp;R:[% ratio %]
-	      [% IF ratio > 1.0 %] controversial [% END -%]
+      <span class="score_comments">Score&nbsp;[% score %], comments&nbsp;[% comments %]  
+      	   [% IF entry.ratio AND entry.ratio > 1.25 %]
+	       <span style="color:red">controversial</span></span>
 	   [% END -%]
-      </code></span>
+      
       
       [% IF hotness == 'hot' -%]
       &nbsp;<span class="tooltip" title="HOT: this entry's sum of score and comments is in the top 15% percentile">&#x1F525;</span>

@@ -8,9 +8,8 @@
 in the last [% meta.no_of_days_to_show %]</strong> days.<p>
 
 <p>Each entry contains links to the submission on each site, and the
-submission's <strong>S</strong>core, number of <strong>C</strong>omments, and
-the <strong>R</strong>atio of comments to score (if the sum of scores and
-comments is greater than [% meta.ratio_limit %]).</p>
+submission's Score and number of Comments. If the ratio of comments to score exceeds 1.25, the topic is deemed to be controversial. 
+ 
 
 <p>This page was generated <span id="generated" 
 timestamp="[% meta.generate_time %]" 
