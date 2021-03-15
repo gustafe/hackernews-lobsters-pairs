@@ -3,11 +3,14 @@ use Modern::Perl '2015';
 ###
 
 use HNLOlib qw/$feeds get_ua get_dbh get_reddit get_reddit_items/;
+use DateTime;
 use Getopt::Long;
 use JSON;
 use Term::ProgressBar 2.00;
 sub usage {
-    say "usage: $0 --label={hn,lo,pr} --days=N";
+    my ( $msg ) = @_;
+    say $msg if $msg;
+    say "usage: $0 --label={hn,lo,pr} --days=N | --month=YYYYMM";
     exit 1;
 
 }
@@ -19,16 +22,53 @@ my $get_items = {pr => \&get_reddit_items,
 		};
 my $no_of_days;
 my $label;
+my $ym;
 GetOptions('label=s'=>\$label,
-	   'days=i'=> \$no_of_days);
+	   'days=i'=> \$no_of_days,
+	  'month=i' => \$ym);
 
-usage unless defined $no_of_days;
-usage unless exists $feeds->{$label};
-usage unless exists $get_items->{$label};
+usage unless ( defined $no_of_days or defined $ym );
+if (defined $ym) {
+    usage("Not a valid YYYYMM") unless $ym =~ m/\d{6}/;
+}
+#usage("Not a valid YYYYMM") if (defined $ym and $ym !~ m/\d{6}/);
 
+usage("$label does not exist") unless exists $feeds->{$label};
+usage("$label does not exist") unless exists $get_items->{$label};
+
+my $sql;
+if ($no_of_days ) {
+    $sql = "select id from $feeds->{$label}->{table_name} where created_time >= datetime('now', '-$no_of_days day') order by created_time desc";
+} elsif ($ym) {
+    my ( $year, $month ) = $ym =~ m/(\d{4})(\d{2})/;
+    usage("invalid month: $month") unless ( $month >=1 and $month <= 12);
+    usage("no data earlier than 2019") if $year < 2019;
+    my $from_dt = DateTime->new(
+    year   => $year,
+    month  => $month,
+    day    => 1,
+    hour   => 0,
+    minute => 0,
+    second => 0
+			       );
+    my $to_dt = DateTime->last_day_of_month(
+    year   => $year,
+    month  => $month,
+    hour   => 23,
+    minute => 59,
+    second => 59
+
+					   );
+    # select * from lobsters where  datetime(created_time) between datetime('2019-07-05T15:28:35') and datetime('2019-07-30T23:59:59')
+    $sql = "select id from $feeds->{$label}->{table_name} where datetime(created_time) between '". $from_dt->iso8601() . "' and '".$to_dt->iso8601() ."'";
+    printf("==> updating items from  %s between %s and %s\n",
+       $label, map { $_->strftime('%Y-%m-%d %H:%M:%S') } ( $from_dt, $to_dt ));
+    say "==> $sql";
+}
+#exit 0;
 my $dbh=get_dbh;
-my $ids = [map {$_->[0]} @{$dbh->selectall_arrayref( "select id from $feeds->{$label}->{table_name} where created_time >= datetime('now', '-$no_of_days day') order by created_time desc")}] or die $dbh->errstr;
-
+my $ids = [map {$_->[0]} @{$dbh->selectall_arrayref( $sql )}] or die $dbh->errstr;
+say "==> no. of items: ", scalar @$ids;
 
 #exit 0 unless $label eq 'pr';
 
