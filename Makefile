@@ -1,5 +1,6 @@
 HOME=/home/gustaf
 BIN=$(HOME)/prj/HN-Lobsters-Tracker
+TEMPLATES=$(BIN)/templates
 WWW=$(HOME)/public_html/hnlo
 MD=$(HOME)/bin/Markdown_1.0.1/Markdown.pl
 .PHONY: build
@@ -18,12 +19,12 @@ refresh:
 scores:
 	perl -I $(BIN) $(BIN)/generate-hourly.pl --update_score 
 
-about.html: about.header common.tt footer.tt changelog.md todo.md hnlo.css
+about.html: $(TEMPLATES)/common.tt $(TEMPLATES)/footer.tt $(TEMPLATES)/changelog.md $(TEMPLATES)/todo.md hnlo.css
 	perl -I $(BIN) $(BIN)/generate-docs.pl
 	cp hnlo.css $(HOME)/public_html/stylesheets/hnlo.css
 
-archives.html: archives.header archives.md common.tt footer.tt
+archives.html: archives.header archives.md $(TEMPLATES)/common.tt archives.footer
 	cat archives.header > $(WWW)/archives.html
-	cat common.tt >> $(WWW)/archives.html
+	cat $(TEMPLATES)/common.tt >> $(WWW)/archives.html
 	cat archives.md | $(MD) >> $(WWW)/archives.html
 	cat archives.footer >> $(WWW)/archives.html

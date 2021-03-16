@@ -5,10 +5,11 @@ use Modern::Perl '2015';
 use Getopt::Long;
 
 use Template;
-
+use FindBin qw/$Bin/;
 use HNLtracker qw/get_dbh get_all_pairs $feeds update_scores $sql/;
-
+use utf8;
 use open qw/ :std :encoding(utf8) /;
+binmode(STDOUT, ":utf8");
 
 my $update_score;
 GetOptions( 'update_score' => \$update_score );
@@ -81,7 +82,7 @@ my %data = (
 
 );
 my $tt =
-  Template->new( { INCLUDE_PATH => '/home/gustaf/prj/HN-Lobsters-Tracker' } );
+  Template->new( { INCLUDE_PATH => "$Bin/templates", ENCODING=>'UTF-8' } );
 
 $tt->process(
     'page.tt', \%data,
