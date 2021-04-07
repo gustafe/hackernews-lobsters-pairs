@@ -5,7 +5,7 @@ color: #444;
 background: #EEEEEE;
 }
 
-h1, h2, h3, h4 , h5, h6 {
+h1, h2, h3, h4 , h5, h6, th {
         font-family: helvetica, arial, sans-serif;  
 /*    font-size:1em; */
  	line-height: 1.286;
@@ -13,9 +13,11 @@ h1, h2, h3, h4 , h5, h6 {
 	margin-bottom: 1.286em; */
 }
 table {
+    width: 100%;
     border-collapse: collapse;
 }
-
+tr:nth-child(4n-2) { background: #CCC; }
+tr:nth-child(4n+3) { background: #CCC; }
 td {
     vertical-align: top;
 }
@@ -27,7 +29,10 @@ th,td {
 table, th, td {
 /*     border: 1px solid black; */
 }
-
+th.rank {
+    width: 4%;}
+th.entries {
+    width: 32%;}
 
 .tooltip { 
 	 border-bottom: 1px dotted black;
@@ -39,6 +44,7 @@ table, th, td {
 /*	display: block;  */
 	/*	line-height: 1.45em; 
 color: #333; */
+	
 }
 .tags {
         vertical-align: middle;
@@ -48,6 +54,15 @@ color: #333; */
     font-size: 11pt;
     color: #888;
 }
+.meta {
+    font-weight: normal;
+    font-family: "helvetica neue", arial, sans-serif;
+    font-size: 9pt;
+    color: #888;
+    text-decoration: none;
+}
+
+
 .hn {
  font-family:Verdana, Geneva, sans-serif;
  font-size:10pt; 
@@ -57,6 +72,7 @@ color: #333; */
     font-family: "Noto Sans", sans-serif;
     font-size: 11pt;
 }
+
 .score_comments {
     font-family: sans-serif;
     font-size: 10pt;
@@ -71,9 +87,6 @@ h2.link a {
 h2.link a:hover {
  	text-decoration: underline; 
 }
-/*.date {
-    font-size: 16pt;
-}*/
 
 
 .domain {

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>[% meta.page_title %]</title>
+
+[% INCLUDE common.tt %]
+
+<script src="http://gerikson.com/js/pretty.js"></script>
+
+<script>
+window.onload = function(){
+	var links = document.getElementById("generated");	
+
+		if ( links.getAttribute("timestamp")) {
+			var date = prettyDate(links.getAttribute("timestamp"));
+			if ( date )
+				links.innerHTML = date;
+		}
+};
+</script>
+
+
+</head>
+
+[% labels = {
+lo = 'Lobste.rs'
+hn = 'Hacker News'
+pr = 'Proggit' }
+%]
+
+[% sort_name = {
+s = 'By score'
+c = 'By comments'}
+%]
+<body>
+  
+<h1>[% meta.page_title -%] <span style="color: red;">==> WIP <==</span></h1>
+<h2>Top posts by score</h2>
+<table >
+<th class="rank">#</th>
+[% FOREACH key IN labels.keys.sort %]
+<th class="entries">[% labels.$key %]</th>
+[% END %]
+[% FOREACH row IN by_score.list %]
+<tr>
+<td>[% row.hn.rank %]</td>
+[% FOREACH el IN  row.keys.sort %]
+<td class="[% el %]">
+<a href="[% row.$el.url %]">[% row.$el.title %]</a>
+</td>
+[% END %]
+</tr>
+<tr><td></td>
+[% FOREACH el IN  row.keys.sort %]
+<td class="meta">
+<a href="[% row.$el.title_href %]">[discussion]</a> 
+<span style="float: right;">[% row.$el.timestamp %] S: [% row.$el.score %] C: [% row.$el.comments %]</span>
+</td>
+[% END %] 
+</tr>
+[% END %]
+</table>
+
+<h2>Top posts by comments</h2>
+
+<table >
+<th class="rank">#</th>
+[% FOREACH key IN labels.keys.sort %]
+<th class="entries">[% labels.$key %]</th>
+[% END %]
+[% FOREACH row IN by_comments.list %]
+<tr>
+<td>[% row.hn.rank %]</td>
+[% FOREACH el IN  row.keys.sort %]
+<td class="[% el %]">
+<a href="[% row.$el.url %]">[% row.$el.title %]</a>
+</td>
+[% END %]
+</tr>
+<tr><td></td>
+[% FOREACH el IN  row.keys.sort %]
+<td>
+<a href="[% row.$el.title_href %]">[discussion]</a> 
+<span style="float: right;">[% row.$el.timestamp %] S: [% row.$el.score %] C: [% row.$el.comments %]</span>
+</td>
+[% END %] 
+</tr>
+[% END %]
+</table>
+
+<hr />
+
+[% FOREACH site IN content.keys.sort -%]
+  <h2>[% labels.$site -%]</h2>
+  [% FOREACH sorting IN content.$site.keys.sort.reverse -%]
+  <h3>[% sort_name.$sorting %]</h3>
+  <ol>
+  [% FOREACH entry IN content.$site.$sorting %]
+  <li>[% entry.timestamp %] <a href="[% entry.url %]">[% entry.title %]</a> <a href="[% entry.title_href %]">(discussion)</a> <span style="float: right;">Score [% entry.score %], comments [% entry.comments %]</span></li>
+  [% END %]
+  </ol>
+  [% END %]
+
+  
+  [% END %]
+</body>
