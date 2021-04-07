@@ -19,6 +19,10 @@ refresh:
 scores:
 	perl -I $(BIN) $(BIN)/generate-hourly.pl --update_score 
 
+topscore.html: $(TEMPLATES)/topscore.tt hnlo.css
+	perl -I $(BIN) $(BIN)/top-score_comments.pl
+	cp hnlo.css $(HOME)/public_html/stylesheets/hnlo.css
+
 about.html: $(TEMPLATES)/common.tt $(TEMPLATES)/footer.tt $(TEMPLATES)/changelog.md $(TEMPLATES)/todo.md hnlo.css
 	perl -I $(BIN) $(BIN)/generate-docs.pl
 	cp hnlo.css $(HOME)/public_html/stylesheets/hnlo.css
