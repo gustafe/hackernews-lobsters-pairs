@@ -10,6 +10,7 @@ use JSON;
 use DateTime;
 use URI;
 use Reddit::Client;
+use Carp;
 use open qw/ :std :encoding(utf8) /;
 
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS/;
@@ -114,7 +115,7 @@ cool_level => 0,
 sub get_dbh {
 
     my $dbh = DBI->connect( $dsn, $dbuser, $dbpass, { PrintError => 0 } )
-      or die $DBI::errstr;
+      or croak $DBI::errstr;
     $dbh->{sqlite_unicode} = 1;
     return $dbh;
 }
@@ -390,7 +391,7 @@ sub update_scores {
         if ( defined $lists->{$label}->{delete} ) {
 
             my $sth = $dbh->prepare( $feeds->{$label}->{delete_sql} )
-              or die $dbh->errstr;
+              or croak $dbh->errstr;
             foreach my $id ( @{ $lists->{$label}->{delete} } ) {
 
                 say
@@ -406,10 +407,10 @@ sub update_scores {
 
 
             my $sth = $dbh->prepare( $feeds->{$label}->{update_sql} )
-              or die $dbh->errstr;
+              or croak $dbh->errstr;
             my $count = 0;
             foreach my $item ( @{ $lists->{$label}->{update} } ) {
-                my $rv = $sth->execute( @{$item} ) or warn $sth->errstr;
+                my $rv = $sth->execute( @{$item} ) or carp $sth->errstr;
                 $count++;
             }
             say "$label: $count items updated";
@@ -430,17 +431,17 @@ sub update_from_list {
     my ( $label, $ids ) = @_;
     my ( $updates, $deletes ) = $get_items->{$label}->($label, $ids );
     my $dbh= get_dbh();
-my $sth = $dbh->prepare( $feeds->{$label}->{update_sql}) or die $dbh->errstr;
+my $sth = $dbh->prepare( $feeds->{$label}->{update_sql}) or croak $dbh->errstr;
 my $count = 0;
 foreach my $update (@$updates) {
-    $sth->execute( @$update ) or warn $sth->errstr;
+    $sth->execute( @$update ) or carp $sth->errstr;
     #say join(' ', @$update[3,0,1,2]);
     $count++;
 }
 say "$count items updated";
 $sth->finish;
 $count=0;
-$sth = $dbh->prepare( $feeds->{$label}->{delete_sql}) or die $dbh->errstr;
+$sth = $dbh->prepare( $feeds->{$label}->{delete_sql}) or croak $dbh->errstr;
 #say "deletes: ",scalar @$deletes;
 foreach my $id (@$deletes) {
     $sth->execute( $id );

@@ -3,7 +3,8 @@ use Modern::Perl '2015';
 ###
 use JSON;
 use HNLOlib qw/$feeds get_ua get_dbh/;
-my $debug    = 1;
+use Getopt::Long;
+my $debug    = 0;
 my $template = 'https://lobste.rs/newest/page/';
 sub dump_entry {
     my ($entry) = @_;
@@ -13,19 +14,41 @@ sub dump_entry {
     say $entry->[2], ' | https://lobste.rs/s/',$entry->[0];
 say '-' x 75;
 }
+sub usage {
+    say "usage: $0 [--help] [--from_page=N]";
+    exit 1;
 
+}
+my $from_page;
+my $help = '';
+GetOptions( 'from_page=i'=>\$from_page,'help'=>\$help);
+usage if $help;
 my $entries;
 my $ua = get_ua();
-foreach my $day ( 1 .. 6 ) {
+my @days;
+if ($from_page ) {
+    @days = ( $from_page .. $from_page + 10 );
+} else {
+    @days = ( 1 .. 6 );
+}
+my $load_fail_count  =0 ;
+FETCH:
+foreach my $day ( @days ) {
 
     my $url      = $template . $day . '.json';
     my $response = $ua->get($url);
     if ( !$response->is_success ) {
         warn "could not fetch newest entries day $day: $response->status_line";
+	$load_fail_count++;
+	LAST FETCH if $load_fail_count > 5;
     }
 
     my $list = decode_json( $response->decoded_content );
     push @{$entries}, @{$list};
+    if ($from_page) {
+	say "==> fetched page for $day... sleeping 5s";
+	sleep 5;
+    }
 }
 
 my $dbh = get_dbh;
@@ -68,17 +91,18 @@ foreach my $entry ( @{$entries} ) {
 
 my $sth;
 my $count = 0;
+$dbh->{PrintError} = 1; 
 if (@inserts) {
 
     $sth = $dbh->prepare( $feeds->{lo}->{insert_sql} ) or die $dbh->errstr;
     foreach my $values (@inserts) {
 #        say join( ' ', @{$values} ) if $debug;
-	dump_entry( $values ) if $debug;
+	dump_entry( $values ) unless $from_page;
         $sth->execute( @{$values} ) or warn $sth->errstr;
         $count++;
     }
     $sth->finish();
-    say "$count items inserted" if $debug;
+    say "$count items inserted" ;
 
 }
 
@@ -92,7 +116,7 @@ if (@updates) {
         $sth->execute( @{$values} ) or warn $sth->errstr;
         $count++;
     }
-    say "$count items updated" if $debug;
+    say "$count items updated";
 
     $sth->finish;
 }
