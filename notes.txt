@@ -1,3 +1,8 @@
+# earliest HN
+
+https://news.ycombinator.com/item?id=4000000
+
+
 # SQLite backup
 
 > .backup db20190910.bak
