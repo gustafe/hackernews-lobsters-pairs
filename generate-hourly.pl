@@ -31,7 +31,7 @@ $dbh->{sqlite_unicode} = 1;
 
 my $now   = time();
 # get all pairs from the DB
-my $sth = $dbh->prepare( $sql->{get_pairs} );
+my $sth = $dbh->prepare( $sql->{get_pairs_10d} );
 my %sets = %{ get_all_sets($sth) };
 # coerce into list
 # filter entries older than the retention time

@@ -39,7 +39,7 @@ c = 'By comments'}
 <table >
 <th class="rank">#</th>
 [% FOREACH key IN labels.keys.sort %]
-<th class="entries">[% labels.$key %]</th>
+<th class="entries">[% labels.$key %] ([% dates.$key.min_ts %]&#8211;[% dates.$key.max_ts %])</th>
 [% END %]
 [% FOREACH row IN by_score.list %]
 <tr>
@@ -66,7 +66,7 @@ c = 'By comments'}
 <table >
 <th class="rank">#</th>
 [% FOREACH key IN labels.keys.sort %]
-<th class="entries">[% labels.$key %]</th>
+<th class="entries">[% labels.$key %] ([% dates.$key.min_ts %]&#8211;[% dates.$key.max_ts %])</th>
 [% END %]
 [% FOREACH row IN by_comments.list %]
 <tr>

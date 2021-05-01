@@ -155,7 +155,7 @@ if ( scalar @failed > 0 ) {
 ### update items that are part of sets
 unless ($read_back) {
 
-    $sth = $dbh->prepare( $sql->{get_pairs} );
+    $sth = $dbh->prepare( $sql->{get_pairs_10d} );
     my %sets = %{ HNLOlib::get_all_sets($sth) };
     my @list;
     my $days = 7;

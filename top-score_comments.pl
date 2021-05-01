@@ -37,16 +37,15 @@ for my $label ( 'hn', 'lo', 'pr' ) {
         #say "$statement" . ';';
 
 # . ( $sorting eq 's' ? ' order by score desc ' : ' order by comments desc ' . ' limit 100 ';
-
         my $list = $dbh->selectall_arrayref($statement);
 
        $statement
-           = "select date(min(created_time)), date(max(created_time)) from "
+          = "select date(min(created_time)), date(max(created_time)) from "
            . $feeds->{$label}->{table_name};
        my $dates  = $dbh->selectall_arrayref($statement);
        my $min_ts = $dates->[0]->[0];
        my $max_ts = $dates->[0]->[1];
-
+	$data->{dates}->{$label} = { min_ts=>$min_ts, max_ts=>$max_ts};
         # $statement = "select min(score), max(score) from "
         #     . $feeds->{$label}->{table_name};
         # my $score_range = $dbh->selectall_arrayref($statement);
