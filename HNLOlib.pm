@@ -266,7 +266,9 @@ sub get_all_sets {
             }
             else {
                 push @{ $sets->{$url}->{sequence} },
-                  { then => sec_to_human_time( $diffs[$seq_idx] ), %{$entry} };
+                  { then => sec_to_human_time( $diffs[$seq_idx] ),
+		    then_s => $diffs[$seq_idx],
+		    %{$entry} };
             }
             $seq_idx++;
         }

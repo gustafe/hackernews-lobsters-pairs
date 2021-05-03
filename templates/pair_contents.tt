@@ -38,7 +38,7 @@
       [% ELSE -%]
       <span class="[% entry.tag %]">
       Then appeared on <strong>[% site %]</strong>
-      <span class="tooltip" title="[% timestamp %]">[% entry.then %]</span> later
+      <span class="tooltip" title="[% timestamp %]">[% entry.then %]</span>[% IF entry.then_s / (365*24*3600) > 1  -%] &#x1F9DF; [% END -%] later
       as <a href="[% title_href %]">[% title %]</a>,
       submitted by <a href="[% submitter_href %]">[% submitter %]</a>.</span>	   
       [% END -%]
@@ -57,5 +57,3 @@
 
 
    [% END -%] 
-
-
