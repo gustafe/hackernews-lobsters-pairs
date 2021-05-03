@@ -87,20 +87,7 @@ c = 'By comments'}
 </tr>
 [% END %]
 </table>
-
-<hr />
-
-[% FOREACH site IN content.keys.sort -%]
-  <h2>[% labels.$site -%]</h2>
-  [% FOREACH sorting IN content.$site.keys.sort.reverse -%]
-  <h3>[% sort_name.$sorting %]</h3>
-  <ol>
-  [% FOREACH entry IN content.$site.$sorting %]
-  <li>[% entry.timestamp %] <a href="[% entry.url %]">[% entry.title %]</a> <a href="[% entry.title_href %]">(discussion)</a> <span style="float: right;">Score [% entry.score %], comments [% entry.comments %]</span></li>
-  [% END %]
-  </ol>
-  [% END %]
-
-  
-  [% END %]
+<hr/>
+<p>This page was generated on [% meta.generate_time %].</p>
+[% INCLUDE static_footer.tt %]
 </body>
