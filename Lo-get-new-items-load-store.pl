@@ -3,16 +3,26 @@ use Modern::Perl '2015';
 ###
 use JSON;
 use HNLOlib qw/$feeds get_ua get_dbh/;
+use List::Util qw/sum/;
 use Getopt::Long;
 my $debug    = 0;
 my $template = 'https://lobste.rs/newest/page/';
 sub dump_entry {
     my ($entry) = @_;
-    print "\n";
-    say join(' ',@{$entry}[0, 4, 1,6,7]);
-    say $entry->[3];
-    say $entry->[2], ' | https://lobste.rs/s/',$entry->[0];
-say '-' x 75;
+    my ( $id, $created_at, $url, $title, $author, $comments, $score, $tags ) = @$entry;
+    my $lo_link = 'https://lobste.rs/s/'.$id;
+    my $title_space = 80 - ( 14 + sum (map{length($_)}($author, $score, $comments)));
+    my $url_space = 80 - 8 - sum(map {length($_)} ($lo_link, $tags)) ;
+    
+    if (length($title) > $title_space ) {
+	$title = substr( $title, 0, $title_space-1) . "\x{2026}";
+    }
+    if (length($url) > $url_space) {
+	$url = substr( $url, 0, $url_space-1) . "\x{2026}";
+    }
+    printf("%s %s %-*s [%s %d %d]\n%s %-*s | %s [%s]\n",
+	   "\x{23A1}",$id, $title_space, $title, $author, $score, $comments,
+	   "\x{23A3}",$url_space, $url,$lo_link, $tags);
 }
 sub usage {
     say "usage: $0 [--help] [--from_page=N]";

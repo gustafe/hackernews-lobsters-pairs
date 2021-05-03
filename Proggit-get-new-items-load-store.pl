@@ -3,6 +3,7 @@ use Modern::Perl '2015';
 ###
 
 use HNLOlib qw/get_dbh get_reddit $feeds/ ;
+use List::Util qw/sum/;
 my $debug=0;
 
 
@@ -30,7 +31,18 @@ foreach my $post (@{$posts}) {
 	say "$current_id already seen, pushing to updates" if $debug;
 	push @updates, [$post->{title}, $post->{score},$post->{num_comments}, $current_id];
     } else {
-    say "$current_id $post->{title}" if $debug;
+	say "$current_id $post->{title}" if $debug;
+	my $title = $post->{title} ? $post->{title} : '<NO TITLE>';
+	my $title_space = 80 - ( 8 ) - ( 4 + sum (map{length($post->{$_})} qw/author score num_comments/));
+	if (length($title)>$title_space) {
+	    $title = substr( $title,0,$title_space-1). "\x{2026}";
+	}
+	printf("%s %-*s [%s %d %d]\n",
+	       $post->{id},
+	       $title_space,
+	       $title,
+	       map {$post->{$_}} qw/author score num_comments/
+	      );
     $sth->execute( $current_id,
 		   $post->{created_utc},
 		   $post->{url},
