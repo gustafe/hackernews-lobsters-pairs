@@ -42,5 +42,5 @@ foreach my $sum (sort {$a<=>$b} keys %sums) {
     } else {
 	$append=''
     }
-    say "$sum;$sums{$sum}"
+    say "$sum;$sums{$sum};$append"
 }
