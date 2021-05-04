@@ -64,11 +64,7 @@ where (lo.url is not null and lo.url !='')
 	    or ( strftime('%s','now') - strftime('%s',hn.created_time) < 10 * 24 * 3600 )
 or ( strftime('%s','now') - strftime('%s',pr.created_time) < 10 * 24 * 3600 )
 },
-	    # order by lo.created_time },
 
-#    get_hn_count =>"select count(*) from hackernews where url is not null and created_time between ? and ?",
-#    get_lo_count =>	    "select count(*) from lobsters where url is not null and created_time between ? and ?",
-#	    get_pr_count=> qq{select count(*) from proggit where url is not null and created_time between ? and ?},
 };
 
 our $feeds;
@@ -87,8 +83,8 @@ $feeds->{lo} = {
       "update lobsters set title=?,score=?,comments=?,tags=? where id=?",
     delete_sql     => "delete from lobsters where id=?",
     select_all_sql => "select * from lobsters",
-hot_level => 39,
-cool_level => 3,
+hot_level => 28,
+cool_level => 2,
 
 
 };
@@ -121,7 +117,7 @@ $feeds->{pr} = {
     title_href     => 'https://www.reddit.com/r/programming/comments/',
     submitter_href => 'https://www.reddit.com/user/',
 
-hot_level => 55,
+hot_level => 30,
 cool_level => 0,
 
 };
