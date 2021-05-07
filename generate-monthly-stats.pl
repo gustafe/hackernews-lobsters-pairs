@@ -8,7 +8,7 @@ use Template;
 use FindBin qw/$Bin/;
 use utf8;
 use DateTime::Format::Strptime qw/strftime strptime/;
-use Data::Dumper;
+use Data::Dump qw/dd/;
 use HNLOlib qw/get_dbh get_all_sets $feeds update_scores $sql/;
 use List::Util qw/all/;
 binmode(STDOUT, ":utf8");
@@ -17,14 +17,18 @@ sub usage;
 
 my $update_score;
 my $target_month;
+#my $dump_output;
 GetOptions(
     'update_score'   => \$update_score,
-    'target_month=i' => \$target_month
+	   'target_month=i' => \$target_month,
+#	   dump_output=> \$dump_output,
 );
+my ( $year, $month ) =( 1980, 1);
+
 
 usage unless defined $target_month;
 usage unless $target_month =~ m/\d{6}/;
-my ( $year, $month ) = $target_month =~ m/(\d{4})(\d{2})/;
+( $year, $month ) = $target_month =~ m/(\d{4})(\d{2})/;
 usage unless ( $month >= 1 and $month <= 12 );
 
 my $from_dt = DateTime->new(
@@ -55,6 +59,10 @@ my $ratio_limit = 9;
 my $ua;
 
 my $dbh = get_dbh;
+my $tt =
+  Template->new( { INCLUDE_PATH => "$Bin/templates",ENCODING=>'UTF-8' } );
+
+
 $dbh->{sqlite_unicode} = 1;
 
 #### CODE ####
@@ -80,7 +88,7 @@ foreach my $url (
               or $_->{time} >= $epoch_range[1]
         }
         @{ $sets->{$url}->{sequence} }
-      )
+       )
     {
         next;
     }
@@ -94,7 +102,6 @@ foreach my $url (
     push @pairs, $sets->{$url};
 }
 
-# update items if that option is set
 
 
 if ($update_score) {
@@ -125,7 +132,7 @@ foreach my $tag ( keys %{$feeds} ) {
     $stats{total}->{$tag} = $rv->[0];
 
 }
-print Dumper \@pairs if $debug;
+
 
 foreach my $pair (@pairs) {
 
@@ -263,8 +270,6 @@ my %data = (
 	   );
 
 
-my $tt =
-  Template->new( { INCLUDE_PATH => "$Bin/templates",ENCODING=>'UTF-8' } );
 
 $tt->process(
     'monthly.tt', \%data,
