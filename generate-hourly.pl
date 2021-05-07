@@ -18,7 +18,7 @@ GetOptions( 'update_score' => \$update_score );
 
 ### Definitions and constants
 my $debug              = 1;
-my $page_title         = 'HN&amp;&amp;LO';
+my $page_title         = 'HN&amp;&amp;LO recent links';
 my $no_of_days_to_show = 3;
 my $ratio_limit        = 9;
 
