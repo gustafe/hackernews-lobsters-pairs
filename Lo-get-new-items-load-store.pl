@@ -20,9 +20,9 @@ sub dump_entry {
     if (length($url) > $url_space) {
 	$url = substr( $url, 0, $url_space-1) . "\x{2026}";
     }
-    printf("%s %s %-*s [%s %d %d]\n%s %-*s | %s [%s]\n",
-	   "\x{23A1}",$id, $title_space, $title, $author, $score, $comments,
-	   "\x{23A3}",$url_space, $url,$lo_link, $tags);
+    printf("  %s %-*s [%s %d %d]\n  %-*s | %s [%s]\n---\n",
+	   $id, $title_space, $title, $author, $score, $comments,
+	   $url_space, $url,$lo_link, $tags);
 }
 sub usage {
     say "usage: $0 [--help] [--from_page=N]";
@@ -101,9 +101,10 @@ foreach my $entry ( @{$entries} ) {
 
 my $sth;
 my $count = 0;
-$dbh->{PrintError} = 1; 
-if (@inserts) {
+$dbh->{PrintError} = 1;
 
+if (@inserts) {
+    print "\n";
     $sth = $dbh->prepare( $feeds->{lo}->{insert_sql} ) or die $dbh->errstr;
     foreach my $values (@inserts) {
 #        say join( ' ', @{$values} ) if $debug;

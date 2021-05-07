@@ -24,6 +24,7 @@ my $sth = $dbh->prepare( $feeds->{pr}->{insert_sql} )  or die $dbh->errstr;
 my $posts = $reddit->get_links( subreddit=>'programming', limit => undef, view=>'new', );
 my $count = 0;
 my @updates;
+print "\n";
 foreach my $post (@{$posts}) {
     next if $post->{is_self};
     my $current_id = $post->{id};

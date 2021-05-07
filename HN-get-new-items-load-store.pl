@@ -62,6 +62,7 @@ else {
     $list = decode_json( $response->decoded_content );
 }
 my $count = 0;
+print "\n";
 while ( @{$list} ) {
 
     my $id = shift @{$list};
@@ -120,7 +121,7 @@ while ( @{$list} ) {
             $title_space,
             $title,
             map { $item->{$_} ? $item->{$_} : 0 } qw/by score descendants/
-        );
+        ) if sum(map{$item->{$_}?$item->{$_}:0} qw/score descendants/)>=10;
 	
     } else {
 	printf(
