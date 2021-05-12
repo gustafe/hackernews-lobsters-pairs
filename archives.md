@@ -45,3 +45,7 @@
 
 ### [ December 2018](2018-12.html)
 ### [ November 2018](2018-11.html)
+### [  October 2018](2018-10.html)
+### [September 2018](2018-09.html)
+### [   August 2018](2018-08.html)
+### [     July 2018](2018-07.html)

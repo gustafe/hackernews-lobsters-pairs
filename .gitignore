@@ -40,3 +40,6 @@ reddit.ini
 /dgsg
 /dump.txt
 /templates/dump.tt
+/check-proggit-items.pl
+/get-single-proggit-item.pl
+/pr
