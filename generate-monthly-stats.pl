@@ -62,7 +62,6 @@ my $dbh = get_dbh;
 my $tt =
   Template->new( { INCLUDE_PATH => "$Bin/templates",ENCODING=>'UTF-8' } );
 
-
 $dbh->{sqlite_unicode} = 1;
 
 #### CODE ####
@@ -76,6 +75,7 @@ my $sets = get_all_sets($sth);
 # filter entries older than the retention time
 
 my @pairs;
+my ( $min_hn_id, $max_hn_id) = (27_076_741+10_000_000,-1);
 foreach my $url (
     sort { $sets->{$a}->{first_seen} <=> $sets->{$b}->{first_seen} }
     keys %{$sets}
@@ -99,10 +99,27 @@ foreach my $url (
     {
         next;
     }
+    for (@{$sets->{$url}->{sequence}}) {
+	if ($_->{tag} eq 'hn') {
+	    if ($_->{id}>$max_hn_id) { $max_hn_id=$_->{id}	    }
+	    if ($_->{id}<$min_hn_id) { $min_hn_id=$_->{id} }
+	}
+    }
+
     push @pairs, $sets->{$url};
 }
 
-
+$sth=$dbh->prepare($sql->{rank_sql});
+$sth->execute( $min_hn_id, $max_hn_id);
+my $hn_rank = $sth->fetchall_arrayref();
+my %ranks;
+for my $row (@$hn_rank) {
+    if (exists $ranks{$row->[0]}) {
+	$ranks{$row->[0]} = $row->[1] if $row->[1] < $ranks{$row->[0]}
+    } else {
+	$ranks{$row->[0]} = $row->[1]
+    }
+}
 
 if ($update_score) {
     my $list_of_ids;
@@ -118,7 +135,6 @@ if ($update_score) {
     }
 }
 
-
 # gather stats
 
 my %stats;
@@ -132,7 +148,6 @@ foreach my $tag ( keys %{$feeds} ) {
     $stats{total}->{$tag} = $rv->[0];
 
 }
-
 
 foreach my $pair (@pairs) {
 
@@ -151,6 +166,9 @@ foreach my $pair (@pairs) {
 	    $ratio = 100
 	}
         $item->{ratio} = $ratio if defined $ratio;
+	if ($item->{tag} eq 'hn' and $ranks{$item->{id}}) {
+	    $item->{rank} = $ranks{$item->{id}}
+	}
 
         # don't count the item unless it's in the date range
         next
@@ -171,13 +189,9 @@ foreach my $pair (@pairs) {
       unless defined $pair->{sequence}->[0]->{timestamp};
     my $posted_day = ( split( ' ', $pair->{sequence}->[0]->{timestamp} ) )[0];
 
-    #    my ( $year, $month, $day ) = split('-',$posted_day);
-    #    my $strp = DateTime::Format::Strptime->new(pattern=>'%F');
-    #    my $dt = strptime('%F',$posted_day);
     my $display_date =
       strftime( '%A, %d %b %Y', strptime( '%F', $posted_day ) );
 
-    #    say $display_date;
     push @{ $dates{$posted_day}->{pairs} }, $pair;
     $dates{$posted_day}->{display_date} = $display_date;
 
@@ -197,8 +211,6 @@ foreach my $tag ( 'hn', 'lo', 'pr' ) {
         } keys %{ $stats{submitters}->{$tag} }
       )
     {
-        #	  print Dumper $name;
-        #        next if $count > $max_subs;
         push
           @{ $submitters{$tag}->{ $stats{submitters}->{$tag}->{$name}->{count} }
           },
@@ -237,7 +249,7 @@ my $count = 0;
 my $sum = 0;
 my @chains;
 foreach my $chain (sort {
-    
+
     $stats{chains}->{$b} <=> $stats{chains}->{$a} || $a cmp $b }
 		   keys %{$stats{chains}}) {
     if ($count<10 and $stats{chains}->{$chain}>1) {
@@ -268,8 +280,6 @@ my %data = (
     sites => $sites,
 
 	   );
-
-
 
 $tt->process(
     'monthly.tt', \%data,

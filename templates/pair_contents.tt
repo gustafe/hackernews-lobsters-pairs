@@ -53,6 +53,7 @@
       [% ELSIF hotness == 'cool' -%]
       &nbsp;<span class="tooltip" title="COLD: this entry's sum of score and comments is in the bottom 25% percentile">&#x1F4A4;</span>
       [% END -%]
+      [% IF entry.rank AND entry.rank <=30 -%]&nbsp;<span class="tooltip" title="FRONTPAGE: this entry featured on the HN frontpage"> &#x2B50;([% entry.rank -%])</span>[% END -%]
       </p>
 
 

@@ -37,15 +37,33 @@ my %sets = %{ get_all_sets($sth) };
 # filter entries older than the retention time
 my @pairs;
 my $limit_seconds = $no_of_days_to_show * 24 * 3600;
-
+my ( $min_hn_id, $max_hn_id) = (27_076_741+10_000_000,-1);
 foreach my $url (sort {$sets{$b}->{first_seen} <=> $sets{$a}->{first_seen}} keys %sets) {
-    #    next if ( $now - $sets{$url}->{first_seen} > $limit_seconds );
+
     next if all {$now - $_->{time}>$limit_seconds } @{$sets{$url}->{sequence}};
+
     # filter single entries
-    #    next unless @{$sets{$url}->{sequence}}>1;
+
     next unless exists $sets{$url}->{sequence};
+    for (@{$sets{$url}->{sequence}}) {
+	if ($_->{tag} eq 'hn') {
+	    if ($_->{id}>$max_hn_id) { $max_hn_id=$_->{id}	    }
+	    if ($_->{id}<$min_hn_id) { $min_hn_id=$_->{id} }
+	}
+    }
     push @pairs, $sets{$url};
-    
+}
+
+$sth=$dbh->prepare($sql->{rank_sql});
+$sth->execute( $min_hn_id, $max_hn_id);
+my $hn_rank = $sth->fetchall_arrayref();
+my %ranks;
+for my $row (@$hn_rank) {
+    if (exists $ranks{$row->[0]}) {
+	$ranks{$row->[0]} = $row->[1] if $row->[1] < $ranks{$row->[0]}
+    } else {
+	$ranks{$row->[0]} = $row->[1]
+    }
 }
 
 # update items if that option is set
@@ -69,7 +87,6 @@ if ($update_score) {
 foreach my $pair (@pairs) {
     foreach my $item (@{$pair->{sequence}}) {
 
-#        my $item  = $pair->{entries}->{$ts};
         my $ratio = undef;
         if ( $item->{score} != 0
             and ( abs($item->{score}) + $item->{comments} > $ratio_limit ) )
@@ -80,6 +97,9 @@ foreach my $pair (@pairs) {
 	    $ratio = 100
 	}
         $item->{ratio} = $ratio if defined $ratio;
+	if ($item->{tag} eq 'hn' and $ranks{$item->{id}} ) {
+	    $item->{rank} = $ranks{$item->{id}}
+	}
 
     }
 }
@@ -107,37 +127,3 @@ $tt->process(
     '/home/gustaf/public_html/hnlo/index.html',
     { binmode => ':utf8' }
 ) || die $tt->error;
-
-
-### SUBS ###
-
-__END__
-foreach my $pair (@pairs) {
-#next unless ((scalar keys %{$pair->{entries}}) >2 );
-
-    my @times = sort keys %{$pair->{entries}};
-    my @shift = (0, @times);
-    my @diffs = (0, map {$times[$_]-$shift[$_]} (1..$#times));
-
-    my $seq_idx = 0;
-    foreach my $ts (sort keys %{$pair->{entries}}) {
-	my $entry = $pair->{entries}->{$ts};
-	if ($seq_idx == 0) {
-	    push @{$pair->{sequence}}, {first=>1, %{$entry}} ;
-	} else {
-	    push @{$pair->{sequence}}, {then=>HNLOlib::sec_to_human_time($diffs[$seq_idx]), %{$entry}};
-	}
-
-	$seq_idx++;
-    }
-    if (scalar @{$pair->{sequence}} == 2) { # we can use our logos
-	if ($pair->{sequence}->[0]->{tag} eq 'hn' and $pair->{sequence}->[1]->{tag} eq 'lo') {
-	    $pair->{logo} = 'hn_lo.png'
-	} else {
-	    $pair->{logo} = 'lo_hn.png'
-	}
-    } else {
-	$pair->{logo} = 'multi.png'
-    }
-    $pair->{anchor} = join('_', map {$pair->{sequence}->[$_]->{id}} (0,1));
-}

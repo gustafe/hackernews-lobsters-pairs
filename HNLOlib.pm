@@ -64,7 +64,7 @@ where (lo.url is not null and lo.url !='')
 	    or ( strftime('%s','now') - strftime('%s',hn.created_time) < 10 * 24 * 3600 )
 or ( strftime('%s','now') - strftime('%s',pr.created_time) < 10 * 24 * 3600 )
 },
-
+rank_sql=> qq{select id, rank from hn_frontpage where id between ? and ?},
 };
 
 our $feeds;
@@ -101,6 +101,7 @@ $feeds->{hn} = {
 id, created_time, url, title, submitter, score, comments)
 values
 (?, datetime(?,'unixepoch'),?,?,?,?,?)},
+
 hot_level => 10,
 cool_level => 1,
 
