@@ -6,11 +6,14 @@ use Getopt::Long;
 use DateTime;
 use Template;
 use FindBin qw/$Bin/;
+use lib "$FindBin::Bin";
 use utf8;
 use DateTime::Format::Strptime qw/strftime strptime/;
 use Data::Dump qw/dd/;
 use HNLOlib qw/get_dbh get_all_sets $feeds update_scores $sql/;
 use List::Util qw/all/;
+
+
 binmode(STDOUT, ":utf8");
 use open qw/ :std :encoding(utf8) /;
 sub usage;
