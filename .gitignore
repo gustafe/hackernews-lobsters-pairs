@@ -43,3 +43,4 @@ reddit.ini
 /check-proggit-items.pl
 /get-single-proggit-item.pl
 /pr
+*.txt
