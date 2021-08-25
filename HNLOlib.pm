@@ -189,6 +189,11 @@ sub get_all_sets {
             {
                 $data->{$field} = $r->{ $label . '_' . $field };
             }
+	    for my $type(qw/score comments/) {
+		if (! defined $data->{$type} and defined $data->{id}) {
+		    warn "==> $label [". $data->{id}."] does not have defined $type";
+		}
+	    }
 
             if ( $label eq 'lo' ) {
                 $title       = $data->{title};

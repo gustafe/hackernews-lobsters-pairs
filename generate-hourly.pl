@@ -12,7 +12,7 @@ use Data::Dumper;
 use HNLOlib qw/get_dbh get_all_sets $feeds update_scores $sql/;
 use List::Util qw/all/;
 use open qw/ :std :encoding(utf8) /;
-binmode(STDOUT, ":utf8");
+binmode(STDOUT, ":encoding(UTF-8)");
 my $update_score;
 GetOptions( 'update_score' => \$update_score );
 

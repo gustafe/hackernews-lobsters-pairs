@@ -14,7 +14,7 @@ use HNLOlib qw/get_dbh get_all_sets $feeds update_scores $sql/;
 use List::Util qw/all/;
 
 
-binmode(STDOUT, ":utf8");
+binmode(STDOUT, ":encoding(UTF-8)");
 use open qw/ :std :encoding(utf8) /;
 sub usage;
 
