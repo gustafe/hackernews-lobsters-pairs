@@ -54,7 +54,7 @@ c = 'By comments'}
 [% FOREACH el IN  row.keys.sort %]
 <td class="meta">
 <a href="[% row.$el.title_href %]">[discussion]</a> 
-<span style="float: right;">[% row.$el.timestamp %] S: [% row.$el.score %] C: [% row.$el.comments %]</span>
+<span style="float: right;">[% row.$el.timestamp %] | S: [% row.$el.score %] C: [% row.$el.comments %]</span>
 </td>
 [% END %] 
 </tr>
@@ -79,9 +79,9 @@ c = 'By comments'}
 </tr>
 <tr><td></td>
 [% FOREACH el IN  row.keys.sort %]
-<td>
+<td class="meta">
 <a href="[% row.$el.title_href %]">[discussion]</a> 
-<span style="float: right;">[% row.$el.timestamp %] S: [% row.$el.score %] C: [% row.$el.comments %]</span>
+<span style="float: right;">[% row.$el.timestamp %] | S: [% row.$el.score %] C: [% row.$el.comments %]</span>
 </td>
 [% END %] 
 </tr>

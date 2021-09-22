@@ -6,11 +6,15 @@ WWW=$(HOME)/public_html/hnlo
 MD=$(HOME)/bin/Markdown_1.0.1/Markdown.pl
 .PHONY: build
 build:
-	perl -I $(BIN) $(BIN)/Lo-get-new-items-load-store.pl	
+	@date -u +"==> %Y-%m-%d %H:%M:%S%z"
+	perl -I $(BIN) $(BIN)/Lo-get-new-items-load-store.pl
+	@date -u +"==> %Y-%m-%d %H:%M:%S%z"
 	perl -I $(BIN) $(BIN)/HN-get-new-items-load-store.pl
+	@date -u +"==> %Y-%m-%d %H:%M:%S%z"
 	perl -I $(BIN) $(BIN)/Proggit-get-new-items-load-store.pl
+	@date -u +"==> %Y-%m-%d %H:%M:%S%z"
 	perl -I $(BIN) $(BIN)/generate-hourly.pl
-
+	@date -u +"==> %Y-%m-%d %H:%M:%S%z"
 
 .PHONY: refresh
 refresh:	

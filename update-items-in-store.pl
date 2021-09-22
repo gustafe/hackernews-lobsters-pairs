@@ -123,7 +123,7 @@ sub get_web_items {
 #	say "fetching $id" if $debug;
 	my $href = $feeds->{$label}->{api_item_href} . $id . '.json';
 	my $r = $ua->get( $href );
-	if (!$r->is_success() or $r->header('Content-Type') !~ m{application/json}) {
+	if (!$r->is_success() ) {
 	    $not_seen{$id}++;
 	    $progress->message("no response for $id");
 	    next;

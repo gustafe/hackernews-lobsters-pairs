@@ -341,14 +341,14 @@ sub get_item_from_source {
     my $href = $feeds->{$label}->{api_item_href} . $id . '.json';
     my $r    = $ua->get($href);
 
-    return undef unless $r->is_success();
-    return undef unless $r->header('Content-Type') =~ m{application/json};
+    return unless $r->is_success();
+    return  unless $r->header('Content-Type') =~ m{application/json};
     my $content = $r->decoded_content();
     my $json    = decode_json($content);
 
     # special case for HN, if link is flagged "dead" after it's been
     # included in the DB
-    return undef if ( $label eq 'hn' and defined( $json->{dead} ) );
+    return if ( $label eq 'hn' and defined( $json->{dead} ) );
 
     # returns stuff common to both sources
     my $hashref = {
@@ -502,7 +502,8 @@ sub get_web_items {
 	push @binds, $id;
 	push @updates, \@binds;
     }
-    my @deletes = keys %not_seen if scalar keys %not_seen > 0;
+    my @deletes;
+    @deletes = keys %not_seen if scalar keys %not_seen > 0;
     return ( \@updates, \@deletes );
 
 }
