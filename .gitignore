@@ -44,3 +44,7 @@ reddit.ini
 /get-single-proggit-item.pl
 /pr
 *.txt
+N-gate/*
+/cldyuo.json
+/cldyuo.json.1
+/test-lo-fetch.pl
