@@ -8,6 +8,9 @@ use Data::Dumper;
 use Getopt::Long;
 use open IO => ':utf8';
 use List::Util qw/sum/;
+use Template;
+use FindBin qw/$Bin/;
+use utf8;
 
 #binmode STDOUT, ':utf8';
 # read from list
@@ -81,22 +84,22 @@ while ( @{$list} ) {
     }
     my $payload = $res->decoded_content;
     if ( $payload eq 'null' ) {
-        say "++> $id has null content" unless $read_back;
+        #say "++> $id has null content" unless $read_back;
         next;
     }
     my $item = decode_json($payload);
 
     # skip items without URLs
     if ( !defined $item->{url} ) {
-        say "~~> $id has no URL, skipping" unless $read_back;
+        #say "~~> $id has no URL, skipping" unless $read_back;
         next;
     }
     if ( defined $item->{dead} ) {
-        say "**> $id flagged 'dead', skipping" unless $read_back;
+        #say "**> $id flagged 'dead', skipping" unless $read_back;
         next;
     }
     if ( defined $item->{deleted} ) {
-        say "__> $id flagged 'deleted', skipping" unless $read_back;
+        #say "__> $id flagged 'deleted', skipping" unless $read_back;
         next;
     }
 
@@ -124,13 +127,15 @@ while ( @{$list} ) {
         ) if sum(map{$item->{$_}?$item->{$_}:0} qw/score descendants/)>=10;
 	
     } else {
-	printf(
-            "%d %-*s [%s %d %d]\n",
-	    $item->{id},
-            $title_space,
-            $title,
-            map { $item->{$_} ? $item->{$_} : 0 } qw/by score descendants/
-        );
+	# printf(
+        #     "%d %-*s [%s %d %d]\n",
+	#     $item->{id},
+        #     $title_space,
+        #     $title,
+        #     map { $item->{$_} ? $item->{$_} : 0 } qw/by score descendants/
+        # );
+	my $hn_link = 'https://news.ycombinator.com/item?id='.$item->{id};
+	#	printf("* [%d](%s) [%s](%s) %s %d %d\n",	      $item->{id}, $hn_link,$title,map{$item->{$_}} qw/url by score descendants/);
     }
 
     push @items,
@@ -145,34 +150,38 @@ foreach my $item (@items) {
     $sth->execute( @{$item} ) or warn $sth->errstr;
 }
 $sth->finish();
-say "\nNew HN items added: $count\n";
+#say "\nNew HN items added: $count\n";
 if ( scalar @failed > 0 ) {
     say "### ITEMS NOT FOUND ###";
     foreach my $id (@failed) {
         say $id;
     }
 }
+my %data = (entries=>\@items);
+my $tt = Template->new( {INCLUDE_PATH=>"$Bin/templates",ENCODING=>'UTF-8'} );
+$tt->process( 'HN-log.tt', \%data) || die $tt->error;
+
 
 ### update items that are part of sets
 unless ($read_back) {
 
-    $sth = $dbh->prepare( $sql->{get_pairs_10d} );
-    my %sets = %{ HNLOlib::get_all_sets($sth) };
-    my @list;
-    my $days = 7;
-    my $now  = time();
-    foreach my $url ( keys %sets ) {
-        foreach my $ts ( keys %{ $sets{$url}->{entries} } ) {
-            my $entries = $sets{$url}->{entries}->{$ts};
-            if (    $entries->{tag} eq 'hn'
-                and $entries->{time} >= ( $now - $days * 24 * 3600 ) )
-            {
-                push @list, $entries->{id};
-            }
-        }
-    }
-    say "items in store in the last $days days: ", scalar @list;
-    HNLOlib::update_from_list( 'hn', \@list );
+    # $sth = $dbh->prepare( $sql->{get_pairs_10d} );
+    # my %sets = %{ HNLOlib::get_all_sets($sth) };
+    # my @list;
+    # my $days = 7;
+    # my $now  = time();
+    # foreach my $url ( keys %sets ) {
+    #     foreach my $ts ( keys %{ $sets{$url}->{entries} } ) {
+    #         my $entries = $sets{$url}->{entries}->{$ts};
+    #         if (    $entries->{tag} eq 'hn'
+    #             and $entries->{time} >= ( $now - $days * 24 * 3600 ) )
+    #         {
+    #             push @list, $entries->{id};
+    #         }
+    #     }
+    # }
+    # say "items in store in the last $days days: ", scalar @list;
+    # HNLOlib::update_from_list( 'hn', \@list );
 
 ## grab the current front page
     $response = $ua->get($topview_url);
@@ -186,7 +195,7 @@ unless ($read_back) {
         ) or die $dbh->errstr;
     my $rank = 1;
     foreach my $id (@$top_ids) {
-        next if $rank > 60;    # only first 2 pages
+        next if $rank > 30;    # only first  page
         $sth->execute( $id, $rank ) or warn $sth->errstr;
         $rank++;
     }

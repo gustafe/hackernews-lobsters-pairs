@@ -4,6 +4,10 @@ use Modern::Perl '2015';
 
 use HNLOlib qw/get_dbh get_reddit $feeds/ ;
 use List::Util qw/sum/;
+use Template;
+use FindBin qw/$Bin/;
+use utf8;
+
 my $debug=0;
 
 
@@ -24,6 +28,7 @@ my $sth = $dbh->prepare( $feeds->{pr}->{insert_sql} )  or die $dbh->errstr;
 my $posts = $reddit->get_links( subreddit=>'programming', limit => undef, view=>'new', );
 my $count = 0;
 my @updates;
+my @entries;
 print "\n";
 foreach my $post (@{$posts}) {
     next if $post->{is_self};
@@ -38,25 +43,35 @@ foreach my $post (@{$posts}) {
 	if (length($title)>$title_space) {
 	    $title = substr( $title,0,$title_space-1). "\x{2026}";
 	}
-	printf("%s %-*s [%s %d %d]\n",
-	       $post->{id},
-	       $title_space,
-	       $title,
-	       map {$post->{$_}} qw/author score num_comments/
-	      );
-    $sth->execute( $current_id,
+	# printf("%s %-*s [%s %d %d]\n",
+	#        $post->{id},
+	#        $title_space,
+	#        $title,
+	#        map {$post->{$_}} qw/author score num_comments/
+	#       );
+	my $pr_link = 'https://www.reddit.com/r/programming/comments/'.$post->{id};
+#	printf("* [%s](%s) [%s](%s) %s %d %d\n",	      $post->{id}, $pr_link,map{$post->{$_}} qw/title url author score num_comments/);
+
+	$sth->execute( $current_id,
 		   $post->{created_utc},
 		   $post->{url},
 		   $post->{title},
 		   $post->{author},
 		   $post->{score},
 		   $post->{num_comments} ) or warn $sth->errstr;
-    $count++;
+	$count++;
+	push @entries, $post;
 	
     }
 }
+if (@entries) {
+    my %data = (entries => \@entries);
+    my $tt = Template->new( {INCLUDE_PATH=>"$Bin/templates",ENCODING=>'UTF-8'} );
+    $tt->process( 'Proggit-log.tt', \%data) || die $tt->error;
 
-say "\nNew Proggit items added: $count\n";
+}
+
+#say "\nNew Proggit items added: $count\n";
 $sth->finish();
 # update
 $count = 0;
@@ -67,6 +82,6 @@ foreach my $item (@updates) {
 	     
     
 }
-say "$count items updated\n";
+#say "$count items updated\n";
 $dbh->disconnect();
 

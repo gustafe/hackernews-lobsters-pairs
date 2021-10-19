@@ -17,7 +17,7 @@ my $update_score;
 GetOptions( 'update_score' => \$update_score );
 
 ### Definitions and constants
-my $debug              = 1;
+my $debug              = 0;
 my $page_title         = 'HN&amp;&amp;LO recent links';
 my $no_of_days_to_show = 3;
 my $ratio_limit        = 9;
@@ -28,11 +28,12 @@ my $dbh = get_dbh;
 $dbh->{sqlite_unicode} = 1;
 
 #### CODE ####
-
-my $now   = time();
+my $now=time();
+say gmtime . " starting, fetching 10d data... " if $debug;
 # get all pairs from the DB
 my $sth = $dbh->prepare( $sql->{get_pairs_10d} );
 my %sets = %{ get_all_sets($sth) };
+say gmtime . " got all sets... " if $debug;
 # coerce into list
 # filter entries older than the retention time
 my @pairs;
@@ -53,7 +54,7 @@ foreach my $url (sort {$sets{$b}->{first_seen} <=> $sets{$a}->{first_seen}} keys
     }
     push @pairs, $sets{$url};
 }
-
+say gmtime . " got all pairs... " if $debug;
 $sth=$dbh->prepare($sql->{rank_sql});
 $sth->execute( $min_hn_id, $max_hn_id);
 my $hn_rank = $sth->fetchall_arrayref();
@@ -103,9 +104,9 @@ foreach my $pair (@pairs) {
 
     }
 }
-
+say gmtime . " got all scores... " if $debug;
 # clean up data for presentation
-
+$now= time();
 # generate the page from the data
 my $dt_now =
   DateTime->from_epoch( epoch => $now, time_zone => 'Europe/Stockholm' );
@@ -127,3 +128,4 @@ $tt->process(
     '/home/gustaf/public_html/hnlo/index.html',
     { binmode => ':utf8' }
 ) || die $tt->error;
+say gmtime . " generated page, done. " if $debug;

@@ -85,6 +85,7 @@ $feeds->{lo} = {
     select_all_sql => "select * from lobsters",
 hot_level => 28,
 cool_level => 2,
+bin_prefix=>'Lo',
 
 
 };
@@ -104,7 +105,7 @@ values
 
 hot_level => 10,
 cool_level => 1,
-
+bin_prefix=>'HN',
 };
 $feeds->{pr} = {
     comments   => 'num_comments',
@@ -120,7 +121,7 @@ $feeds->{pr} = {
 
 hot_level => 30,
 cool_level => 0,
-
+bin_prefix=>'Proggit',
 };
 
 sub get_dbh {

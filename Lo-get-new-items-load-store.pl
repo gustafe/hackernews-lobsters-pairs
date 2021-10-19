@@ -1,12 +1,26 @@
 #! /usr/bin/env perl
 use Modern::Perl '2015';
 ###
+use Template;
+use FindBin qw/$Bin/;
+use utf8;
+
+
 use JSON;
 use HNLOlib qw/$feeds get_ua get_dbh/;
 use List::Util qw/sum/;
 use Getopt::Long;
+binmode(STDOUT, ":encoding(UTF-8)");
 my $debug    = 0;
 my $template = 'https://lobste.rs/newest/page/';
+
+sub md_entry {
+    my ($entry) = @_;
+    my ( $id, $created_at, $url, $title, $author, $comments, $score, $tags ) = @$entry;
+    my $lo_link = 'https://lobste.rs/s/'.$id;
+    say "* [$id]($lo_link) [$title]($url) $author [$tags] $score $comments";
+}
+
 sub dump_entry {
     my ($entry) = @_;
     my ( $id, $created_at, $url, $title, $author, $comments, $score, $tags ) = @$entry;
@@ -20,9 +34,7 @@ sub dump_entry {
     if (length($url) > $url_space) {
 	$url = substr( $url, 0, $url_space-1) . "\x{2026}";
     }
-    printf("  %s %-*s [%s %d %d]\n  %-*s | %s [%s]\n---\n",
-	   $id, $title_space, $title, $author, $score, $comments,
-	   $url_space, $url,$lo_link, $tags);
+#    printf("  %s %-*s [%s %d %d]\n  %-*s | %s [%s]\n---\n",	   $id, $title_space, $title, $author, $score, $comments,	   $url_space, $url,$lo_link, $tags);
 }
 sub usage {
     say "usage: $0 [--help] [--from_page=N]";
@@ -108,13 +120,16 @@ if (@inserts) {
     $sth = $dbh->prepare( $feeds->{lo}->{insert_sql} ) or die $dbh->errstr;
     foreach my $values (@inserts) {
 #        say join( ' ', @{$values} ) if $debug;
-	dump_entry( $values ) unless $from_page;
+	#	dump_entry( $values ) unless $from_page;
+#	md_entry( $values ) unless $from_page;
         $sth->execute( @{$values} ) or warn $sth->errstr;
         $count++;
     }
     $sth->finish();
-    say "$count items inserted" ;
-
+#    say "$count items inserted" ;
+    my %data = (count=>$count, entries=>\@inserts);
+    my $tt = Template->new( {INCLUDE_PATH=>"$Bin/templates",ENCODING=>'UTF-8'} );
+    $tt->process( 'Lo-log.tt', \%data) || die $tt->error;
 }
 
 if (@updates) {
@@ -127,7 +142,7 @@ if (@updates) {
         $sth->execute( @{$values} ) or warn $sth->errstr;
         $count++;
     }
-    say "$count items updated";
+ #   say "$count items updated";
 
     $sth->finish;
 }
