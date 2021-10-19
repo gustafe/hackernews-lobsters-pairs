@@ -1,0 +1,7 @@
+<h3>Lobste.rs</h3>
+<ol>
+[% FOREACH entry IN entries -%]
+<li><a href="https://lobste.rs/s/[% entry.0 -%]">[% entry.0 -%]</a> <a href="[% entry.2 -%]">[% entry.3 -%]</a>, submitted by [% entry.4 -%]. Tags: [% entry.7 -%]. Score: [% entry.6 -%], comments: [% entry.5 -%]
+</li>
+[% END %]
+</ol>

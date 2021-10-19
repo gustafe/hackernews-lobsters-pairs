@@ -48,3 +48,5 @@ N-gate/*
 /cldyuo.json
 /cldyuo.json.1
 /test-lo-fetch.pl
+Logs/
+/out.md

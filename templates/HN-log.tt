@@ -1,0 +1,6 @@
+<h3>Hacker News</h3>
+<ol>
+[% FOREACH entry IN entries -%]
+<li><a href="https://news.ycombinator.com/item?id=[% entry.0 -%]">[% entry.0 -%]</a> <a href="[% entry.2 -%]">[% entry.3 %]</a> submitted by [% entry.4 -%]. Score: [% entry.5 -%], comments: [% entry.6 -%].</li>
+[% END %]
+</ol>

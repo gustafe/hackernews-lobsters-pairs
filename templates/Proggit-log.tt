@@ -1,0 +1,6 @@
+<h3>/r/programming</h3>
+<ol>
+[% FOREACH entry IN entries -%]
+<li><a href="https://www.reddit.com/r/programming/comments/[% entry.id -%]">[% entry.id -%]</a> <a href="[% entry.url -%]">[% entry.title %]</a> submitted by [% entry.author -%]. Score: [% entry.score -%], comments: [% entry.num_comments -%].</li>
+[% END %]
+</ol>

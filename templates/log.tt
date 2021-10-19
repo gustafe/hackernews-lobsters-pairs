@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>log</title>
+    </head>
+  <body>
+    [% FOREACH entry IN entries -%]
+    <h2>[% entry.title -%]</h2>
+    [% entry.text -%]
+    [% END %]
+    </body>
+  </html>
