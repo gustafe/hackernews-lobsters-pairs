@@ -1,7 +1,6 @@
 <h3>Lobste.rs</h3>
 <ol>
 [% FOREACH entry IN entries -%]
-<li><a href="https://lobste.rs/s/[% entry.0 -%]">[% entry.0 -%]</a> <a href="[% entry.2 -%]">[% entry.3 -%]</a>, submitted by [% entry.4 -%]. Tags: [% entry.7 -%]. Score: [% entry.6 -%], comments: [% entry.5 -%]
-</li>
+<li class="split-line"><a href="https://lobste.rs/s/[% entry.0 -%]">[% entry.0 -%]</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="[% entry.2 -%]">[% entry.3 -%]</a>&nbsp;&nbsp;&nbsp;&nbsp;([% entry.8 -%])&nbsp;&nbsp;&nbsp;&nbsp;[[% entry.7 -%]]<span><a href="https://lobste.rs/u/[% entry.4 -%]">[% entry.4 -%]</a> S: [% entry.6 -%] C: [% entry.5 -%]</span></li>
 [% END %]
 </ol>

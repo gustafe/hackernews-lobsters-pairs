@@ -15,7 +15,7 @@ my @entries;
 my $count = 0;
 for my $f (sort{$b cmp $a} @files ) {
     next if ( $f eq '.' or $f eq '..' );
-    say $f;
+#    say $f;
     next if $count > 23;
 
     open my $fh, "<:encoding(UTF-8)", "$logdir/$f" or die "can't open $logdir/$f: $!";

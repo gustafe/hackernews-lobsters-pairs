@@ -7,7 +7,8 @@ MD=$(HOME)/bin/Markdown_1.0.1/Markdown.pl
 .PHONY: build
 build:
 	@perl -I $(BIN) $(BIN)/update-daily-and-output-log-files.pl
-	@perl -I $(BIN) $(BIN)/generate-hourly.pl 
+	@perl -I $(BIN) $(BIN)/generate-hourly.pl
+	perl $(BIN)/generate-log-file.pl
 .PHONY: refresh
 refresh:	
 	perl -I $(BIN) $(BIN)/generate-hourly.pl 

@@ -7,8 +7,22 @@ use List::Util qw/sum/;
 use Template;
 use FindBin qw/$Bin/;
 use utf8;
-
+use URI;
 my $debug=0;
+sub extract_host {
+    my ( $in ) = @_;
+    my $uri = URI->new( $in );
+    my $host;
+    eval {
+	$host = $uri->host;
+	1;
+    } or do {
+	my $error = $@;
+	$host= 'www';
+	};
+    $host =~ s/^www\.//;
+    return $host;
+}
 
 
 my $reddit = get_reddit();
@@ -60,11 +74,14 @@ foreach my $post (@{$posts}) {
 		   $post->{score},
 		   $post->{num_comments} ) or warn $sth->errstr;
 	$count++;
-	push @entries, $post;
+	my $entry = { map {$_=> $post->{$_}} keys %$post};
+	my $host = extract_host( $entry->{url} );
+	$entry->{host} = $host;
+	push @entries, $entry;
 	
     }
 }
-if (@entries) {
+if (scalar @entries>0) {
     my %data = (entries => \@entries);
     my $tt = Template->new( {INCLUDE_PATH=>"$Bin/templates",ENCODING=>'UTF-8'} );
     $tt->process( 'Proggit-log.tt', \%data) || die $tt->error;

@@ -5,11 +5,11 @@ use Template;
 use FindBin qw/$Bin/;
 use utf8;
 
-
 use JSON;
 use HNLOlib qw/$feeds get_ua get_dbh/;
 use List::Util qw/sum/;
 use Getopt::Long;
+use URI;
 binmode(STDOUT, ":encoding(UTF-8)");
 my $debug    = 0;
 my $template = 'https://lobste.rs/newest/page/';
@@ -41,6 +41,21 @@ sub usage {
     exit 1;
 
 }
+sub extract_host {
+    my ( $in ) = @_;
+    my $uri = URI->new( $in );
+    my $host;
+    eval {
+	$host = $uri->host;
+	1;
+    } or do {
+	my $error = $@;
+	$host= 'www';
+	};
+    $host =~ s/^www\.//;
+    return $host;
+}
+
 my $from_page;
 my $help = '';
 GetOptions( 'from_page=i'=>\$from_page,'help'=>\$help);
@@ -126,6 +141,11 @@ if (@inserts) {
         $count++;
     }
     $sth->finish();
+    for my $el (@inserts) {
+	my $url = $el->[2];
+	my $host = extract_host( $url );
+	push @$el,$host;
+    }
 #    say "$count items inserted" ;
     my %data = (count=>$count, entries=>\@inserts);
     my $tt = Template->new( {INCLUDE_PATH=>"$Bin/templates",ENCODING=>'UTF-8'} );
