@@ -5,7 +5,7 @@
 
 [% INCLUDE common.tt %]
 
-<script src="http://gerikson.com/js/pretty.js"></script>
+<script src="https://gerikson.com/js/pretty.js"></script>
 
 <script>
 window.onload = function(){
