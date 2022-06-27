@@ -23,5 +23,5 @@ updates hourly.
 [% FOREACH pair=pairs %]
    [% INCLUDE pair_contents.tt %]
 [% END -%]
-
+<p>Time to generate page: [% meta.generation_log -%]</p>
 [% INCLUDE footer.tt %]

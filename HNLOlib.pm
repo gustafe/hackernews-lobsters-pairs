@@ -19,7 +19,7 @@ $VERSION = 1.00;
 @ISA     = qw/Exporter/;
 @EXPORT  = ();
 @EXPORT_OK =
-  qw/get_dbh get_ua get_all_sets get_item_from_source $feeds update_scores $debug $sql $ua get_reddit get_web_items get_reddit_items/;
+  qw/get_dbh get_ua get_all_sets get_item_from_source $feeds update_scores $debug $sql $ua get_reddit get_web_items get_reddit_items sec_to_dhms/;
 %EXPORT_TAGS = ( DEFAULT => [qw/&get_dbh &get_ua/] );
 
 #### DBH
@@ -333,6 +333,22 @@ sub sec_to_human_time {
 
     return $out;
 }
+
+sub sec_to_dhms {
+    my ($sec) = @_;
+    my $days = int( $sec / ( 24 * 60 * 60 ) );
+    my $hours   = ( $sec / ( 60 * 60 ) ) % 24;
+    my $mins    = ( $sec / 60 ) % 60;   
+    my $seconds = $sec % 60;
+
+    my $out;
+    $out = sprintf("%dD", $days) if $days;
+    $out .= sprintf("%02d:", $hours?$hours:0);
+    $out .= sprintf("%02d:",$mins?$mins:0) ;
+    $out .= sprintf("%02d",$seconds?$seconds:0);
+    return $out;
+}
+
 
 sub get_item_from_source {
     my ( $label, $id ) = @_;

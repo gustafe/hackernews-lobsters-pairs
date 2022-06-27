@@ -7,9 +7,9 @@ use Getopt::Long;
 use Template;
 use FindBin qw/$Bin/;
 use utf8;
-
+use Time::HiRes  qw/gettimeofday tv_interval/;
 use Data::Dumper;
-use HNLOlib qw/get_dbh get_all_sets $feeds update_scores $sql/;
+use HNLOlib qw/get_dbh get_all_sets $feeds update_scores $sql sec_to_dhms/;
 use List::Util qw/all/;
 use open qw/ :std :encoding(utf8) /;
 binmode(STDOUT, ":encoding(UTF-8)");
@@ -29,11 +29,14 @@ $dbh->{sqlite_unicode} = 1;
 
 #### CODE ####
 my $now=time();
+my $t0 = [gettimeofday];
+my $generation_log;
 say gmtime . " starting, fetching 10d data... " if $debug;
 # get all pairs from the DB
 my $sth = $dbh->prepare( $sql->{get_pairs_10d} );
 my %sets = %{ get_all_sets($sth) };
 say gmtime . " got all sets... " if $debug;
+$generation_log .= " got all sets after " .sec_to_dhms(tv_interval($t0));
 # coerce into list
 # filter entries older than the retention time
 my @pairs;
@@ -55,6 +58,7 @@ foreach my $url (sort {$sets{$b}->{first_seen} <=> $sets{$a}->{first_seen}} keys
     push @pairs, $sets{$url};
 }
 say gmtime . " got all pairs... " if $debug;
+$generation_log .= " got all pairs after " .sec_to_dhms(tv_interval($t0));
 $sth=$dbh->prepare($sql->{rank_sql});
 $sth->execute( $min_hn_id, $max_hn_id);
 my $hn_rank = $sth->fetchall_arrayref();
@@ -105,18 +109,21 @@ foreach my $pair (@pairs) {
     }
 }
 say gmtime . " got all scores... " if $debug;
+$generation_log .= " got all scores and done after " .sec_to_dhms(tv_interval($t0));
 # clean up data for presentation
 $now= time();
 # generate the page from the data
 my $dt_now =
   DateTime->from_epoch( epoch => $now, time_zone => 'Europe/Stockholm' );
+my $elapsed = sec_to_dhms(tv_interval($t0));
 my %data = (
     pairs => \@pairs,
     meta  => {
         generate_time      => $dt_now->strftime('%Y-%m-%d %H:%M:%S%z'),
         page_title         => $page_title,
         no_of_days_to_show => $no_of_days_to_show,
-        ratio_limit        => $ratio_limit,
+	      ratio_limit        => $ratio_limit,
+	      generation_log => $generation_log,
     },
 
 );

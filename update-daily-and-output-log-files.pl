@@ -33,11 +33,14 @@ my $t0 = [gettimeofday];
 open( my $fh, ">>", "$BIN/Logs/$filename");
 #printf $fh ("<h2>%s  %02dH UTC</h2>\n", $today->ymd(), $today->hour());
 for my $tag (qw/lo hn pr/) {
+
     my $cmd ="perl -I $BIN  $BIN/$feeds->{$tag}->{bin_prefix}".'-get-new-items-load-store.pl';
 #    say $fh "==> getting new items from $feeds->{$tag}->{site}";
     my $output= `$cmd`;
+
     say $fh $output;
-#    say $fh "Elapsed time: ",sec_to_dhms( tv_interval( $t0));
+    say $fh "<!-- elapsed time: ", sec_to_dhms(tv_interval($t0)), " -->";
+    #    say $fh "Elapsed time: ",sec_to_dhms( tv_interval( $t0));
 }
 close $fh;
 #                my @args = ("command", "arg1", "arg2");
