@@ -34,7 +34,6 @@ sub dump_entry {
     if (length($url) > $url_space) {
 	$url = substr( $url, 0, $url_space-1) . "\x{2026}";
     }
-#    printf("  %s %-*s [%s %d %d]\n  %-*s | %s [%s]\n---\n",	   $id, $title_space, $title, $author, $score, $comments,	   $url_space, $url,$lo_link, $tags);
 }
 sub usage {
     say "usage: $0 [--help] [--from_page=N]";
@@ -110,7 +109,7 @@ foreach my $entry ( @{$entries} ) {
           ];
     }
     else {
-#        say "new $current_id, inserting" if $debug;
+
         push @inserts,
           [
             $current_id,
@@ -134,9 +133,6 @@ if (@inserts) {
     print "\n";
     $sth = $dbh->prepare( $feeds->{lo}->{insert_sql} ) or die $dbh->errstr;
     foreach my $values (@inserts) {
-#        say join( ' ', @{$values} ) if $debug;
-	#	dump_entry( $values ) unless $from_page;
-#	md_entry( $values ) unless $from_page;
         $sth->execute( @{$values} ) or warn $sth->errstr;
         $count++;
     }
@@ -146,7 +142,7 @@ if (@inserts) {
 	my $host = extract_host( $url );
 	push @$el,$host;
     }
-#    say "$count items inserted" ;
+
     my %data = (count=>$count, entries=>\@inserts);
     my $tt = Template->new( {INCLUDE_PATH=>"$Bin/templates",ENCODING=>'UTF-8'} );
     $tt->process( 'Lo-log.tt', \%data) || die $tt->error;
@@ -157,12 +153,9 @@ if (@updates) {
     $sth = $dbh->prepare( $feeds->{lo}->{update_sql} ) or die $dbh->errstr;
     foreach my $values (@updates) {
 
-        #	say join(' ', @{$values});
-
         $sth->execute( @{$values} ) or warn $sth->errstr;
         $count++;
     }
- #   say "$count items updated";
 
     $sth->finish;
 }
