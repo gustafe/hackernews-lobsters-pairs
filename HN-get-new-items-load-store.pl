@@ -88,8 +88,7 @@ while ( @{$list} ) {
     if ( !defined($read_back) and $id <= $start_id ) {
         next;
     }
-    my $item_url
-        = 'https://hacker-news.firebaseio.com/v0/item/' . $id . '.json';
+    my $item_url = $feeds->{hn}->{api_item_href} . $id . '.json';
     my $res = $ua->get($item_url);
     if ( !$res->is_success ) {
         warn $res->status_line;
@@ -118,13 +117,12 @@ while ( @{$list} ) {
         next;
     }
 
-
-        # let's make a nice line
-        my $title = $item->{title} ? $item->{title} : '<NO TITLE>';
-        my $title_space = 80 - ($read_back?18:10) - (
-            4 + sum(
-                map { length( $item->{$_} ? $item->{$_} : 0 ) }
-                    qw/by score descendants/
+    # let's make a nice line
+    my $title = $item->{title} ? $item->{title} : '<NO TITLE>';
+    my $title_space = 80 - ($read_back?18:10) - (
+						 4 + sum(
+							 map { length( $item->{$_} ? $item->{$_} : 0 ) }
+							 qw/by score descendants/
             )
         );
         if ( length($title) > $title_space ) {
@@ -142,7 +140,7 @@ while ( @{$list} ) {
         ) if sum(map{$item->{$_}?$item->{$_}:0} qw/score descendants/)>=10;
 	
     } else {
-	my $hn_link = 'https://news.ycombinator.com/item?id='.$item->{id};
+	my $hn_link = $feeds->{hn}->{title_href}.$item->{id};
     }
 
     push @items,
@@ -153,10 +151,14 @@ while ( @{$list} ) {
 
 #add to store
 $sth = $dbh->prepare( $feeds->{hn}->{insert_sql} ) or die $dbh->errstr;
+my $sth_q = $dbh->prepare("insert into hn_queue (id, age, retries) values (?,?,?)") or die $dbh->errstr;
+
 foreach my $item (@items) {
     $sth->execute( @{$item} ) or warn $sth->errstr;
+    $sth_q->execute($item->[0],$item->[1]+3600,0) or warn $sth_q->errstr;
 }
 $sth->finish();
+$sth_q->finish();
 
 if ( scalar @failed > 0 ) {
     say "### ITEMS NOT FOUND ###";
