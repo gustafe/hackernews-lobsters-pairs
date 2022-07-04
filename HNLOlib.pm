@@ -342,10 +342,10 @@ sub sec_to_dhms {
     my $seconds = $sec % 60;
 
     my $out;
-    $out = sprintf("%dD", $days) if $days;
-    $out .= sprintf("%02d:", $hours?$hours:0);
-    $out .= sprintf("%02d:",$mins?$mins:0) ;
-    $out .= sprintf("%02d",$seconds?$seconds:0);
+    $out = sprintf("%dd", $days) if $days;
+    $out .= sprintf("%02dh", $hours?$hours:0);
+    $out .= sprintf("%02dm",$mins?$mins:0) ;
+    $out .= sprintf("%02ds",$seconds?$seconds:0);
     return $out;
 }
 

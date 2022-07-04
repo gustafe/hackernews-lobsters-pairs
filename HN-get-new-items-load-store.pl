@@ -152,10 +152,11 @@ while ( @{$list} ) {
 #add to store
 $sth = $dbh->prepare( $feeds->{hn}->{insert_sql} ) or die $dbh->errstr;
 my $sth_q = $dbh->prepare("insert into hn_queue (id, age, retries) values (?,?,?)") or die $dbh->errstr;
-
+my $offset = 0;
 foreach my $item (@items) {
     $sth->execute( @{$item} ) or warn $sth->errstr;
-    $sth_q->execute($item->[0],$item->[1]+3600,0) or warn $sth_q->errstr;
+    $sth_q->execute($item->[0],$item->[1]+3600+5*60*$offset,0) or warn $sth_q->errstr;
+    $offset++;
 }
 $sth->finish();
 $sth_q->finish();
