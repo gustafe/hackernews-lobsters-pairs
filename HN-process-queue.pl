@@ -36,7 +36,7 @@ for my $row (sort {$a->[0] <=> $b->[0]} @$rows) {
     }
     $dhms = sec_to_dhms( $item_age );
     if ($id>$cutoff and !$cutoff_shown) {
-	say "~~> cutoff ID: $cutoff" if $debug;
+	say "~~> cutoff ID: $cutoff <~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" if $debug;
 	$cutoff_shown = 1; 
     }
     my $item_url = $feeds->{hn}->{api_item_href} . $id . '.json';
@@ -59,13 +59,13 @@ for my $row (sort {$a->[0] <=> $b->[0]} @$rows) {
 	next;
     }
     if ($item->{title} eq $title and $item->{descendants} == $comments and $item->{score} == $score ) { # no change
-	if ($retries == 0 and $score == 1 and $comments == 0) {
-	    say "X1> $id «$title» unchanged and low score, removing [$dhms]" if $debug;
+	if ($retries == 0 and $score <=2 and $comments == 0) {
+	    say "X1> $id «$title» S:$score C:$comments unchanged and low score, removing [$dhms]" if $debug;
 	    push @removes, $id
 	} elsif ($id<=$cutoff) {
 	    say "XC> $id «$title» S:$score C:$comments unchanged and id under cutoff, removing [$dhms]" if $debug;
 	    push @removes, $id;
-	} elsif ($retries > 2) {
+	} elsif ($retries >=2) {
 	    say "XR> $id «$title» S:$score C:$comments unchanged for $retries retries, removing [$dhms]" if $debug;
 	    push @removes, $id
 	} else {
@@ -96,8 +96,8 @@ if (@retries > 0) {
     my $now = time;
     my $sth = $dbh->prepare("update hn_queue set age = ?, retries= ? where id=?") or die $dbh->errstr;
     my $count = 0;
-    for my $item (@retries) {
-	$sth->execute($now + 3600*$item->{retries} + 5*60*$count, $item->{retries}, $item->{id}) or warn $sth->errstr;
+    for my $item (sort {$a->{retries} <=> $b->{retries}} @retries) {
+	$sth->execute($now + 2*3600*$item->{retries} + 5*60*$count, $item->{retries}, $item->{id}) or warn $sth->errstr;
 	$count++;
     }
 }
