@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>queue</title>
+    </head>
+  <style>
+    li: {padding-top: 20px; padding-bottom: 20px; }
+    .split-line span {float:right;padding-right: 10%;}
+    table td, table td * { vertical-align: top; }
+    table td.num {text-align: right;}
+    table td.center {text-align: center;}
+    </style>
+  <body>
+
+<h3>Hacker News update queue</h3>
+
+<h4>Summary</h4>
+
+<ul>
+<li>Retried: [% summary.retries -%]</li>
+<li>Updated (and retried): [% summary.updates -%]</li>
+<li>Removed: [% summary.removes -%]</li>
+</ul>
+
+<p>This page was updated on [% generation_time -%] UTC.</p>
+
+<h4>Updates</h4>
+<table>
+<tr><th>Id</th><th>URL</th><th>Domain</th><th>S</th><th>C</th><th>R</th><th>Item age</th><th>Status</th><th>Changes</th></tr>
+[% FOREACH id IN update_data.keys.sort -%]
+<tr>
+<td><a href="https://news.ycombinator.com/item?id=[% id -%]">[% id -%]</a></td>
+<td><a href="[% update_data.$id.url -%]">[% IF update_data.$id.changes.title -%][% THEN -%][% update_data.$id.title -%] → [% update_data.$id.changes.title -%] [% ELSE -%] [% update_data.$id.title -%][% END -%]</a></td>
+<td>[% update_data.$id.domain -%]</td>
+<td class="num">[% IF update_data.$id.changes.score -%][% THEN -%][% update_data.$id.score -%]→[% update_data.$id.changes.score -%] [% ELSE -%] [% update_data.$id.score -%][% END -%]</td>
+<td class="num">[% IF update_data.$id.changes.comments -%][% THEN -%][% update_data.$id.comments -%]→[% update_data.$id.changes.comments -%] [% ELSE -%] [% update_data.$id.comments -%][% END -%]</td>
+<td class="num">[% update_data.$id.retries -%]</td>
+<td class="num">[% update_data.$id.item_age -%]</td>
+<td class="center">[% update_data.$id.status -%]</td>
+
+<td></td>
+</tr>
+[% END -%]
+</table>
+
+<h4>Current queue (next hour)</h4>
+
+<table>
+<tr><th>Id</th><th>URL</th><th>Domain</th><th>S</th><th>C</th><th>R</th><th>Item age</th><th>&nbsp;</th><th>&nbsp;</th></tr>
+
+[% FOREACH entry IN queue_data -%]
+<tr>
+<td><a href="https://news.ycombinator.com/item?id=[% entry.id -%]">[% entry.id -%]</a></td>
+<td><a href="[% entry.url -%]">[% entry.title %]</a></td>
+<td>[% entry.domain -%]</td>
+<td class="num">[% entry.score -%]</td>
+<td class="num">[% entry.comments -%]</td>
+<td class="num">[% entry.retries -%]</td>
+<td class="num">[% entry.item_age -%]</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+[% END %]
+</table>
+
+</body></html>
