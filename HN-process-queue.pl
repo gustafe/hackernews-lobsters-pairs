@@ -96,6 +96,7 @@ for my $row (sort {$a->[0] <=> $b->[0]} @$rows) {
 	    say "RL> $id «$title» S:$score C:$comments unchanged and low score, bumping retries [$dhms]" if $debug;
 	    push @retries, {id=>$id, retries=>2};
 	    $update_data->{$id}->{status} = $status_icons{'retry_low'};
+	    $update_data->{$id}->{changes}->{retries} = 2;
 	} elsif ($id<=$cutoff) {
 	    say "XC> $id «$title» S:$score C:$comments unchanged and id under cutoff, removing [$dhms]" if $debug;
 	    $update_data->{$id}->{status} = $status_icons{remove_under_cutoff};
@@ -107,6 +108,7 @@ for my $row (sort {$a->[0] <=> $b->[0]} @$rows) {
 	} else {
 	    say "R$retries> $id «$title» S:$score C:$comments added to retries [$dhms]" if $debug;
 	    $update_data->{$id}->{status} = $status_icons{'retried'};
+	    $update_data->{$id}->{changes}->{retries} = $retries+ 1;
 	    push @retries, {id=>$id, retries=>$retries+1}
 	}
     } elsif ($item_age >3 * 24 * 3600) {
@@ -134,10 +136,20 @@ for my $row (sort {$a->[0] <=> $b->[0]} @$rows) {
 	}
 	say join(' | ', @msg). " [$dhms]" if $debug;
 	$update_data->{$id}->{status} = $status_icons{'updated'} ;
-	$update_data->{$id}->{changes} = join(' | ' , @msg);
+	$update_data->{$id}->{changes}->{retries}  = 0;
+	#	$update_data->{$id}->{changes} = join(' | ' , @msg);
 	push @updates, {id=>$id, title=>$item->{title}, score=>$item->{score}, comments=>$item->{descendants}};
 	push @retries, {id=>$id, retries=>0};
+
     }
+    my $new_score = defined $update_data->{$id}->{changes}->{score} ?
+      $update_data->{$id}->{changes}->{score} :
+      $update_data->{$id}->{score};
+    my $new_comments = defined $update_data->{$id}->{changes}->{comments} ?
+      $update_data->{$id}->{changes}->{comments} :
+      $update_data->{$id}->{comments};
+    my $percentage = ( $new_score + $new_comments ) / ($update_data->{$id}->{score} + $update_data->{$id}->{comments} ) * 100-100 if ( $new_score + $new_comments )>100;
+    $update_data->{$id}->{changes}->{percentage} = sprintf("%.1f",$percentage) if ( defined $percentage and $percentage> 0);
 }
 
 if (scalar @removes > 0) {
@@ -176,7 +188,7 @@ for my $k (sort keys %statuses) {
     say "$k =>  $statuses{$k}," if $debug;
 }
 
-$stmt ="select hn.id, url, title, score,comments, q.age-strftime('%s','now'),q.retries,strftime('%s','now') - strftime('%s',created_time) from hackernews hn inner join hn_queue q on q.id=hn.id where q.age<= strftime('%s','now')+1*3600 order by q.age-strftime('%s','now')";
+$stmt ="select hn.id, url, title, score,comments, q.age-strftime('%s','now'),q.retries,strftime('%s','now') - strftime('%s',created_time) from hackernews hn inner join hn_queue q on q.id=hn.id where q.age<= strftime('%s','now')+1*3600 order by q.age-strftime('%s','now'), id";
 $rows = $dbh->selectall_arrayref( $stmt ) or die $dbh->errstr;
 my $queue_data;
 if (scalar @$rows > 0) {

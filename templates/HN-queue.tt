@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>queue</title>
+    <title>HN update queue for HN&amp;&amp;LO</title>
     </head>
   <style>
     li: {padding-top: 20px; padding-bottom: 20px; }
@@ -15,7 +15,7 @@
     </style>
   <body>
 
-<h3>Hacker News update queue</h3>
+<h3>HN&amp;&amp;LO - Hacker News update queue</h3>
 
 <h4>Summary</h4>
 
@@ -29,19 +29,20 @@
 
 <h4>Updates</h4>
 <table>
-<tr><th>Id</th><th>URL</th><th>Domain</th><th>S</th><th>C</th><th>R</th><th>Item age</th><th>Status</th><th>Changes</th></tr>
+<tr><th>Id</th><th>URL</th><th>Domain</th><th>S</th><th>C</th><th>R</th><th>Item age</th><th>Status</th><th>&percnt; change</th></tr>
 [% FOREACH id IN update_data.keys.sort -%]
 <tr>
 <td><a href="https://news.ycombinator.com/item?id=[% id -%]">[% id -%]</a></td>
-<td><a href="[% update_data.$id.url -%]">[% IF update_data.$id.changes.title -%][% THEN -%][% update_data.$id.title -%] → [% update_data.$id.changes.title -%] [% ELSE -%] [% update_data.$id.title -%][% END -%]</a></td>
+<td><a href="[% update_data.$id.url -%]">[% IF update_data.$id.changes.title -%][% THEN -%][% update_data.$id.title -%] → <br/>[% update_data.$id.changes.title -%] [% ELSE -%] [% update_data.$id.title -%][% END -%]</a></td>
 <td>[% update_data.$id.domain -%]</td>
 <td class="num">[% IF update_data.$id.changes.score -%][% THEN -%][% update_data.$id.score -%]→[% update_data.$id.changes.score -%] [% ELSE -%] [% update_data.$id.score -%][% END -%]</td>
 <td class="num">[% IF update_data.$id.changes.comments -%][% THEN -%][% update_data.$id.comments -%]→[% update_data.$id.changes.comments -%] [% ELSE -%] [% update_data.$id.comments -%][% END -%]</td>
-<td class="num">[% update_data.$id.retries -%]</td>
+<td class="num">[% IF update_data.$id.changes.retries or update_data.$id.changes.retries == 0 -%][% THEN -%][% update_data.$id.retries -%]→[% update_data.$id.changes.retries -%] [% ELSE -%] [% update_data.$id.retries -%][% END -%]</td>
 <td class="num">[% update_data.$id.item_age -%]</td>
 <td class="center">[% update_data.$id.status -%]</td>
+<td class="num">[% IF update_data.$id.changes.percentage -%][% THEN -%][% update_data.$id.changes.percentage -%]&percnt; [% ELSE -%]&nbsp;[% END -%]</td>
 
-<td></td>
+
 </tr>
 [% END -%]
 </table>
