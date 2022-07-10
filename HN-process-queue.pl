@@ -10,7 +10,7 @@ use lib "$FindBin::Bin";
 use HNLOlib qw/get_dbh $sql $feeds get_ua sec_to_dhms sec_to_human_time/;
 use URI;
 binmode( STDOUT, ':utf8' );
-
+sub calculate_percentage;
 sub extract_host {
     my ($in) = @_;
     my $uri = URI->new($in);
@@ -125,6 +125,11 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
         next;
     }
 
+    # percentage change
+    my $percentage = calculate_percentage($item->{score},$item->{descendants},
+					 $score, $comments);
+    # decode retry data
+    
     if (    $item->{title} eq $title
         and $item->{descendants} == $comments
         and $item->{score} == $score )
@@ -209,24 +214,26 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
             };
         push @retries, { id => $id, retries => 0 };
     }
-    my $new_score
-        = defined $update_data->{$id}->{changes}->{score}
-        ? $update_data->{$id}->{changes}->{score}
-        : $update_data->{$id}->{score};
-    my $new_comments
-        = defined $update_data->{$id}->{changes}->{comments}
-        ? $update_data->{$id}->{changes}->{comments}
-        : $update_data->{$id}->{comments};
-    my $percentage
-        = ( $new_score + $new_comments )
-        / ( $update_data->{$id}->{score} + $update_data->{$id}->{comments} )
-        * 100 - 100
-        if ( $new_score + $new_comments ) > 100;
-    $update_data->{$id}->{changes}->{percentage}
-        = sprintf( "%.1f", $percentage )
-        if ( defined $percentage and $percentage > 0 );
+    # my $new_score
+    #     = defined $update_data->{$id}->{changes}->{score}
+    #     ? $update_data->{$id}->{changes}->{score}
+    #     : $update_data->{$id}->{score};
+    # my $new_comments
+    #     = defined $update_data->{$id}->{changes}->{comments}
+    #     ? $update_data->{$id}->{changes}->{comments}
+    #     : $update_data->{$id}->{comments};
+    # my $percentage
+    #     = ( $new_score + $new_comments )
+    #     / ( $update_data->{$id}->{score} + $update_data->{$id}->{comments} )
+    #     * 100 - 100
+    #     if ( $new_score + $new_comments ) > 100;
+    $update_data->{$id}->{changes}->{percentage} =  sprintf( "%.1f", $percentage );
+
 
     $update_data->{$id}->{retries} = $status_icons{$update_data->{$id}->{retries}};
+    if ($update_data->{$id}->{changes}->{retries} or $update_data->{$id}->{changes}->{retries} == 0) {
+	$update_data->{$id}->{changes}->{retries} = $status_icons{$update_data->{$id}->{changes}->{retries}};
+    }
 }
 
 if ( scalar @removes > 0 ) {
@@ -295,7 +302,7 @@ if ( scalar @$rows > 0 ) {
             score    => $score,
             comments => $comments,
             next_run => $age,
-            retries  => $retries,
+            retries  => $status_icons{$retries},
             domain   => extract_host($url),
             item_age => sec_to_human_time($item_age)
             };
@@ -320,3 +327,12 @@ $tt->process(
 ) || die $tt->error;
 #
 $dbh->disconnect;
+
+sub calculate_percentage{
+    my ( $new_score, $new_comments, $score,  $comments ) = @_;
+    if ($score+$comments !=0) {
+	return sprintf("%.1f",( $new_score + $new_comments ) / ($score+$comments) * 100 - 100)
+    } else {
+	return 0
+    }
+}
