@@ -37,9 +37,9 @@ my %status_icons = (
         '<abbr title="item is retried despite being low score">♻️↓</abbr>',
 		    updated => '<abbr title="item is updated">🔄</abbr>',
 
-		    0 => '<abbr title="retry level 0">0</abbr>',
-		    1 => '<abbr title="retry level 1">1</abbr>',
-		    2 => '<abbr title="retry level 2">2</abbr>',
+		    0 => '<abbr title="retry level 0">🟢</abbr>',
+		    1 => '<abbr title="retry level 1">🟡</abbr>',
+		    2 => '<abbr title="retry level 2">🔴</abbr>',
 );
 
 my $debug  = 0;
