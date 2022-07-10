@@ -15,9 +15,11 @@ submission's Score and number of Comments. If the ratio of comments to score exc
 timestamp="[% meta.generate_time %]" 
 title="[% meta.generate_time %]">[% meta.generate_time %]</span>. It usually
 updates hourly.
-<a href="about.html">About this project</a>.
-<a href="about.html#changelog">Changelog</a>.
-<a href="archives.html">Monthly archives</a>.
+<a href="about.html">About this project</a>. 
+<a href="about.html#changelog">Changelog</a>. 
+<a href="archives.html">Monthly archives</a>. 
+<a href="log.html">Daily log</a>.
+<a href="queue.html">HN update queue</a>.
 </p>
 
 [% FOREACH pair=pairs %]

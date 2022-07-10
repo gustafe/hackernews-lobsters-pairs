@@ -4,13 +4,14 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>log</title>
+    <title>HN&amp;&amp;LO new entry log</title>
     </head>
   <style>
     li: {padding-top: 20px; padding-bottom: 20px; }
     .split-line span {float:right;padding-right: 10%;}
     </style>
   <body>
+    <h1>HN&amp;&amp;LO new entry log</h1>
     [% FOREACH entry IN entries -%]
     <h2>[% entry.title -%]</h2>
     [% entry.text -%]
