@@ -27,8 +27,9 @@
 
 <p>This page was updated on [% generation_time -%] UTC.</p>
 
-<h4>Updates</h4>
+
 <table>
+<tr><th colspan="9"><h4>Updates</h4></th></tr>
 <tr><th>Id</th><th>URL</th><th>Domain</th><th>S</th><th>C</th><th>R</th><th>Item age</th><th>Status</th><th>&percnt; change</th></tr>
 [% FOREACH id IN update_data.keys.sort -%]
 <tr>
@@ -45,12 +46,10 @@
 
 </tr>
 [% END -%]
-</table>
 
-<h4>Current queue (next hour)</h4>
+<tr><th colspan="9"><h4>Current queue (next hour)</h4></th></tr>
 
-<table>
-<tr><th>Id</th><th>URL</th><th>Domain</th><th>S</th><th>C</th><th>R</th><th>Item age</th><th>&nbsp;</th><th>&nbsp;</th></tr>
+<!-- <tr><th>Id</th><th>URL</th><th>Domain</th><th>S</th><th>C</th><th>R</th><th>Item age</th><th>&nbsp;</th><th>&nbsp;</th></tr> -->
 
 [% FOREACH entry IN queue_data -%]
 <tr>
