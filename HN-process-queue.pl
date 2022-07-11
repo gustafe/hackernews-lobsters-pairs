@@ -27,21 +27,17 @@ sub extract_host {
 }
 my %status_icons = (
     dead_or_deleted => '<abbr title="item is dead or deleted">💀</abbr>',
-    remove_under_cutoff =>
-        '<abbr title="item is old and unchanged">❌🧟</abbr>',
+    remove_under_cutoff => '<abbr title="item is old and unchanged">❌🧟</abbr>',
     item_too_old => '<abbr title="item is old and unchanged">❌🧟</abbr>',
-    removed_unchanged_after_2_retries =>
-        '<abbr title="item is unchanged">❌=</abbr>',
+    removed_unchanged_after_2_retries => '<abbr title="item is unchanged">❌=</abbr>',
     retried => '<abbr title="item is retried">♻️</abbr>',
-    retry_low =>
-        '<abbr title="item is retried despite being low score">♻️↓</abbr>',
-		    updated => '<abbr title="item is updated">🔄</abbr>',
-
-		    0 => '<abbr title="retry level 0">🟢</abbr>',
-		    1 => '<abbr title="retry level 1">🟡</abbr>',
-		    2 => '<abbr title="retry level 2">🔴</abbr>',
-		    flagged=>'<abbr title="flagged">🏴‍☠️</abbr>',
-		    remove_low_percentage=>'<abbr title="old title with low percentage change">X&percnt;</abbrev>',
+    retry_low => '<abbr title="item is retried despite being low score">♻️↓</abbr>',
+    updated => '<abbr title="item is updated">🔄</abbr>',
+    0 => '<abbr title="retry level 0">🟢</abbr>',
+    1 => '<abbr title="retry level 1">🟡</abbr>',
+    2 => '<abbr title="retry level 2">🔴</abbr>',
+    flagged=>'<abbr title="flagged">🏴‍☠️</abbr>',
+    remove_low_percentage=>'<abbr title="old title with low percentage change">❌&percnt;</abbrev>',
 );
 
 my $debug  = 0;
