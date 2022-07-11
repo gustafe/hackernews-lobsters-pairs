@@ -40,6 +40,8 @@ my %status_icons = (
 		    0 => '<abbr title="retry level 0">🟢</abbr>',
 		    1 => '<abbr title="retry level 1">🟡</abbr>',
 		    2 => '<abbr title="retry level 2">🔴</abbr>',
+		    flagged=>'<abbr title="flagged">🏴‍☠️</abbr>',
+		    remove_low_percentage=>'<abbr title="old title with low percentage change">X&percnt;</abbrev>',
 );
 
 my $debug  = 0;
@@ -58,7 +60,7 @@ if ( scalar @$rows == 0 ) {
     say "no items in queue, exiting.";
     exit 0;
 }
-say "Number of items: " . scalar @$rows if $debug;
+
 my $ua = get_ua();
 my @removes;
 my @retries;
@@ -90,9 +92,6 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
 
     $dhms = sec_to_dhms($item_age);
     if ( $id > $cutoff and !$cutoff_shown ) {
-        say
-            "~~> cutoff ID: $cutoff <~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-            if $debug;
         $cutoff_shown = 1;
     }
 
@@ -109,8 +108,7 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
     my $payload = $res->decoded_content;
 
     if ( $payload eq 'null' ) {
-        say "X0> $id is null" if $debug;
-        push @removes, $id;
+        push @removes, {id=>$id};
         $update_data->{$id}->{status} = 'null_content';
         next;
 
@@ -119,72 +117,64 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
     my $item = decode_json($payload);
 
     if ( defined $item->{dead} or defined $item->{deleted} ) {
-        say "XX> $id «$title» dead or deleted, removing [$dhms]" if $debug;
-        push @removes, $id;
+        push @removes, {id=>$id};
         $update_data->{$id}->{status} = $status_icons{'dead_or_deleted'};
         next;
-    }
+    } 
 
     # percentage change
     my $percentage = calculate_percentage($item->{score},$item->{descendants},
 					 $score, $comments);
     # decode retry data
-    
+
+    # item is older than 24h and has low change percentage (but is not a catch-up item below cutoff)
+    $update_data->{$id}->{changes}->{percentage} = $percentage;
+    if ($item_age>24*3600 and abs($percentage)<1.0 and $id>$cutoff) {
+            $update_data->{$id}->{status}
+                = $status_icons{remove_low_percentage};
+            push @removes, {id=>$id};
+	    next;
+	
+    }
+    # item is unchanged compared to DB
     if (    $item->{title} eq $title
         and $item->{descendants} == $comments
         and $item->{score} == $score )
-    {    # no change
+    {    
 
         if ( $retries == 0 and $score <= 2 and $comments == 0 ) {
 
-            say
-                "RL> $id «$title» S:$score C:$comments unchanged and low score, bumping retries [$dhms]"
-                if $debug;
             push @retries, { id => $id, retries => 2 };
             $update_data->{$id}->{status} = $status_icons{'retry_low'};
             $update_data->{$id}->{changes}->{retries} = 2;
+	    next;
         }
         elsif ( $id <= $cutoff ) {
 
-            say
-                "XC> $id «$title» S:$score C:$comments unchanged and id under cutoff, removing [$dhms]"
-                if $debug;
             $update_data->{$id}->{status}
                 = $status_icons{remove_under_cutoff};
-            push @removes, $id;
+            push @removes, {id=>$id};
+	    next;
         }
         elsif ( $retries >= 2 ) {
 
-            say
-                "XR> $id «$title» S:$score C:$comments unchanged for $retries retries, removing [$dhms]"
-                if $debug;
             $update_data->{$id}->{status}
                 = $status_icons{ 'removed_unchanged_after_'
                     . $retries
                     . '_retries' };
-            push @removes, $id;
-        }
+            push @removes, {id=>$id};
+	    next;
+        } 
         else {
 
-            say
-                "R$retries> $id «$title» S:$score C:$comments added to retries [$dhms]"
-                if $debug;
             $update_data->{$id}->{status} = $status_icons{'retried'};
             $update_data->{$id}->{changes}->{retries} = $retries + 1;
             push @retries, { id => $id, retries => $retries + 1 };
+	    next;
         }
-    }
-    elsif ( $item_age > 3 * 24 * 3600 ) {
-
-        $update_data->{$id}->{status} = $status_icons{'item_too_old'};
-        push @removes, $id;
-
     }
     else {
 
-        print
-            "U$retries> $id «$title» metadata changed, adding to updates | "
-            if $debug;
         my @msg;
 
         if ( $title ne $item->{title} ) {
@@ -200,11 +190,9 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
             $update_data->{$id}->{changes}->{comments} = $item->{descendants};
         }
 
-        say join( ' | ', @msg ) . " [$dhms]" if $debug;
-
         $update_data->{$id}->{status} = $status_icons{'updated'};
         $update_data->{$id}->{changes}->{retries} = 0;
-
+	
         push @updates,
             {
             id       => $id,
@@ -213,40 +201,26 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
             comments => $item->{descendants}
             };
         push @retries, { id => $id, retries => 0 };
+	next;
     }
-    # my $new_score
-    #     = defined $update_data->{$id}->{changes}->{score}
-    #     ? $update_data->{$id}->{changes}->{score}
-    #     : $update_data->{$id}->{score};
-    # my $new_comments
-    #     = defined $update_data->{$id}->{changes}->{comments}
-    #     ? $update_data->{$id}->{changes}->{comments}
-    #     : $update_data->{$id}->{comments};
-    # my $percentage
-    #     = ( $new_score + $new_comments )
-    #     / ( $update_data->{$id}->{score} + $update_data->{$id}->{comments} )
-    #     * 100 - 100
-    #     if ( $new_score + $new_comments ) > 100;
-    $update_data->{$id}->{changes}->{percentage} =  sprintf( "%.1f", $percentage );
+    # should we remove an item because it's too old and not changed enough?
+    if ($item_age > 24*3600) {
+	$update_data->{$id}->{changes}->{percentage} =  sprintf( "%.1f", $percentage );
+    }
+    
 
 
-    $update_data->{$id}->{retries} = $status_icons{$update_data->{$id}->{retries}};
-    if ($update_data->{$id}->{changes}->{retries} or $update_data->{$id}->{changes}->{retries} == 0) {
-	$update_data->{$id}->{changes}->{retries} = $status_icons{$update_data->{$id}->{changes}->{retries}};
-    }
 }
 
 if ( scalar @removes > 0 ) {
-    say "removing: " . scalar @removes if $debug;
 
     my $sth = $dbh->prepare("delete from hn_queue where id = ?")
         or die $dbh->errstr;
-    for my $id (@removes) {
-        $sth->execute($id) or warn $sth->errstr;
+    for my $item (@removes) {
+        $sth->execute($item->{id}) or warn $sth->errstr;
     }
 }
 if ( @retries > 0 ) {
-    say "retrying: " . scalar @retries if $debug;
 
     my $sth
         = $dbh->prepare("update hn_queue set age = ?, retries= ? where id=?")
@@ -256,11 +230,23 @@ if ( @retries > 0 ) {
         $sth->execute( $now + 2 * 3600 * $item->{retries} + 5 * 60 * $count,
             $item->{retries}, $item->{id} )
             or warn $sth->errstr;
+
         $count++;
     }
+
+}
+# update item metadata for display
+
+for my $item (@removes ,@retries) {
+	$update_data->{$item->{id}}->{retries} = $status_icons{$update_data->{$item->{id}}->{retries}};
+	if ($update_data->{$item->{id}}->{changes}->{retries} or $update_data->{$item->{id}}->{changes}->{retries} == 0) {
+	    $update_data->{$item->{id}}->{changes}->{retries} = $status_icons{$update_data->{$item->{id}}->{changes}->{retries}};
+    }
+    
+    
 }
 if ( scalar @updates > 0 ) {
-    say "updating: " . scalar @updates if $debug;
+
     my $sth
         = $dbh->prepare(
         "update hackernews set title=?,score=?,comments=? where id=?")
@@ -277,14 +263,6 @@ my $summary = {
     retries => scalar @retries,
     updates => scalar @updates
 };
-my %statuses;
-for my $k ( keys %$update_data ) {
-    next unless defined $update_data->{$k}->{status};
-    $statuses{ $update_data->{$k}->{status} }++;
-}
-for my $k ( sort keys %statuses ) {
-    say "$k =>  $statuses{$k}," if $debug;
-}
 
 $stmt
     = "select hn.id, url, title, score,comments, q.age-strftime('%s','now'),q.retries,strftime('%s','now') - strftime('%s',created_time) from hackernews hn inner join hn_queue q on q.id=hn.id where q.age<= strftime('%s','now')+1*3600 order by q.age-strftime('%s','now'), q.id";
@@ -306,9 +284,6 @@ if ( scalar @$rows > 0 ) {
             domain   => extract_host($url),
             item_age => sec_to_human_time($item_age)
             };
-
-        #			      ,domain=>extract_host($url)};
-        say "$age $id $title <$url> $score $comments $retries" if $debug;
     }
 }
 
@@ -325,7 +300,7 @@ $tt->process(
     '/home/gustaf/public_html/hnlo/queue.html',
     { binmode => ':utf8' }
 ) || die $tt->error;
-#
+
 $dbh->disconnect;
 
 sub calculate_percentage{
