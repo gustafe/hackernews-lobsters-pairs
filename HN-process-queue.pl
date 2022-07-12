@@ -125,7 +125,7 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
 
     # item is older than 24h and has low change percentage (but is not a catch-up item below cutoff)
     $update_data->{$id}->{changes}->{percentage} = $percentage;
-    if ($item_age>24*3600 and abs($percentage)<1.0 and $id>$cutoff) {
+    if ($item_age>2*24*3600 and abs($percentage)<=1.0 and $id>$cutoff) {
             $update_data->{$id}->{status}
                 = $status_icons{remove_low_percentage};
             push @removes, {id=>$id};

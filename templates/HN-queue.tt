@@ -27,6 +27,7 @@
 
 <p>This page was updated on [% generation_time -%] UTC.</p>
 
+<p><a href="#wat">[wat]</a></p>
 
 <table>
 <tr><th colspan="9"><h4>Updates</h4></th></tr>
@@ -66,4 +67,28 @@
 [% END %]
 </table>
 
+<h3><a id="wat">What is this</a></h3>
+
+<p>This is the update queue for submissions from Hackernews in <a
+href="/hnlo">HN&amp;&amp;LO</a>.</p>
+
+<p>Whenever a submission <a href="/hnlo/log.html">is read</a>, an
+entry is added to the queue about an hour into the future. Every 10
+minutes or so, the queue reads those items that are older than the
+current time, connects to HN, and compares scores, comments, and
+titles. If they have been changed, the item is re-submitted to the
+queue.</p>
+
+<p>While most items in HN rarely get more than 2 karma and zero
+comments, some might get popular, so these items are given an extra
+chance when first seen in the queue.</p>
+
+<p>If an entry is older than 24h and isn't getting many updates
+(defined as the new sum of score and comments is less than 1&percnt;
+more than the previous sum), it's removed from thee queue.</p>
+
+<p>If an item has been resubmitted 3 times and there's no change, it
+is removed from the queue.</p>
+
 </body></html>
+
