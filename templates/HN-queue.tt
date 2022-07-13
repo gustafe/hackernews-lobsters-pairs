@@ -15,19 +15,12 @@
     </style>
   <body>
 
-<h3>HN&amp;&amp;LO - Hacker News update queue</h3>
+<h1>HN&amp;&amp;LO - Hacker News update queue</h1>
 
-<h4>Summary</h4>
+<h3>Summary</h3>
+<p>Retried: [% summary.retries -%]. Updated (and retried): [% summary.updates -%]. Removed: [% summary.removes -%].</p>
 
-<ul>
-<li>Retried: [% summary.retries -%]</li>
-<li>Updated (and retried): [% summary.updates -%]</li>
-<li>Removed: [% summary.removes -%]</li>
-</ul>
-
-<p>This page was updated on [% generation_time -%] UTC.</p>
-
-<p><a href="#wat">[wat]</a></p>
+<p>This page was updated on [% generation_time -%] UTC. <a href="#wat">[wat]</a></p>
 
 <table>
 <tr><th colspan="9"><h4>Updates</h4></th></tr>
