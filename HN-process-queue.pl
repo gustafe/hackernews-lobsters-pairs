@@ -11,6 +11,7 @@ use HNLOlib qw/get_dbh $sql $feeds get_ua sec_to_dhms sec_to_human_time/;
 use URI;
 binmode( STDOUT, ':utf8' );
 sub calculate_percentage;
+sub decode_retry;
 sub extract_host {
     my ($in) = @_;
     my $uri = URI->new($in);
@@ -42,6 +43,11 @@ my %status_icons = (
 
 my $debug  = 0;
 my $cutoff = 31940335;
+
+for my $t (0,1,2,99,1001,2002,3003,2999) {
+    my $r = decode_retry( $t );
+    say join("\t", $t, $r->{level}, $r->{count}) if $debug;
+}
 
 my $now  = time;
 
@@ -232,14 +238,14 @@ if ( @retries > 0 ) {
 
 }
 # update item metadata for display
-
-for my $item (@removes ,@retries) {
+{
+    no warnings 'uninitialized';
+    for my $item (@removes ,@retries) {
 	$update_data->{$item->{id}}->{retries} = $status_icons{$update_data->{$item->{id}}->{retries}};
-	if ($update_data->{$item->{id}}->{changes}->{retries} or $update_data->{$item->{id}}->{changes}->{retries} == 0) {
+	if (defined $update_data->{$item->{id}}->{changes} and ($update_data->{$item->{id}}->{changes}->{retries} or $update_data->{$item->{id}}->{changes}->{retries} == 0)) {
 	    $update_data->{$item->{id}}->{changes}->{retries} = $status_icons{$update_data->{$item->{id}}->{changes}->{retries}};
+	}
     }
-    
-    
 }
 if ( scalar @updates > 0 ) {
 
@@ -306,4 +312,19 @@ sub calculate_percentage{
     } else {
 	return 0
     }
+}
+
+sub decode_retry {
+    my ( $in ) = @_;
+    my ( $level, $count );
+    if ($in >=0 and $in <= 2) { # old format
+	$level = 1;
+	$count = $in;
+    } elsif ($in > 1_000) {
+	$count = $in % 1_000;
+	$level = ($in - $count)/1_000;
+    } else {
+	warn "invalid input: $in";
+    }
+    return { level=>$level, count=>$count };
 }
