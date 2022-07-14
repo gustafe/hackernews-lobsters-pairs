@@ -28,9 +28,9 @@ sub extract_host {
 }
 my %status_icons = (
     dead_or_deleted => '<abbr title="item is dead or deleted">💀</abbr>',
-    remove_under_cutoff => '<abbr title="item is old and unchanged">\N{CROSS MARK}🧟</abbr>',
-    item_too_old => '<abbr title="item is old and unchanged">\N{CROSS MARK}🧟</abbr>',
-    removed_unchanged_after_3_retries => '<abbr title="item is unchanged">\N{CROSS MARK}=</abbr>',
+    remove_under_cutoff => '<abbr title="item is old and unchanged">'.\N{CROSS MARK}.'🧟</abbr>',
+    item_too_old => '<abbr title="item is old and unchanged">'.\N{CROSS MARK}.'🧟</abbr>',
+    removed_unchanged_after_3_retries => '<abbr title="item is unchanged">'.\N{CROSS MARK}.'=</abbr>',
     retried => '<abbr title="item is retried">♻️</abbr>',
     retry_low => '<abbr title="item is retried despite being low score">♻️↓</abbr>',
     updated => '<abbr title="item is updated">🔄</abbr>',
@@ -38,7 +38,7 @@ my %status_icons = (
     2 => '<abbr title="retry level 2">🟡</abbr>',
     3 => '<abbr title="retry level 3">🔴</abbr>',
     flagged=>'<abbr title="flagged">🏴‍☠️</abbr>',
-    remove_low_percentage=>'<abbr title="old title with low percentage change">\N{CROSS MARK}&percnt;</abbrev>',
+    remove_low_percentage=>'<abbr title="old title with low percentage change">'.\N{CROSS MARK}.'&percnt;</abbrev>',
 );
 
 my $debug  = 0;
