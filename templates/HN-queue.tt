@@ -116,16 +116,16 @@ is removed from the queue.</p>
 <h3 id="key">Key</h3>
 
 <ul>
-<li><abbr title="item is old and unchanged">❌🧟</abbr></li>
-<li><abbr title="item is unchanged">❌=</abbr></li>
-<li><abbr title="old title with low percentage change">❌&percnt;</abbrev></li>
+<li>❌🧟 - removed from queue due to age</li>
+<li>❌= - removed from queue because unchanged</li>
+<li>❌&percnt; - removed from queue; change percentage too low</li>
 <li>💀 - item is dead</li>
 <li>♻️↓ - item has been reset in the queue despite a low score</li>
 <li>♻️ - item has been reset in the queue</li>
 <li>🔄 - item has been updated in the database, and reset in the queue</li>
-<li><abbr title='retry level 1'>🟢</abbr></li>
-<li><abbr title='retry level 2'>🟡</abbr></li>
-<li><abbr title='retry level 3'>🔴</abbr></li>
+<li>🟢 - retry level 1</li>
+<li>🟡 - retry level 2</li>
+<li>🔴 - retry level 3</li>
 </ul>
 
 </body></html>
