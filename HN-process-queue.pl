@@ -27,17 +27,16 @@ sub extract_host {
     return $host;
 }
 my %status_icons = (
-    dead_or_deleted => '<abbr title="item is dead or deleted">💀</abbr>',
-    remove_under_cutoff => '<abbr title="item is old and unchanged">'."\N{CROSS MARK}".'🧟</abbr>',
-    item_too_old => '<abbr title="item is old and unchanged">'."\N{CROSS MARK}".'🧟</abbr>',
+    dead_or_deleted => '<abbr title="item is dead or deleted">."\N{SKULL}".</abbr>',
+    remove_under_cutoff => '<abbr title="item is old and unchanged">'."\N{CROSS MARK}\N{ZOMBIE}".'</abbr>',
+    item_too_old => '<abbr title="item is old and unchanged">'."\N{CROSS MARK}\N{ZOMBIE}".'</abbr>',
     removed_unchanged_after_3_retries => '<abbr title="item is unchanged">'."\N{CROSS MARK}".'=</abbr>',
-    retried => '<abbr title="item is retried">♻️</abbr>',
-    retry_low => '<abbr title="item is retried despite being low score">♻️↓</abbr>',
-    updated => '<abbr title="item is updated">🔄</abbr>',
-    1 => '<abbr title="retry level 1">🟢</abbr>',
-    2 => '<abbr title="retry level 2">🟡</abbr>',
-    3 => '<abbr title="retry level 3">🔴</abbr>',
-    flagged=>'<abbr title="flagged">🏴‍☠️</abbr>',
+    retried => "<abbr title='item is retried'>\N{U+267B}</abbr>",
+    retry_low => "<abbr title='item is retried despite being low score'>\N{U+267B}↓</abbr>",
+    updated => "<abbr title='item is updated'>\N{U+1F504}</abbr>",
+    1 => "<abbr title='retry level 1'>\N{Large Green Circle}</abbr>",
+    2 => "<abbr title='retry level 2'>\N{Large Yellow Circle}</abbr>",
+    3 => "<abbr title='retry level 3'>\N{Large Red Circle}</abbr>",
     remove_low_percentage=>'<abbr title="old title with low percentage change">'."\N{CROSS MARK}".'&percnt;</abbrev>',
 );
 
