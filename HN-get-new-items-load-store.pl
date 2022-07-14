@@ -155,7 +155,7 @@ my $sth_q = $dbh->prepare("insert into hn_queue (id, age, retries) values (?,?,?
 my $offset = 0;
 foreach my $item (@items) {
     $sth->execute( @{$item} ) or warn $sth->errstr;
-    $sth_q->execute($item->[0],$item->[1]+3600+5*60*$offset,0) or warn $sth_q->errstr;
+    $sth_q->execute($item->[0],$item->[1]+3600+5*60*$offset,1001) or warn $sth_q->errstr;
     $offset++;
 }
 $sth->finish();

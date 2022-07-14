@@ -30,13 +30,13 @@ my %status_icons = (
     dead_or_deleted => '<abbr title="item is dead or deleted">💀</abbr>',
     remove_under_cutoff => '<abbr title="item is old and unchanged">❌🧟</abbr>',
     item_too_old => '<abbr title="item is old and unchanged">❌🧟</abbr>',
-    removed_unchanged_after_2_retries => '<abbr title="item is unchanged">❌=</abbr>',
+    removed_unchanged_after_3_retries => '<abbr title="item is unchanged">❌=</abbr>',
     retried => '<abbr title="item is retried">♻️</abbr>',
     retry_low => '<abbr title="item is retried despite being low score">♻️↓</abbr>',
     updated => '<abbr title="item is updated">🔄</abbr>',
-    0 => '<abbr title="retry level 0">🟢</abbr>',
-    1 => '<abbr title="retry level 1">🟡</abbr>',
-    2 => '<abbr title="retry level 2">🔴</abbr>',
+    1 => '<abbr title="retry level 1">🟢</abbr>',
+    2 => '<abbr title="retry level 2">🟡</abbr>',
+    3 => '<abbr title="retry level 3">🔴</abbr>',
     flagged=>'<abbr title="flagged">🏴‍☠️</abbr>',
     remove_low_percentage=>'<abbr title="old title with low percentage change">❌&percnt;</abbrev>',
 );
@@ -44,10 +44,6 @@ my %status_icons = (
 my $debug  = 0;
 my $cutoff = 31940335;
 
-for my $t (0,1,2,99,1001,2002,3003,2999) {
-    my $r = decode_retry( $t );
-    say join("\t", $t, $r->{level}, $r->{count}) if $debug;
-}
 
 my $now  = time;
 
@@ -70,17 +66,20 @@ my @updates;
 my $cutoff_shown = 0;
 my $dhms;
 my %seen;
-my $update_data;
+my $current;
+my $new;
 
 for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
     my ( $id, $title, $url, $score, $comments, $item_age, $retries ) = @$row;
-    $update_data->{$id} = {
+    my $retry_data = decode_retry( $retries );
+    $current->{$id} = {
         title    => $title,
         url      => $url,
         score    => $score,
         comments => $comments,
         item_age => sec_to_human_time($item_age),
-        retries  => $retries,
+			   retry_count  => $retry_data->{count},
+			   retry_level=> $status_icons{$retry_data->{level}},
         domain   => extract_host($url)
     };
 
@@ -111,7 +110,7 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
 
     if ( $payload eq 'null' ) {
         push @removes, {id=>$id};
-        $update_data->{$id}->{status} = 'null_content';
+        $current->{$id}->{status} = 'null_content';
         next;
 
     }
@@ -120,7 +119,7 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
 
     if ( defined $item->{dead} or defined $item->{deleted} ) {
         push @removes, {id=>$id};
-        $update_data->{$id}->{status} = $status_icons{'dead_or_deleted'};
+        $current->{$id}->{status} = $status_icons{'dead_or_deleted'};
         next;
     } 
 
@@ -130,9 +129,9 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
     # decode retry data
 
     # item is older than 24h and has low change percentage (but is not a catch-up item below cutoff)
-    $update_data->{$id}->{changes}->{percentage} = $percentage;
+    $new->{$id}->{percentage} = $percentage;
     if ($item_age>2*24*3600 and abs($percentage)<=1.0 and $id>$cutoff) {
-            $update_data->{$id}->{status}
+            $current->{$id}->{status}
                 = $status_icons{remove_low_percentage};
             push @removes, {id=>$id};
 	    next;
@@ -146,32 +145,36 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
 
         if ( $retries == 0 and $score <= 2 and $comments == 0 ) {
 
-            push @retries, { id => $id, retries => 2 };
-            $update_data->{$id}->{status} = $status_icons{'retry_low'};
-            $update_data->{$id}->{changes}->{retries} = 2;
+            push @retries, { id => $id, level => 3, count=>$retry_data->{count}+1 };
+            $current->{$id}->{status} = $status_icons{'retry_low'};
+            $new->{$id}->{retry_level} = $status_icons{3};
+	    $new->{$id}->{retry_count} = $retry_data->{count}+1;
 	    next;
         }
         elsif ( $id <= $cutoff ) {
 
-            $update_data->{$id}->{status}
+            $current->{$id}->{status}
                 = $status_icons{remove_under_cutoff};
             push @removes, {id=>$id};
 	    next;
         }
-        elsif ( $retries >= 2 ) {
+        elsif ( $retry_data->{level} >= 3 ) {
 
-            $update_data->{$id}->{status}
+            $current->{$id}->{status}
                 = $status_icons{ 'removed_unchanged_after_'
-                    . $retries
+                    . 3
                     . '_retries' };
             push @removes, {id=>$id};
 	    next;
         } 
         else {
 
-            $update_data->{$id}->{status} = $status_icons{'retried'};
-            $update_data->{$id}->{changes}->{retries} = $retries + 1;
-            push @retries, { id => $id, retries => $retries + 1 };
+            $current->{$id}->{status} = $status_icons{'retried'};
+            $new->{$id}->{retry_count} = $retry_data->{count}+1;
+	    $new->{$id}->{retry_level} = $status_icons{$retry_data->{level}+1};
+            push @retries, { id => $id,
+			     level => $retry_data->{level} + 1,
+			     count=>$retry_data->{count}+1 };
 	    next;
         }
     }
@@ -181,19 +184,20 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
 
         if ( $title ne $item->{title} ) {
             push @msg, "T:$title→" . $item->{title};
-            $update_data->{$id}->{changes}->{title} = $item->{title};
+            $new->{$id}->{title} = $item->{title};
         }
         if ( $score != $item->{score} ) {
             push @msg, "S:$score→" . $item->{score};
-            $update_data->{$id}->{changes}->{score} = $item->{score};
+            $new->{$id}->{score} = $item->{score};
         }
         if ( $comments != $item->{descendants} ) {
             push @msg, "C:$comments→" . $item->{descendants};
-            $update_data->{$id}->{changes}->{comments} = $item->{descendants};
+            $new->{$id}->{comments} = $item->{descendants};
         }
 
-        $update_data->{$id}->{status} = $status_icons{'updated'};
-        $update_data->{$id}->{changes}->{retries} = 0;
+        $current->{$id}->{status} = $status_icons{'updated'};
+        $new->{$id}->{retry_level} = $status_icons{1};
+	$new->{$id}->{retry_count} = $retry_data->{count}+1;
 	
         push @updates,
             {
@@ -202,16 +206,12 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
             score    => $item->{score},
             comments => $item->{descendants}
             };
-        push @retries, { id => $id, retries => 0 };
+        push @retries, { id => $id, level => 1, count=>$retry_data->{count}+1 };
 	next;
     }
-    # should we remove an item because it's too old and not changed enough?
     if ($item_age > 24*3600) {
-	$update_data->{$id}->{changes}->{percentage} =  sprintf( "%.1f", $percentage );
+	$new->{$id}->{percentage} =  sprintf( "%.1f", $percentage );
     }
-    
-
-
 }
 
 if ( scalar @removes > 0 ) {
@@ -228,25 +228,25 @@ if ( @retries > 0 ) {
         = $dbh->prepare("update hn_queue set age = ?, retries= ? where id=?")
         or die $dbh->errstr;
     my $count = 0;
-    for my $item ( sort { $a->{retries} <=> $b->{retries} } @retries ) {
-        $sth->execute( $now + 2 * 3600 * $item->{retries} + 5 * 60 * $count,
-            $item->{retries}, $item->{id} )
+    for my $item ( sort { $a->{level} <=> $b->{level} } @retries ) {
+        $sth->execute( $now + 2 * 3600 * $item->{level} + 5 * 60 * $count,
+            $item->{level}*1_000+$item->{count}, $item->{id} )
             or warn $sth->errstr;
 
         $count++;
     }
+}
 
-}
 # update item metadata for display
-{
-    no warnings 'uninitialized';
-    for my $item (@removes ,@retries) {
-	$update_data->{$item->{id}}->{retries} = $status_icons{$update_data->{$item->{id}}->{retries}};
-	if (defined $update_data->{$item->{id}}->{changes} and ($update_data->{$item->{id}}->{changes}->{retries} or $update_data->{$item->{id}}->{changes}->{retries} == 0)) {
-	    $update_data->{$item->{id}}->{changes}->{retries} = $status_icons{$update_data->{$item->{id}}->{changes}->{retries}};
-	}
-    }
-}
+# {
+#     no warnings 'uninitialized';
+#     for my $item (@removes ,@retries) {
+# 	$current->{$item->{id}}->{retry_level} = $status_icons{$current->{$item->{id}}->{retry_level}};
+# 	if (defined $new->{$item->{id}} and ($new->{$item->{id}}->{retry_level} )) {
+# 	    $new->{$item->{id}}->{retry_level} = $status_icons{$new->{$item->{id}}->{retry_level}};
+# 	}
+#     }
+# }
 if ( scalar @updates > 0 ) {
 
     my $sth
@@ -273,7 +273,8 @@ my $queue_data;
 if ( scalar @$rows > 0 ) {
     for my $r (@$rows) {
         my ( $id, $url, $title, $score, $comments, $age, $retries, $item_age )
-            = @$r;
+	  = @$r;
+	my $retry_data = decode_retry( $retries );
         push @{$queue_data},
             {
             id       => $id,
@@ -282,7 +283,8 @@ if ( scalar @$rows > 0 ) {
             score    => $score,
             comments => $comments,
             next_run => $age,
-            retries  => $status_icons{$retries},
+	     retry_level  => $status_icons{$retry_data->{level}},
+	     retry_count => $retry_data->{count},
             domain   => extract_host($url),
             item_age => sec_to_human_time($item_age)
             };
@@ -290,7 +292,8 @@ if ( scalar @$rows > 0 ) {
 }
 
 my %data = (
-    update_data     => $update_data,
+	    current     => $current,
+	    new=>$new,
     queue_data      => $queue_data,
     generation_time => scalar gmtime($now),
     summary         => $summary
@@ -318,9 +321,9 @@ sub decode_retry {
     my ( $in ) = @_;
     my ( $level, $count );
     if ($in >=0 and $in <= 2) { # old format
-	$level = 1;
-	$count = $in;
-    } elsif ($in > 1_000) {
+	$level = $in+1;
+	$count = 1;
+    } elsif ($in >= 1_000) {
 	$count = $in % 1_000;
 	$level = ($in - $count)/1_000;
     } else {
