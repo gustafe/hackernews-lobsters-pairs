@@ -27,20 +27,47 @@
 
 <table>
 <tr><th colspan="9"><h4>Updates</h4></th></tr>
-<tr><th>Id</th><th>URL</th><th>Domain</th><th>S</th><th>C</th><th>R</th><th>Item age</th><th>Status</th><th>&percnt; change</th></tr>
+<tr><th>Id</th>
+<th>URL</th>
+<th>Domain
+</th>
+<th>S</th><th>C</th><th>R</th>
+<th>Item age</th><th>Status</th><th>&percnt; change</th></tr>
 [% FOREACH id IN current.keys.sort -%]
 <tr>
 <td><a href="https://news.ycombinator.com/item?id=[% id -%]">[% id -%]</a></td>
-<td><a href="[% current.$id.url -%]">[% IF new.$id.title -%][% THEN -%][% current.$id.title -%] → <br/>[% new.$id.title -%] [% ELSE -%] [% current.$id.title -%][% END -%]</a></td>
+<td><a href="[% current.$id.url -%]">
+  [% IF new.$id.title -%]
+  [% THEN -%][% current.$id.title -%] → <br/>[% new.$id.title -%]
+  [% ELSE -%][% current.$id.title -%]
+  [% END -%]</a>
+</td>
 <td>[% current.$id.domain -%]</td>
-<td class="num">[% IF new.$id.score -%][% THEN -%][% current.$id.score -%]→[% new.$id.score -%] [% ELSE -%] [% current.$id.score -%][% END -%]</td>
-<td class="num">[% IF new.$id.comments -%][% THEN -%][% current.$id.comments -%]→[% new.$id.comments -%] [% ELSE -%] [% current.$id.comments -%][% END -%]</td>
-<td class="num">[% IF new.$id.retry_level  -%][% THEN -%][% current.$id.retry_level -%]→[% new.$id.retry_level -%][% new.$id.retry_count -%] [% ELSE -%] [% current.$id.retry_level -%][% current.$id.retry_count -%][% END -%]</td>
+<td class="num">
+  [% IF new.$id.score -%]
+  [% THEN -%][% current.$id.score -%]→[% new.$id.score -%]
+  [% ELSE -%][% current.$id.score -%]
+  [% END -%]
+</td>
+<td class="num">
+  [% IF new.$id.comments -%]
+  [% THEN -%][% current.$id.comments -%]→[% new.$id.comments -%]
+  [% ELSE -%][% current.$id.comments -%]
+  [% END -%]
+</td>
+<td class="num">
+  [% IF new.$id.retry_level  -%]
+  [% THEN -%][% current.$id.retry_level -%]→[% new.$id.retry_level -%]<span id="sub">[% new.$id.retry_count -%]</span>
+  [% ELSE -%][% current.$id.retry_level -%]<span id="sub">[% current.$id.retry_count -%]</span>
+  [% END -%]
+</td>
 <td class="num">[% current.$id.item_age -%]</td>
 <td class="center">[% current.$id.status -%]</td>
-<td class="num">[% IF new.$id.percentage -%][% THEN -%][% new.$id.percentage -%]&percnt; [% ELSE -%]&nbsp;[% END -%]</td>
-
-
+<td class="num">
+  [% IF new.$id.percentage -%]
+  [% THEN -%][% new.$id.percentage -%]&percnt;
+  [% ELSE -%]&nbsp;[% END -%]
+</td>
 </tr>
 [% END -%]
 

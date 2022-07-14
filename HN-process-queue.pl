@@ -31,12 +31,12 @@ my %status_icons = (
     remove_under_cutoff => '<abbr title="item is old and unchanged">'."\N{CROSS MARK}\N{ZOMBIE}".'</abbr>',
     item_too_old => '<abbr title="item is old and unchanged">'."\N{CROSS MARK}\N{ZOMBIE}".'</abbr>',
     removed_unchanged_after_3_retries => '<abbr title="item is unchanged">'."\N{CROSS MARK}".'=</abbr>',
-    retried => "<abbr title='item is retried'>\N{U+267B}</abbr>",
+    retried => "<abbr title='item is retried'>\N{BLACK UNIVERSAL RECYCLING SYMBOL}</abbr>",
     retry_low => "<abbr title='item is retried despite being low score'>\N{U+267B}↓</abbr>",
     updated => "<abbr title='item is updated'>\N{U+1F504}</abbr>",
-    1 => "<abbr title='retry level 1'>\N{Large Green Circle}</abbr>",
-    2 => "<abbr title='retry level 2'>\N{Large Yellow Circle}</abbr>",
-    3 => "<abbr title='retry level 3'>\N{Large Red Circle}</abbr>",
+    1 => "<abbr title='retry level 1'>\N{LARGE GREEN CIRCLE}</abbr>",
+    2 => "<abbr title='retry level 2'>\N{LARGE YELLOW CIRCLE}</abbr>",
+    3 => "<abbr title='retry level 3'>\N{LARGE RED CIRCLE}</abbr>",
     remove_low_percentage=>'<abbr title="old title with low percentage change">'."\N{CROSS MARK}".'&percnt;</abbrev>',
 );
 
@@ -125,10 +125,9 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
     # percentage change
     my $percentage = calculate_percentage($item->{score},$item->{descendants},
 					 $score, $comments);
-    # decode retry data
 
     # item is older than 24h and has low change percentage (but is not a catch-up item below cutoff)
-    $new->{$id}->{percentage} = $percentage;
+    $new->{$id}->{percentage} = $percentage if $percentate>0.0;
     if ($item_age>2*24*3600 and abs($percentage)<=1.0 and $id>$cutoff) {
             $current->{$id}->{status}
                 = $status_icons{remove_low_percentage};
@@ -207,9 +206,6 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
             };
         push @retries, { id => $id, level => 1, count=>$retry_data->{count}+1 };
 	next;
-    }
-    if ($item_age > 24*3600) {
-	$new->{$id}->{percentage} =  sprintf( "%.1f", $percentage );
     }
 }
 
