@@ -27,12 +27,12 @@ sub extract_host {
     return $host;
 }
 my %status_icons = (
-    dead_or_deleted => '<abbr title="item is dead or deleted">."\N{SKULL}".</abbr>',
+    dead_or_deleted => "<abbr title='item is dead or deleted'>\N{U+1F480}</abbr>",
     remove_under_cutoff => '<abbr title="item is old and unchanged">'."\N{CROSS MARK}\N{ZOMBIE}".'</abbr>',
     item_too_old => '<abbr title="item is old and unchanged">'."\N{CROSS MARK}\N{ZOMBIE}".'</abbr>',
     removed_unchanged_after_3_retries => '<abbr title="item is unchanged">'."\N{CROSS MARK}".'=</abbr>',
-    retried => "<abbr title='item is retried'>\N{BLACK UNIVERSAL RECYCLING SYMBOL}</abbr>",
-    retry_low => "<abbr title='item is retried despite being low score'>\N{U+267B}↓</abbr>",
+    retried => "<abbr title='item is retried'>\N{BLACK UNIVERSAL RECYCLING SYMBOL}\N{U+FE0F}</abbr>",
+    retry_low => "<abbr title='item is retried despite being low score'>\N{U+267B}\N{U+FE0F}↓</abbr>",
     updated => "<abbr title='item is updated'>\N{U+1F504}</abbr>",
     1 => "<abbr title='retry level 1'>\N{LARGE GREEN CIRCLE}</abbr>",
     2 => "<abbr title='retry level 2'>\N{LARGE YELLOW CIRCLE}</abbr>",
@@ -127,7 +127,7 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
 					 $score, $comments);
 
     # item is older than 24h and has low change percentage (but is not a catch-up item below cutoff)
-    $new->{$id}->{percentage} = $percentage if $percentate>0.0;
+    $new->{$id}->{percentage} = $percentage if $percentage>0.0;
     if ($item_age>2*24*3600 and abs($percentage)<=1.0 and $id>$cutoff) {
             $current->{$id}->{status}
                 = $status_icons{remove_low_percentage};
@@ -141,7 +141,7 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
         and $item->{score} == $score )
     {    
 
-        if ( $retries == 0 and $score <= 2 and $comments == 0 ) {
+        if ( $retry_data->{level} == 1 and $score <= 2 and $comments == 0 ) {
 
             push @retries, { id => $id, level => 3, count=>$retry_data->{count}+1 };
             $current->{$id}->{status} = $status_icons{'retry_low'};
@@ -232,16 +232,6 @@ if ( @retries > 0 ) {
     }
 }
 
-# update item metadata for display
-# {
-#     no warnings 'uninitialized';
-#     for my $item (@removes ,@retries) {
-# 	$current->{$item->{id}}->{retry_level} = $status_icons{$current->{$item->{id}}->{retry_level}};
-# 	if (defined $new->{$item->{id}} and ($new->{$item->{id}}->{retry_level} )) {
-# 	    $new->{$item->{id}}->{retry_level} = $status_icons{$new->{$item->{id}}->{retry_level}};
-# 	}
-#     }
-# }
 if ( scalar @updates > 0 ) {
 
     my $sth
@@ -260,6 +250,10 @@ my $summary = {
     retries => scalar @retries,
     updates => scalar @updates
 };
+my $key_hash;
+for my $val (values %status_icons) {
+    $key_hash->{$val}++;
+}
 
 $stmt
     = "select hn.id, url, title, score,comments, q.age-strftime('%s','now'),q.retries,strftime('%s','now') - strftime('%s',created_time) from hackernews hn inner join hn_queue q on q.id=hn.id where q.age<= strftime('%s','now')+1*3600 order by q.age-strftime('%s','now'), q.id";
@@ -291,7 +285,8 @@ my %data = (
 	    new=>$new,
     queue_data      => $queue_data,
     generation_time => scalar gmtime($now),
-    summary         => $summary
+	    summary         => $summary,
+	    key_hash=>$key_hash,
 );
 my $tt = Template->new(
     { INCLUDE_PATH => "$Bin/templates", ENCODING => 'UTF-8' } );

@@ -113,5 +113,20 @@ more than the previous sum), it's removed from thee queue.</p>
 <p>If an item has been resubmitted 3 times and there's no change, it
 is removed from the queue.</p>
 
+<h3 id="key">Key</h3>
+
+<ul>
+<li><abbr title="item is old and unchanged">❌🧟</abbr></li>
+<li><abbr title="item is unchanged">❌=</abbr></li>
+<li><abbr title="old title with low percentage change">❌&percnt;</abbrev></li>
+<li>💀 - item is dead</li>
+<li>♻️↓ - item has been reset in the queue despite a low score</li>
+<li>♻️ - item has been reset in the queue</li>
+<li>🔄 - item has been updated in the database, and reset in the queue</li>
+<li><abbr title='retry level 1'>🟢</abbr></li>
+<li><abbr title='retry level 2'>🟡</abbr></li>
+<li><abbr title='retry level 3'>🔴</abbr></li>
+</ul>
+
 </body></html>
 
