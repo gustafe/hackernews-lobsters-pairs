@@ -18,7 +18,7 @@ my $idx = 0;
 my $sth = $dbh->prepare( "update hn_queue set age = ? where id = ?") or die $dbh->errstr;
 for my $r (@$rows) {
     my $id = $r->[0];
-    my $age = $now + 60 * $idx;
+    my $age = $now + 5 * $idx;
     $sth->execute( $age, $id ) or warn $sth->errstr;
     $idx++;
 }

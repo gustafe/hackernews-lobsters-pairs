@@ -23,7 +23,7 @@
 <h3>Summary</h3>
 <p>Retried: [% summary.retries -%]. Updated (and retried): [% summary.updates -%]. Removed: [% summary.removes -%].</p>
 
-<p>This page was updated on [% generation_time -%] UTC. <a href="#wat">[wat]</a></p>
+<p>This page was updated on [% generation_time -%] UTC - <a href="#wat">[wat]</a> - <a href="#key">[key]</a></p>
 
 <table>
 <tr><th colspan="9"><h4>Updates</h4></th></tr>

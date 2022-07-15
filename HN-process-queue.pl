@@ -27,17 +27,17 @@ sub extract_host {
     return $host;
 }
 my %status_icons = (
-    dead_or_deleted => "<abbr title='item is dead or deleted'>\N{U+1F480}</abbr>",
-    remove_under_cutoff => '<abbr title="item is old and unchanged">'."\N{CROSS MARK}\N{ZOMBIE}".'</abbr>',
-    item_too_old => '<abbr title="item is old and unchanged">'."\N{CROSS MARK}\N{ZOMBIE}".'</abbr>',
-    removed_unchanged_after_3_retries => '<abbr title="item is unchanged">'."\N{CROSS MARK}".'=</abbr>',
-    retried => "<abbr title='item is retried'>\N{BLACK UNIVERSAL RECYCLING SYMBOL}\N{U+FE0F}</abbr>",
-    retry_low => "<abbr title='item is retried despite being low score'>\N{U+267B}\N{U+FE0F}↓</abbr>",
-    updated => "<abbr title='item is updated'>\N{U+1F504}</abbr>",
-    1 => "<abbr title='retry level 1'>\N{LARGE GREEN CIRCLE}</abbr>",
-    2 => "<abbr title='retry level 2'>\N{LARGE YELLOW CIRCLE}</abbr>",
-    3 => "<abbr title='retry level 3'>\N{LARGE RED CIRCLE}</abbr>",
-    remove_low_percentage=>'<abbr title="old title with low percentage change">'."\N{CROSS MARK}".'&percnt;</abbrev>',
+    1 => "\N{LARGE GREEN CIRCLE}",
+    2 => "\N{LARGE YELLOW CIRCLE}",
+    3 => "\N{LARGE RED CIRCLE}",
+    dead_or_deleted => "\N{U+1F480}",
+    item_too_old => "\N{CROSS MARK}\N{ZOMBIE}",
+    remove_low_percentage=>"\N{CROSS MARK}&percnt",
+    remove_under_cutoff => "\N{CROSS MARK}\N{ZOMBIE}",
+    removed_unchanged_after_3_retries => "\N{CROSS MARK}=",
+    retried => "\N{BLACK UNIVERSAL RECYCLING SYMBOL}\N{U+FE0F}",
+    retry_low => "\N{U+267B}\N{U+FE0F}↓",
+    updated => "\N{U+1F504}",
 );
 
 my $debug  = 0;
