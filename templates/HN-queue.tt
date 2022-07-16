@@ -21,9 +21,12 @@
 <h1>HN&amp;&amp;LO - Hacker News update queue</h1>
 
 <h3>Summary</h3>
-<p>Retried: [% summary.retries -%]. Updated (and retried): [% summary.updates -%]. Removed: [% summary.removes -%].</p>
+<p>Retried: [% summary.retries -%]. Updated (and retried): [% summary.updates -%]. Removed: [% summary.removes -%]. </p>
+
+<p>Total items in queue: [% summary.items_in_queue -%]. Highest retry count: [% max_retry_count.last -%].</p>
 
 <p>This page was updated on [% generation_time -%] UTC - <a href="#wat">[wat]</a> - <a href="#key">[key]</a></p>
+
 
 <table>
 <tr><th colspan="9"><h4>Updates</h4></th></tr>
@@ -89,6 +92,12 @@
 </tr>
 [% END %]
 </table>
+
+<h3>Retry levels and count</h3>
+
+<pre>
+[% retry_table %]
+</pre>
 
 <h3><a id="wat">What is this</a></h3>
 

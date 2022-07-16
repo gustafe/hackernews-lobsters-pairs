@@ -9,6 +9,8 @@ use FindBin qw/$Bin/;
 use lib "$FindBin::Bin";
 use HNLOlib qw/get_dbh $sql $feeds get_ua sec_to_dhms sec_to_human_time/;
 use URI;
+use List::Util qw/max/;
+use Data::Dump qw/dump/;
 binmode( STDOUT, ':utf8' );
 sub calculate_percentage;
 sub decode_retry;
@@ -32,7 +34,7 @@ my %status_icons = (
     3 => "\N{LARGE RED CIRCLE}",
     dead_or_deleted => "\N{U+1F480}",
     item_too_old => "\N{CROSS MARK}\N{ZOMBIE}",
-    remove_low_percentage=>"\N{CROSS MARK}&percnt",
+    remove_low_percentage=>"\N{CROSS MARK}&percnt;",
     remove_under_cutoff => "\N{CROSS MARK}\N{ZOMBIE}",
     removed_unchanged_after_3_retries => "\N{CROSS MARK}=",
     retried => "\N{BLACK UNIVERSAL RECYCLING SYMBOL}\N{U+FE0F}",
@@ -224,8 +226,15 @@ if ( @retries > 0 ) {
         or die $dbh->errstr;
     my $count = 0;
     for my $item ( sort { $a->{level} <=> $b->{level} } @retries ) {
-        $sth->execute( $now + 2 * 3600 * $item->{level} + 5 * 60 * $count,
-            $item->{level}*1_000+$item->{count}, $item->{id} )
+
+	my $retry_count = $item->{count};
+	if ($retry_count>999) {
+	    warn "!!> retry count for ID $item->{id} exceeds 3 digits, capping to 999";
+	    $retry_count=999;
+	}
+
+	$sth->execute( $now + 15 * $item->{count} + 5 * 60 * $count,
+            $item->{level}*1_000+$retry_count, $item->{id} )
             or warn $sth->errstr;
 
         $count++;
@@ -250,21 +259,31 @@ my $summary = {
     retries => scalar @retries,
     updates => scalar @updates
 };
-my $key_hash;
-for my $val (values %status_icons) {
-    $key_hash->{$val}++;
-}
+# my $key_hash;
+# for my $val (values %status_icons) {
+#     $key_hash->{$val}++;
+# }
 
 $stmt
-    = "select hn.id, url, title, score,comments, q.age-strftime('%s','now'),q.retries,strftime('%s','now') - strftime('%s',created_time) from hackernews hn inner join hn_queue q on q.id=hn.id where q.age<= strftime('%s','now')+1*3600 order by q.age-strftime('%s','now'), q.id";
+    = "select hn.id, url, title, score,comments, q.age,q.retries,
+strftime('%s','now') - strftime('%s',created_time) 
+from hackernews hn 
+inner join hn_queue q on q.id=hn.id 
+ order by q.age, q.id";
 $rows = $dbh->selectall_arrayref($stmt) or die $dbh->errstr;
+$summary->{items_in_queue} = scalar @$rows;
+$now = time;
 my $queue_data;
+my $retry_summary;
 if ( scalar @$rows > 0 ) {
     for my $r (@$rows) {
         my ( $id, $url, $title, $score, $comments, $age, $retries, $item_age )
 	  = @$r;
+
 	my $retry_data = decode_retry( $retries );
-        push @{$queue_data},
+	if ($age <= $now+3600 ) {
+
+	    push @{$queue_data},
             {
             id       => $id,
             url      => $url,
@@ -277,16 +296,40 @@ if ( scalar @$rows > 0 ) {
             domain   => extract_host($url),
             item_age => sec_to_human_time($item_age)
             };
+	}
+	$retry_summary->{$retry_data->{level}}->{$retry_data->{count}}++;
     }
 }
+dump $retry_summary;
+my $max_retry_count= max(map {keys %{$retry_summary->{$_}}} keys %$retry_summary );
+my $retry_table = 'L\C|';
 
+$retry_table .= join('', map {sprintf(" %2d|", $_)} (1..$max_retry_count));
+
+$retry_table .= "\n";
+$retry_table.= '---+';
+$retry_table.= '---+' x $max_retry_count . "\n";
+for my $level (sort keys %$retry_summary) {
+    $retry_table .=sprintf(' %d |', $level);
+    for my $count (1..$max_retry_count) {
+	if (defined $retry_summary->{$level}->{$count}) {
+	    $retry_table.=sprintf("%3d|", $retry_summary->{$level}->{$count});
+	} else {
+	    $retry_table.=sprintf("%3s|",' ');
+	}
+    }
+    $retry_table.= "\n";
+}
 my %data = (
 	    current     => $current,
 	    new=>$new,
     queue_data      => $queue_data,
     generation_time => scalar gmtime($now),
 	    summary         => $summary,
-	    key_hash=>$key_hash,
+	    #	    key_hash=>$key_hash,
+	    retry_summary => $retry_summary,
+	    max_retry_count=>[1 .. $max_retry_count],
+	    retry_table=>$retry_table,
 );
 my $tt = Template->new(
     { INCLUDE_PATH => "$Bin/templates", ENCODING => 'UTF-8' } );
