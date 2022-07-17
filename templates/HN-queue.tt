@@ -30,10 +30,7 @@
 
 <table>
 <tr><th colspan="9"><h4>Updates</h4></th></tr>
-<tr><th>Id</th>
-<th>URL</th>
-<th>Domain
-</th>
+<tr><th>Id</th><th>URL</th><th>Domain</th>
 <th>S</th><th>C</th><th>R</th>
 <th>Item age</th><th>Status</th><th>&percnt; change</th></tr>
 [% FOREACH id IN current.keys.sort -%]
@@ -61,10 +58,10 @@
 </td>
 <td class="num">
   [% IF new.$id.retry_level  -%]
-  [% THEN -%][% current.$id.retry_level -%]→[% new.$id.retry_level -%]<span id="sub">[% new.$id.retry_count -%]</span>
-  [% ELSE -%][% current.$id.retry_level -%]<span id="sub">[% current.$id.retry_count -%]</span>
+  [% THEN -%][% current.$id.retry_level -%]→[% new.$id.retry_level -%]
+  [% ELSE -%][% current.$id.retry_level -%]
   [% END -%]
-</td>
+<span id="sub">[% current.$id.retry_count -%]</span></td>
 <td class="num">[% current.$id.item_age -%]</td>
 <td class="center">[% current.$id.status -%]</td>
 <td class="num">

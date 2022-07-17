@@ -9,7 +9,7 @@ use FindBin qw/$Bin/;
 use lib "$FindBin::Bin";
 use HNLOlib qw/get_dbh $sql $feeds get_ua sec_to_dhms sec_to_human_time/;
 use URI;
-use List::Util qw/max/;
+use List::Util qw/max all/;
 use Data::Dump qw/dump/;
 binmode( STDOUT, ':utf8' );
 sub calculate_percentage;
@@ -330,13 +330,11 @@ if ( scalar @$rows > 0 ) {
                 comments    => $comments,
                 next_run    => $age,
                 retry_level => $status_icons{ $retry_data->{level} },
-                retry_count => $retry_data->{count},
+		retry_count => $retry_data->{count},
                 domain      => extract_host($url),
                 item_age    => sec_to_human_time($item_age),
             };
             if ( exists $frontpage{$id} and $frontpage{$id} <= 30 ) {
-
-                #		say "==> $id $title on frontpage: $frontpage{$id}";
                 $data->{frontpage} = "$status_icons{star}($frontpage{$id})";
             }
 
@@ -346,25 +344,33 @@ if ( scalar @$rows > 0 ) {
     }
 }
 
-#dump $retry_summary;
 my $max_retry_count
     = max( map { keys %{ $retry_summary->{$_} } } keys %$retry_summary );
 my $retry_table = 'L\C|';
 
+my @header;
+for my $count (1..$max_retry_count) {
+    if ($retry_summary->{1}->{$count} or
+	$retry_summary->{2}->{$count} or
+	$retry_summary->{3}->{$count}       ) {
+	push @header, $count
+    }
+}
 $retry_table
-    .= join( '', map { sprintf( " %2d|", $_ ) } ( 1 .. $max_retry_count ) );
+    .= join( '', map { sprintf( " %2d|", $_ ) } ( @header ) );
 
 $retry_table .= "\n";
 $retry_table .= '---+';
-$retry_table .= '---+' x $max_retry_count . "\n";
+$retry_table .= '---+' x scalar @header;
+$retry_table .= "\n";
 for my $level ( sort keys %$retry_summary ) {
     $retry_table .= sprintf( ' %d |', $level );
-    for my $count ( 1 .. $max_retry_count ) {
+    for my $count ( @header ) {
         if ( defined $retry_summary->{$level}->{$count} ) {
             $retry_table
                 .= sprintf( "%3d|", $retry_summary->{$level}->{$count} );
-        }
-        else {
+       }
+       else {
             $retry_table .= sprintf( "%3s|", ' ' );
         }
     }
