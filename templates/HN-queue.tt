@@ -44,7 +44,7 @@
   [% THEN -%][% current.$id.title -%] → <br/>[% new.$id.title -%]
   [% ELSE -%][% current.$id.title -%]
   [% END -%]</a>
-  [% IF current.$id.frontpage -%][% THEN -%] ⭐[% current.$id.frontpage -%][% END -%]
+  [% IF current.$id.frontpage -%][% THEN -%] [% current.$id.frontpage -%][% END -%]
 </td>
 <td>[% current.$id.domain -%]</td>
 <td class="num">
