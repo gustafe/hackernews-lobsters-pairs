@@ -329,7 +329,7 @@ sub sec_to_human_time {
     }
 
     $out .= $hours > 0 ? $hours . 'h' : '';
-    $out .= $mins . 'm';
+    $out .= $hours > 0 ? sprintf("%02d",$mins) : $mins . 'm';
 
     return $out;
 }

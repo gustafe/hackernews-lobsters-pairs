@@ -39,7 +39,8 @@ my %status_icons = (
     removed_unchanged_after_3_retries => "\N{CROSS MARK}=",
     retried => "\N{BLACK UNIVERSAL RECYCLING SYMBOL}\N{U+FE0F}",
     retry_low => "\N{U+267B}\N{U+FE0F}↓",
-    updated => "\N{U+1F504}",
+		    updated => "\N{U+1F504}",
+		    star=>"\N{U+2B50}",
 );
 
 my $debug  = 0;
@@ -64,11 +65,26 @@ my $ua = get_ua();
 my @removes;
 my @retries;
 my @updates;
+my @deads;
 my $cutoff_shown = 0;
 my $dhms;
 my %seen;
 my $current;
 my $new;
+my %frontpage;
+# get current front page
+my $topview_url = 'https://hacker-news.firebaseio.com/v0/topstories.json';
+my    $response = $ua->get($topview_url);
+if ( !$response->is_success ) {
+    warn $response->status_line;
+}
+my $top_ids = decode_json( $response->decoded_content );
+my $rank = 1;
+foreach my $id (@$top_ids) {
+    $frontpage{$id}=$rank;
+    $rank++;
+}
+
 
 for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
     my ( $id, $title, $url, $score, $comments, $item_age, $retries ) = @$row;
@@ -91,7 +107,10 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
     else {
         $seen{$id}++;
     }
-
+    if (exists $frontpage{$id} and $frontpage{$id}<=30) {
+	say "==> $id $title on frontpage: $frontpage{$id}";
+	$current->{$id}->{frontpage} = "$status_icons{star}($frontpage{$id})";
+    }
     $dhms = sec_to_dhms($item_age);
     if ( $id > $cutoff and !$cutoff_shown ) {
         $cutoff_shown = 1;
@@ -120,7 +139,9 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
 
     if ( defined $item->{dead} or defined $item->{deleted} ) {
         push @removes, {id=>$id};
+	push @deads, {id=>$id};
         $current->{$id}->{status} = $status_icons{'dead_or_deleted'};
+	say "==> $id $title <$url> S:$score C:$comments is dead or deleted";
         next;
     } 
 
@@ -211,6 +232,13 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
     }
 }
 
+if (scalar @deads > 0) {
+    my $sth=$dbh->prepare("delete from hackernews where id = ?") or die $dbh->errstr;
+    for my $item (@deads) {
+	$sth->execute( $item->{id} ) or warn $sth->errstr;
+    }
+}
+
 if ( scalar @removes > 0 ) {
 
     my $sth = $dbh->prepare("delete from hn_queue where id = ?")
@@ -257,7 +285,8 @@ if ( scalar @updates > 0 ) {
 my $summary = {
     removes => scalar @removes,
     retries => scalar @retries,
-    updates => scalar @updates
+	       updates => scalar @updates,
+	       deads=>scalar @deads,
 };
 # my $key_hash;
 # for my $val (values %status_icons) {
@@ -282,9 +311,7 @@ if ( scalar @$rows > 0 ) {
 
 	my $retry_data = decode_retry( $retries );
 	if ($age <= $now+3600 ) {
-
-	    push @{$queue_data},
-            {
+	    my $data =             {
             id       => $id,
             url      => $url,
             title    => $title,
@@ -294,13 +321,19 @@ if ( scalar @$rows > 0 ) {
 	     retry_level  => $status_icons{$retry_data->{level}},
 	     retry_count => $retry_data->{count},
             domain   => extract_host($url),
-            item_age => sec_to_human_time($item_age)
-            };
+            item_age => sec_to_human_time($item_age),
+				   };
+	    if (exists $frontpage{$id} and $frontpage{$id}<=30) {
+		say "==> $id $title on frontpage: $frontpage{$id}";
+		$data->{frontpage} = "$status_icons{star}($frontpage{$id})";
+	    }
+
+	    push @{$queue_data}, $data;
 	}
 	$retry_summary->{$retry_data->{level}}->{$retry_data->{count}}++;
     }
 }
-dump $retry_summary;
+#dump $retry_summary;
 my $max_retry_count= max(map {keys %{$retry_summary->{$_}}} keys %$retry_summary );
 my $retry_table = 'L\C|';
 

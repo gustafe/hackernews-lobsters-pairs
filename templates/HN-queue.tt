@@ -21,11 +21,11 @@
 <h1>HN&amp;&amp;LO - Hacker News update queue</h1>
 
 <h3>Summary</h3>
-<p>Retried: [% summary.retries -%]. Updated (and retried): [% summary.updates -%]. Removed: [% summary.removes -%]. </p>
+<p>Retried: [% summary.retries -%]. Updated (and retried): [% summary.updates -%]. Removed: [% summary.removes -%]. Dead: [% summary.deads -%].</p>
 
 <p>Total items in queue: [% summary.items_in_queue -%]. Highest retry count: [% max_retry_count.last -%].</p>
 
-<p>This page was updated on [% generation_time -%] UTC - <a href="#wat">[wat]</a> - <a href="#key">[key]</a></p>
+<p>This page was updated on [% generation_time -%] UTC - <a href="#wat">[wat]</a> - <a href="#key">[key]</a> - <a href="#retry_summary">[Retry levels and counts]</a></p>
 
 
 <table>
@@ -44,6 +44,7 @@
   [% THEN -%][% current.$id.title -%] → <br/>[% new.$id.title -%]
   [% ELSE -%][% current.$id.title -%]
   [% END -%]</a>
+  [% IF current.$id.frontpage -%][% THEN -%] ⭐[% current.$id.frontpage -%][% END -%]
 </td>
 <td>[% current.$id.domain -%]</td>
 <td class="num">
@@ -81,7 +82,9 @@
 [% FOREACH entry IN queue_data -%]
 <tr>
 <td><a href="https://news.ycombinator.com/item?id=[% entry.id -%]">[% entry.id -%]</a></td>
-<td><a href="[% entry.url -%]">[% entry.title %]</a></td>
+<td><a href="[% entry.url -%]">[% entry.title -%]</a>
+  [% IF entry.frontpage -%][% THEN -%] [% entry.frontpage -%][% END -%]
+</td>
 <td>[% entry.domain -%]</td>
 <td class="num">[% entry.score -%]</td>
 <td class="num">[% entry.comments -%]</td>
@@ -93,7 +96,7 @@
 [% END %]
 </table>
 
-<h3>Retry levels and count</h3>
+<h3 id="retry_summary">Retry levels and count</h3>
 
 <pre>
 [% retry_table %]
