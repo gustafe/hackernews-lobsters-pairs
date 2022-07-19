@@ -9,7 +9,7 @@ use FindBin qw/$Bin/;
 use lib "$FindBin::Bin";
 use HNLOlib qw/get_dbh $sql $feeds get_ua sec_to_dhms sec_to_human_time/;
 use URI;
-use List::Util qw/max all/;
+use List::Util qw/max all any/;
 use Data::Dump qw/dump/;
 binmode( STDOUT, ':utf8' );
 sub calculate_percentage;
@@ -72,7 +72,7 @@ my %seen;
 my $current;
 my $new;
 my %frontpage;
-
+my $exception_log;
 # get current front page
 my $topview_url = 'https://hacker-news.firebaseio.com/v0/topstories.json';
 my $response    = $ua->get($topview_url);
@@ -142,7 +142,7 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
         push @removes, { id => $id };
         push @deads,   { id => $id };
         $current->{$id}->{status} = $status_icons{'dead_or_deleted'};
-        say "==> $id $title <$url> S:$score C:$comments is dead or deleted";
+        $exception_log .= "==> $id $title <$url> S:$score C:$comments is dead or deleted\n";
         next;
     }
 
@@ -274,9 +274,21 @@ if ( @retries > 0 ) {
                 "!!> retry count for ID $item->{id} exceeds 3 digits, capping to 999";
             $retry_count = 999;
         }
-
+	my $future_age;
+	if ($item->{level} == 3 and $retry_count <= 2) {  # first retry for low score items
+	  $exception_log .=  sprintf ("==> setting %d «%s» S:%d C:%d to %d seconds in the future\n", $item->{id}, $current->{$item->{id}}->{title}, $current->{$item->{id}}->{score}, $current->{$item->{id}}->{comments}, 3*3600);
+	    $future_age = $now + 3 * 3600;
+	} else {
+	    $future_age = $now + 3600 + 15 * 60 * $retry_count;
+	}
+	if ($future_age-$now >8*3600) {
+	  $exception_log .=  sprintf("~~> %d «%s» interval %s s too  long, capping to %s s\n",
+$item->{id}, $current->{$item->{id}}->{title},		   $future_age-$now,  8.5*3600);
+		   
+	    $future_age = $now+ 8.5*3600;
+	}
         $sth->execute(
-            $now + 15 * $item->{count} + 5 * 60 * $count,
+            $future_age + 5 * 60 * $count,
             $item->{level} * 1_000 + $retry_count,
             $item->{id}
         ) or warn $sth->errstr;
@@ -315,6 +327,7 @@ $summary->{items_in_queue} = scalar @$rows;
 $now = time;
 my $queue_data;
 my $retry_summary;
+my $age_summary;
 if ( scalar @$rows > 0 ) {
     for my $r (@$rows) {
         my ( $id, $url, $title, $score, $comments, $age, $retries, $item_age )
@@ -341,6 +354,8 @@ if ( scalar @$rows > 0 ) {
             push @{$queue_data}, $data;
         }
         $retry_summary->{ $retry_data->{level} }->{ $retry_data->{count} }++;
+	my $age_level = int(( $age-$now)/3600);
+	$age_summary->{$age_level+1}++;
     }
 }
 
@@ -352,7 +367,8 @@ my @header;
 for my $count (1..$max_retry_count) {
     if ($retry_summary->{1}->{$count} or
 	$retry_summary->{2}->{$count} or
-	$retry_summary->{3}->{$count}       ) {
+	$retry_summary->{3}->{$count} or
+       $age_summary->{$count}) {
 	push @header, $count
     }
 }
@@ -376,6 +392,14 @@ for my $level ( sort keys %$retry_summary ) {
     }
     $retry_table .= "\n";
 }
+$retry_table .='Hrs|';
+for my $age_level (@header) {
+    if (defined $age_summary->{$age_level}) {
+	$retry_table .= sprintf( "%3d|", $age_summary->{$age_level} );
+    } else {
+	    $retry_table .= sprintf( "%3s|", ' ' );
+    }
+}
 my %data = (
     current         => $current,
     new             => $new,
@@ -386,7 +410,8 @@ my %data = (
     #	    key_hash=>$key_hash,
     retry_summary   => $retry_summary,
     max_retry_count => [ 1 .. $max_retry_count ],
-    retry_table     => $retry_table,
+	    retry_table     => $retry_table,
+	    exception_log => $exception_log,
 );
 my $tt = Template->new(
     { INCLUDE_PATH => "$Bin/templates", ENCODING => 'UTF-8' } );

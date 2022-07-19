@@ -99,6 +99,10 @@
 [% retry_table %]
 </pre>
 
+<pre>
+[% exception_log %]
+</pre>
+
 <h3><a id="wat">What is this</a></h3>
 
 <p>This is the update queue for submissions from Hackernews in <a
