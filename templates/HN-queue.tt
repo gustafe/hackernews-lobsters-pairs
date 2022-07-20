@@ -9,9 +9,21 @@
   <style>
     li: {padding-top: 20px; padding-bottom: 20px; }
     .split-line span {float:right;padding-right: 10%;}
-    table td, table td * { vertical-align: top; }
+    table td, table td * { vertical-align: top; width: 90%;}
     table td.num {text-align: right;}
     table td.center {text-align: center;}
+    td:nth-child(1) { width: 3%; }
+    td:nth-child(2) { width: 5%; }
+    td:nth-child(3) { width: 47%; }
+    td:nth-child(4) { width: 15%; }
+    td:nth-child(5) { width: 5%; }
+    td:nth-child(6) { width: 5%; }
+    td:nth-child(7) { width: 8%; }
+    td:nth-child(8) { width: 8%; }
+    td:nth-child(9) { width: 4%; }
+        td:nth-child(10) { width: 4%; }	
+    
+
     #sub { vertical-align: sub; 
     	 font-size: small;
 	 }
@@ -27,14 +39,15 @@
 
 <p>This page was updated on [% generation_time -%] UTC - <a href="#wat">[wat]</a> - <a href="#key">[key]</a> - <a href="#retry_summary">[Retry levels and counts]</a></p>
 
-
+[% rownum = 1 -%]
 <table>
 <tr><th colspan="9"><h4>Updates</h4></th></tr>
-<tr><th>Id</th><th>URL</th><th>Domain</th>
+<tr><th>#</th><th>Id</th><th>URL</th><th>Domain</th>
 <th>S</th><th>C</th><th>R</th>
 <th>Item age</th><th>Status</th><th>&percnt; change</th></tr>
 [% FOREACH id IN current.keys.sort -%]
 <tr>
+<td class="num">[% rownum -%].</td>
 <td><a href="https://news.ycombinator.com/item?id=[% id -%]">[% id -%]</a></td>
 <td><a href="[% current.$id.url -%]">
   [% IF new.$id.title -%]
@@ -70,15 +83,16 @@
   [% ELSE -%]&nbsp;[% END -%]
 </td>
 </tr>
+[% rownum = rownum + 1 -%]
 [% END -%]
-
+[% rownum = 1 %]
 <tr><th colspan="9"><h4>Current queue (next hour)</h4></th></tr>
 
 <!-- <tr><th>Id</th><th>URL</th><th>Domain</th><th>S</th><th>C</th><th>R</th><th>Item age</th><th>&nbsp;</th><th>&nbsp;</th></tr> -->
 
 [% FOREACH entry IN queue_data -%]
 <tr>
-<td><a href="https://news.ycombinator.com/item?id=[% entry.id -%]">[% entry.id -%]</a></td>
+<td class="num">[% rownum -%].<td><a href="https://news.ycombinator.com/item?id=[% entry.id -%]">[% entry.id -%]</a></td>
 <td><a href="[% entry.url -%]">[% entry.title -%]</a>
   [% IF entry.frontpage -%][% THEN -%] [% entry.frontpage -%][% END -%]
 </td>
@@ -90,6 +104,7 @@
 <td>&nbsp;</td>
 <td>&nbsp;</td>
 </tr>
+[% rownum = rownum + 1 %]
 [% END %]
 </table>
 

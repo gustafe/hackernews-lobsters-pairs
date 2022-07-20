@@ -1,6 +1,26 @@
 <h3>/r/programming</h3>
-<ol>
+[% rownum = 1 -%]
+<table>
+<tr>
+<th>#</th>
+<th>Id</th>
+<th>URL</th>
+<th>Domain</th>
+<th>Submitter</th>
+<th>Score</th>
+<th>Comments</th>
+</tr>
+
+
 [% FOREACH entry IN entries -%]
-<li class="split-line"><a href="https://www.reddit.com/r/programming/comments/[% entry.id -%]">[% entry.id -%]</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="[% entry.url -%]">[% entry.title %]</a>&nbsp;&nbsp;&nbsp;&nbsp;([% entry.host -%])<span><a href="https://reddit.com/user/[% entry.author -%]">[% entry.author -%]</a> S: [% entry.score -%] C: [% entry.num_comments -%]</span></li>
+<td>[% rownum -%]</td>
+<td><a href="https://www.reddit.com/r/programming/comments/[% entry.id -%]">[% entry.id -%]</a></td>
+<td><a href="[% entry.url -%]">[% entry.title %]</a></td>
+<td>[% entry.host -%]</td>
+<td><a href="https://reddit.com/user/[% entry.author -%]">[% entry.author -%]</a></td>
+<td>[% entry.score -%]</td><td>[% entry.num_comments -%]</td>
+</tr>
+[% rownum = rownum + 1 -%]
 [% END %]
-</ol>
+
+</table>
