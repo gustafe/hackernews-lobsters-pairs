@@ -20,24 +20,25 @@ my $all_items_sql = 'select id from hackernews order by id';
 
 my $insert_sql = $feeds->{hn}->{insert_sql};
 
-my $all_ids = $dbh->selectall_arrayref( $all_items_sql );
-my %seen = map {$all_ids->[$_][0] => 1 } (0 .. scalar @$all_ids-1);
-my $min = 20444922  // $all_ids->[0][0];
-my $max = $all_ids->[-1][0];
-#my $list;
-my %gaps;
-my @sequences;
-for (my $idx=1; $idx< scalar @$all_ids;$idx++ )  {
-    my $diff = $all_ids->[$idx][0] - $all_ids->[$idx-1][0];
-    if ($diff>=100) {
-	push @sequences, [$all_ids->[$idx-1][0]+1,$all_ids->[$idx][0]-1];
-    }
-    $gaps{$diff}++;
-}
-#for my $seq (@sequences) {     say join(' - ', @$seq);}
-#exit 0;
+# my $all_ids = $dbh->selectall_arrayref( $all_items_sql );
+# my %seen = map {$all_ids->[$_][0] => 1 } (0 .. scalar @$all_ids-1);
+# my $min = 20444922  // $all_ids->[0][0];
+# my $max = $all_ids->[-1][0];
+# #my $list;
+# my %gaps;
+# my @sequences;
+# for (my $idx=1; $idx< scalar @$all_ids;$idx++ )  {
+#     my $diff = $all_ids->[$idx][0] - $all_ids->[$idx-1][0];
+#     if ($diff>=100) {
+# 	push @sequences, [$all_ids->[$idx-1][0]+1,$all_ids->[$idx][0]-1];
+#     }
+#     $gaps{$diff}++;
+# }
+# #for my $seq (@sequences) {     say join(' - ', @$seq);}
+# #exit 0;
 
-my ( $start, $end) = (20444922,20445026);
+my ( $start, $end) = (3900000,
+		      4100000);
 
 my $list = [ $start .. $end ];
 
