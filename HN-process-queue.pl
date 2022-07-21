@@ -11,6 +11,7 @@ use HNLOlib qw/get_dbh $sql $feeds get_ua sec_to_dhms sec_to_human_time/;
 use URI;
 use List::Util qw/max all any/;
 use Data::Dump qw/dump/;
+use Time::Piece;
 binmode( STDOUT, ':utf8' );
 sub calculate_percentage;
 sub decode_retry;
@@ -404,7 +405,8 @@ my %data = (
     current         => $current,
     new             => $new,
     queue_data      => $queue_data,
-    generation_time => scalar gmtime($now),
+	    generation_time => gmtime($now)->datetime,
+	    generation_minute => join(':',gmtime($now)->hour, gmtime($now)->minute),
     summary         => $summary,
 
     #	    key_hash=>$key_hash,

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>HN update queue for HN&amp;&amp;LO</title>
+    <title>HN Q [% generation_minute -%]</title>
     </head>
   <style>
     li: {padding-top: 20px; padding-bottom: 20px; }
@@ -14,16 +14,15 @@
     table td.center {text-align: center;}
     td:nth-child(1) { width: 3%; }
     td:nth-child(2) { width: 5%; }
-    td:nth-child(3) { width: 47%; }
+    td:nth-child(3) { width: 50%; }
     td:nth-child(4) { width: 15%; }
     td:nth-child(5) { width: 5%; }
     td:nth-child(6) { width: 5%; }
     td:nth-child(7) { width: 8%; }
-    td:nth-child(8) { width: 8%; }
+    td:nth-child(8) { width: 5%; }
     td:nth-child(9) { width: 4%; }
-        td:nth-child(10) { width: 4%; }	
+    td:nth-child(10) { width: 4%; }	
     
-
     #sub { vertical-align: sub; 
     	 font-size: small;
 	 }
@@ -69,7 +68,7 @@
   [% ELSE -%][% current.$id.comments -%]
   [% END -%]
 </td>
-<td class="num">
+<td>
   [% IF new.$id.retry_level  -%]
   [% THEN -%][% current.$id.retry_level -%]→[% new.$id.retry_level -%]
   [% ELSE -%][% current.$id.retry_level -%]
@@ -99,7 +98,7 @@
 <td>[% entry.domain -%]</td>
 <td class="num">[% entry.score -%]</td>
 <td class="num">[% entry.comments -%]</td>
-<td class="num">[% entry.retry_level -%]<span id="sub">[% entry.retry_count -%]</span></td>
+<td>[% entry.retry_level -%]<span id="sub">[% entry.retry_count -%]</span></td>
 <td class="num">[% entry.item_age -%]</td>
 <td>&nbsp;</td>
 <td>&nbsp;</td>
