@@ -12,6 +12,7 @@ use URI;
 use List::Util qw/max all any/;
 use Data::Dump qw/dump/;
 use Time::Piece;
+use open qw/ :std :encoding(utf8) /;
 binmode( STDOUT, ':utf8' );
 sub calculate_percentage;
 sub decode_retry;
@@ -49,12 +50,12 @@ my $debug  = 0;
 my $cutoff = 31940335;
 
 my $now = time;
-
+my $start_time=$now;
 my $dbh  = get_dbh;
 my $stmt = "select hn.id, title,url, score,comments, 
 strftime('%s','now') - strftime('%s',created_time),q.retries 
 from hackernews hn inner join hn_queue q on q.id=hn.id 
-where q.age <= " . ( $now + 15 * 60 );
+where q.age <= " . ( $now + 45 * 60 );
 
 my $rows = $dbh->selectall_arrayref($stmt) or die $dbh->errstr;
 if ( scalar @$rows == 0 ) {
@@ -174,12 +175,21 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
         if ( $retry_data->{level} == 1 and $score <= 2 and $comments == 0 ) {
 
             push @retries,
-                { id => $id, level => 3, count => $retry_data->{count} + 1 };
+                { id => $id, level => 3, count => $retry_data->{count} + 1};
             $current->{$id}->{status}  = $status_icons{'retry_low'};
             $new->{$id}->{retry_level} = $status_icons{3};
             $new->{$id}->{retry_count} = $retry_data->{count} + 1;
             next;
         }
+	# "stuttering" items, low score but many retries
+	if ($retry_data->{level}<3 and $retry_data->{count}>=3 and ($score+$comments)<=10) {
+	    push @retries, {id=>$id, level=>3, count=>$retry_data->{count}+1};
+	    $current->{$id}->{status}="STT";
+	    $new->{$id}->{retry_level}=$status_icons{3};
+	    $new->{$id}->{retry_count}=$retry_data->{count}+1;
+	    next;
+	    
+	}
         elsif ( $id <= $cutoff ) {
 
             $current->{$id}->{status}
@@ -206,7 +216,7 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
                 {
                 id    => $id,
                 level => $retry_data->{level} + 1,
-                count => $retry_data->{count} + 1
+		 count => $retry_data->{count} + 1,
                 };
             next;
         }
@@ -287,7 +297,8 @@ if ( @retries > 0 ) {
 $item->{id}, $current->{$item->{id}}->{title},		   $future_age-$now,  8.5*3600);
 		   
 	    $future_age = $now+ 8.5*3600;
-	}
+      }
+
         $sth->execute(
             $future_age + 5 * 60 * $count,
             $item->{level} * 1_000 + $retry_count,
@@ -424,7 +435,16 @@ $tt->process(
 ) || die $tt->error;
 
 $dbh->disconnect;
-
+my $end_time=time;
+open(LF, ">> $Bin/Logs/HN-queue.log") or warn "could not open log file for appending: $!";
+say LF join("\x{2502}",(gmtime($start_time)->datetime,
+	      gmtime($end_time)->datetime,
+	      "REM:".sprintf("%2d",$summary->{removes}),
+	      "RTY:".sprintf("%2d",$summary->{retries}),
+	      "UPD:".sprintf("%2d",$summary->{updates}),
+	      "DED:".sprintf("%2d",$summary->{deads}),
+	      "QSZ:".sprintf("%2d",$summary->{items_in_queue})));
+close LF;	 
 sub calculate_percentage {
     my ( $new_score, $new_comments, $score, $comments ) = @_;
     if ( $score + $comments != 0 ) {
