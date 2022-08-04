@@ -6,7 +6,8 @@ use Template;
 use FindBin qw/$Bin/;
 use utf8;
 use File::Find;
-binmode(STDOUT, ":encoding(UTF-8)");
+use open IO => ':utf8';
+#binmode(STDOUT, ":encoding(UTF-8)");
 my $logdir = "$Bin/Logs";
 opendir(my $dh, $logdir) || die "can't open $logdir: $!";
 my @files = readdir $dh;
@@ -14,7 +15,7 @@ exit 0 unless @files;
 my @entries;
 my $count = 0;
 for my $f (sort{$b cmp $a} @files ) {
-    next if ( $f eq '.' or $f eq '..' );
+    next if ( $f eq '.' or $f eq '..' or $f =~ /\.log$/);
 #    say $f;
     next if $count > 23;
 
