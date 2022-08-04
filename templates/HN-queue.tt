@@ -7,7 +7,11 @@
     <title>HN Q [% generation_minute -%]</title>
     </head>
   <style>
-    li: {padding-top: 20px; padding-bottom: 20px; }
+h1,h2,h3,
+h4,h5,h6 {
+  font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+}
+li: {padding-top: 20px; padding-bottom: 20px; }
     .split-line span {float:right;padding-right: 10%;}
     table td, table td * { vertical-align: top; width: 90%;}
     table td.num {text-align: right;}
