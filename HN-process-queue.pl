@@ -87,7 +87,7 @@ foreach my $id (@$top_ids) {
     $frontpage{$id} = $rank;
     $rank++;
 }
-
+my $summary;
 for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
     my ( $id, $title, $url, $score, $comments, $item_age, $retries ) = @$row;
     my $retry_data = decode_retry($retries);
@@ -187,6 +187,8 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
 	    $current->{$id}->{status}="STT";
 	    $new->{$id}->{retry_level}=$status_icons{3};
 	    $new->{$id}->{retry_count}=$retry_data->{count}+1;
+	    $summary->{stutters}++;
+	    warn "==> $id stutters";
 	    next;
 	    
 	}
@@ -322,12 +324,11 @@ if ( scalar @updates > 0 ) {
         ) or warn $sth->errstr;
     }
 }
-my $summary = {
-    removes => scalar @removes,
-    retries => scalar @retries,
-    updates => scalar @updates,
-    deads   => scalar @deads,
-};
+$summary->{removes} = scalar @removes;
+$summary->{ retries} = scalar @retries;
+$summary->{   updates} = scalar @updates;
+  $summary-> {	      deads }  = scalar @deads;
+
 
 $stmt = "select hn.id, url, title, score,comments, q.age,q.retries,
 strftime('%s','now') - strftime('%s',created_time) 
@@ -437,12 +438,13 @@ $tt->process(
 $dbh->disconnect;
 my $end_time=time;
 open(LF, ">> $Bin/Logs/HN-queue.log") or warn "could not open log file for appending: $!";
-say LF join("\x{2502}",(gmtime($start_time)->datetime,
-	      gmtime($end_time)->datetime,
+say LF join("\x{2502}",(gmtime($start_time)->strftime("%Y%m%dT%H%M%S"),
+	      gmtime($end_time)->strftime("%Y%m%dT%H%M%S"),
 	      "REM:".sprintf("%2d",$summary->{removes}),
 	      "RTY:".sprintf("%2d",$summary->{retries}),
 	      "UPD:".sprintf("%2d",$summary->{updates}),
-	      "DED:".sprintf("%2d",$summary->{deads}),
+			"DED:".sprintf("%2d",$summary->{deads}),
+			"STT:".sprintf("%2d",$summary->{stutters}?$summary->{sutters}:0),
 	      "QSZ:".sprintf("%2d",$summary->{items_in_queue})));
 close LF;	 
 sub calculate_percentage {
