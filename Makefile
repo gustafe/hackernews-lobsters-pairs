@@ -6,12 +6,18 @@ WWW=$(HOME)/public_html/hnlo
 MD=$(HOME)/bin/Markdown_1.0.1/Markdown.pl
 .PHONY: build
 build:
-	@perl -I $(BIN) $(BIN)/update-daily-and-output-log-files.pl
+#	@perl -I $(BIN) $(BIN)/update-daily-and-output-log-files.pl
 	@perl -I $(BIN) $(BIN)/generate-hourly.pl
-	perl $(BIN)/generate-log-file.pl
+#	perl $(BIN)/generate-log-file.pl
 .PHONY: refresh
 refresh:	
 	perl -I $(BIN) $(BIN)/generate-hourly.pl 
+
+.PHONY: loaddata
+loaddata:
+	@perl -I $(BIN) $(BIN)/update-daily-and-output-log-files.pl
+# 	perl $(BIN)/generate-log-file.pl
+	perl $(BIN)/HN-process-queue.pl
 
 .PHONY: scores
 scores:

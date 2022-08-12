@@ -176,7 +176,7 @@ if (scalar @items > 0) {
 
     my %data = (entries=>\@items);
     my $tt = Template->new( {INCLUDE_PATH=>"$Bin/templates",ENCODING=>'UTF-8'} );
-    $tt->process( 'HN-log.tt', \%data) || die $tt->error;
+    $tt->process( 'HN-log-txt.tt', \%data) || die $tt->error;
 }
 
 ### update items that are part of sets

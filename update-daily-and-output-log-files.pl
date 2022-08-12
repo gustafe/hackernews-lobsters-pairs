@@ -39,7 +39,7 @@ for my $tag (qw/lo hn pr/) {
     my $output= `$cmd`;
 
     say $fh $output;
-    say $fh "<!-- elapsed time: ", sec_to_dhms(tv_interval($t0)), " -->";
+#    say $fh "<!-- elapsed time: ", sec_to_dhms(tv_interval($t0)), " -->";
     #    say $fh "Elapsed time: ",sec_to_dhms( tv_interval( $t0));
 }
 close $fh;

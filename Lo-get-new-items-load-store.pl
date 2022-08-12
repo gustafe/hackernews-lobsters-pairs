@@ -143,9 +143,6 @@ if (@inserts) {
 	push @$el,$host;
     }
 
-    my %data = (count=>$count, entries=>\@inserts);
-    my $tt = Template->new( {INCLUDE_PATH=>"$Bin/templates",ENCODING=>'UTF-8'} );
-    $tt->process( 'Lo-log.tt', \%data) || die $tt->error;
 }
 
 if (@updates) {
@@ -158,4 +155,10 @@ if (@updates) {
     }
 
     $sth->finish;
+}
+my %data = (count=>$count, entries=>\@inserts, updates=>scalar @updates);
+if (scalar @inserts) {
+
+my $tt = Template->new( {INCLUDE_PATH=>"$Bin/templates",ENCODING=>'UTF-8'} );
+$tt->process( 'Lo-log-txt.tt', \%data) || die $tt->error;
 }

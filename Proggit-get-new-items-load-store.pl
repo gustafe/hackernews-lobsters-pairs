@@ -84,7 +84,7 @@ foreach my $post (@{$posts}) {
 if (scalar @entries>0) {
     my %data = (entries => \@entries);
     my $tt = Template->new( {INCLUDE_PATH=>"$Bin/templates",ENCODING=>'UTF-8'} );
-    $tt->process( 'Proggit-log.tt', \%data) || die $tt->error;
+    $tt->process( 'Proggit-log-txt.tt', \%data) || die $tt->error;
 
 }
 
