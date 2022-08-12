@@ -188,7 +188,7 @@ for my $row ( sort { $a->[0] <=> $b->[0] } @$rows ) {
 	    $new->{$id}->{retry_level}=$status_icons{3};
 	    $new->{$id}->{retry_count}=$retry_data->{count}+1;
 	    $summary->{stutters}++;
-	    warn "==> $id stutters";
+#	    warn "==> $id stutters";
 	    next;
 	    
 	}
@@ -438,6 +438,8 @@ $tt->process(
 $dbh->disconnect;
 my $end_time=time;
 open(LF, ">> $Bin/Logs/HN-queue.log") or warn "could not open log file for appending: $!";
+{
+    no warnings 'uninitialized';
 say LF join("\x{2502}",(gmtime($start_time)->strftime("%Y%m%dT%H%M%S"),
 	      gmtime($end_time)->strftime("%Y%m%dT%H%M%S"),
 	      "REM:".sprintf("%2d",$summary->{removes}),
@@ -445,7 +447,9 @@ say LF join("\x{2502}",(gmtime($start_time)->strftime("%Y%m%dT%H%M%S"),
 	      "UPD:".sprintf("%2d",$summary->{updates}),
 			"DED:".sprintf("%2d",$summary->{deads}),
 			"STT:".sprintf("%2d",$summary->{stutters}?$summary->{sutters}:0),
-	      "QSZ:".sprintf("%2d",$summary->{items_in_queue})));
+			"QSZ:".sprintf("%2d",$summary->{items_in_queue})
+		       ));
+}
 close LF;	 
 sub calculate_percentage {
     my ( $new_score, $new_comments, $score, $comments ) = @_;
