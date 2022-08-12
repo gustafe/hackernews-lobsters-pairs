@@ -1,0 +1,3 @@
+[% FOREACH entry IN entries -%]
+Pr|[% entry.id -%]|[% entry.url -%]|[% entry.title -%]|[% entry.host -%]||[% entry.author -%]|[% entry.score -%]|[% entry.num_comments %]
+[% END -%]
