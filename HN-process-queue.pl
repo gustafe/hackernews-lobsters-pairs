@@ -438,18 +438,19 @@ $tt->process(
 $dbh->disconnect;
 my $end_time=time;
 open(LF, ">> $Bin/Logs/HN-queue.log") or warn "could not open log file for appending: $!";
-{
-    no warnings 'uninitialized';
+
+#    no warnings 'uninitialized';
+my @stats=();
+push @stats, "REM:".sprintf("%2d",$summary->{removes});
+push @stats, "RTY:".sprintf("%2d",$summary->{retries});
+push @stats, "UPD:".sprintf("%2d",$summary->{updates});
+push @stats, "DED:".sprintf("%2d",$summary->{deads});
+push @stats, "STT:".sprintf("%2d",$summary->{stutters}?$summary->{stutters}:0);
+push @stats, "QSZ:".sprintf("%2d",$summary->{items_in_queue});
+
 say LF join("\x{2502}",(gmtime($start_time)->strftime("%Y%m%dT%H%M%S"),
-	      gmtime($end_time)->strftime("%Y%m%dT%H%M%S"),
-	      "REM:".sprintf("%2d",$summary->{removes}),
-	      "RTY:".sprintf("%2d",$summary->{retries}),
-	      "UPD:".sprintf("%2d",$summary->{updates}),
-			"DED:".sprintf("%2d",$summary->{deads}),
-			"STT:".sprintf("%2d",$summary->{stutters}?$summary->{sutters}:0),
-			"QSZ:".sprintf("%2d",$summary->{items_in_queue})
-		       ));
-}
+	      gmtime($end_time)->strftime("%Y%m%dT%H%M%S"), @stats ));
+
 close LF;	 
 sub calculate_percentage {
     my ( $new_score, $new_comments, $score, $comments ) = @_;
