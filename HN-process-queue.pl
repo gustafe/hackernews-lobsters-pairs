@@ -7,7 +7,7 @@ use JSON;
 use Template;
 use FindBin qw/$Bin/;
 use lib "$FindBin::Bin";
-use HNLOlib qw/get_dbh $sql $feeds get_ua sec_to_dhms sec_to_human_time/;
+use HNLOlib qw/get_dbh $sql $feeds get_ua sec_to_dhms sec_to_human_time extract_host/;
 use URI;
 use List::Util qw/max all any/;
 use Data::Dump qw/dump/;
@@ -17,20 +17,20 @@ binmode( STDOUT, ':utf8' );
 sub calculate_percentage;
 sub decode_retry;
 
-sub extract_host {
-    my ($in) = @_;
-    my $uri = URI->new($in);
-    my $host;
-    eval {
-        $host = $uri->host;
-        1;
-    } or do {
-        my $error = $@;
-        $host = 'www';
-    };
-    $host =~ s/^www\.//;
-    return $host;
-}
+# sub extract_host {
+#     my ($in) = @_;
+#     my $uri = URI->new($in);
+#     my $host;
+#     eval {
+#         $host = $uri->host;
+#         1;
+#     } or do {
+#         my $error = $@;
+#         $host = 'www';
+#     };
+#     $host =~ s/^www\.//;
+#     return $host;
+# }
 my %status_icons = (
     1                                 => "\N{LARGE GREEN CIRCLE}",
     2                                 => "\N{LARGE YELLOW CIRCLE}",
