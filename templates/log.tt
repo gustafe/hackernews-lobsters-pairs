@@ -12,9 +12,9 @@
     </style>
   <body>
     <h1>HN&amp;&amp;LO new entry log</h1>
-    [% FOREACH entry IN entries -%]
-    <h2>[% entry.title -%]</h2>
-    [% entry.text -%]
-    [% END %]
+    [% FOREACH tag IN sources.keys -%]
+    <h2>[% tag -%]</h2>
+
+    [% END -%]
     </body>
   </html>

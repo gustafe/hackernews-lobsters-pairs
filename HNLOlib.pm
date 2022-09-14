@@ -19,7 +19,7 @@ $VERSION = 1.00;
 @ISA     = qw/Exporter/;
 @EXPORT  = ();
 @EXPORT_OK =
-  qw/get_dbh get_ua get_all_sets get_item_from_source $feeds update_scores $debug $sql $ua get_reddit get_web_items get_reddit_items sec_to_dhms sec_to_human_time/;
+  qw/get_dbh get_ua get_all_sets get_item_from_source $feeds update_scores $debug $sql $ua get_reddit get_web_items get_reddit_items sec_to_dhms sec_to_human_time extract_host/;
 %EXPORT_TAGS = ( DEFAULT => [qw/&get_dbh &get_ua/] );
 
 #### DBH
@@ -83,6 +83,9 @@ $feeds->{lo} = {
       "update lobsters set title=?,score=?,comments=?,tags=? where id=?",
     delete_sql     => "delete from lobsters where id=?",
     select_all_sql => "select * from lobsters",
+select_latest_sql=>qq{select 
+id, created_time, url, title, submitter, score, comments, tags 
+from lobsters where created_time<=datetime('now','-24 hours')},
 hot_level => 28,
 cool_level => 2,
 bin_prefix=>'Lo',
@@ -102,6 +105,10 @@ $feeds->{hn} = {
 id, created_time, url, title, submitter, score, comments)
 values
 (?, datetime(?,'unixepoch'),?,?,?,?,?)},
+select_latest_sql=>qq{select 
+id, created_time, url, title, submitter, score, comments 
+from hackernews where created_time>=datetime('now','-24 hours') } ,
+
 
 hot_level => 10,
 cool_level => 1,
@@ -114,6 +121,9 @@ $feeds->{pr} = {
     insert_sql => qq{ insert into proggit 
 (id, created_time,             url ,title, submitter, score,comments ) values 
 (?,  datetime( ?,'unixepoch'), ?,   ?,     ?,         ?,    ? )},
+select_latest_sql=>qq{select 
+id, created_time, url, title, submitter, score, comments 
+from proggit where created_time>=datetime('now','-24 hours') },
     delete_sql     => "delete from proggit where id = ?",
     table_name     => 'proggit',
     title_href     => 'https://www.reddit.com/r/programming/comments/',
@@ -349,6 +359,20 @@ sub sec_to_dhms {
     return $out;
 }
 
+sub extract_host {
+    my ( $in ) = @_;
+    my $uri = URI->new( $in );
+    my $host;
+    eval {
+        $host = $uri->host;
+        1;
+    } or do {
+        my $error = $@;
+        $host= 'www';
+        };
+    $host =~ s/^www\.//;
+    return $host;
+}
 
 sub get_item_from_source {
     my ( $label, $id ) = @_;

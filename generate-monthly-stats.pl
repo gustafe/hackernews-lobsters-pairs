@@ -124,6 +124,38 @@ for my $row (@$hn_rank) {
     }
 }
 
+=pod 
+
+
+
+## update the queue store with some entries from HN
+
+my $queue_href= $dbh->selectall_hashref( "select id from hn_queue",'id');
+my $hn_id_list;
+for my $pair( @pairs) {
+    for my $entry (@{$pair->{sequence}}) {
+	if ($entry->{tag} eq 'hn' and !exists $queue_href->{$entry->{id}} ) {
+	    say "added $entry->{id} $entry->{title} to queue";
+	    push @{$hn_id_list}, $entry->{id};
+	}
+    }
+}
+
+if (scalar @$hn_id_list > 0) {
+
+    $sth=$dbh->
+      prepare("insert into hn_queue (id, age, retries) values (?,?,3001)");
+    my $offset =0;
+    for my $id(@{$hn_id_list}) {
+	my $age = time + 15 + $offset;
+	warn "$id not in queue, adding with age of $age";
+	$sth->execute( $id, $age ) ;
+	$offset += 5;
+    }
+}
+
+=cut
+
 if ($update_score) {
     my $list_of_ids;
     foreach my $pair (@pairs) {

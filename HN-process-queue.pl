@@ -413,10 +413,49 @@ for my $age_level (@header) {
 	    $retry_table .= sprintf( "%3s|", ' ' );
     }
 }
+
+$stmt = "select hn.id, url, title, score,comments, q.age,q.retries,
+strftime('%s','now') - strftime('%s',created_time) , q.age-strftime('%s','now')
+from hackernews hn 
+inner join hn_queue q on q.id=hn.id 
+ order by q.retries % 1000 desc, q.age limit 20";
+$rows = $dbh->selectall_arrayref($stmt) or die $dbh->errstr;
+
+my $top_retries;
+
+if (scalar @$rows > 0) {
+    for my $r (@$rows) {
+	my ( $id, $url, $title, $score, $comments, $age, $retries, $item_age, $next_run) = @$r;
+	my $retry_data = decode_retry( $retries );
+	my $data = {
+		    id          => $id,
+		    url         => $url,
+		    title       => $title,
+		    score       => $score,
+		    comments    => $comments,
+		    next_run    => $age,
+		    retry_level => $status_icons{ $retry_data->{level} },
+		    retry_count => $retry_data->{count},
+		    domain      => extract_host($url),
+		    item_age    => sec_to_human_time($item_age),
+		    next_run    => sec_to_human_time( $next_run),
+		   };
+	if ( exists $frontpage{$id} and $frontpage{$id} <= 30 ) {
+                $data->{frontpage} = "$status_icons{star}($frontpage{$id})";
+            }
+            push @{$top_retries}, $data;
+
+    }
+}
+
+
+### Generate page 
+
 my %data = (
     current         => $current,
     new             => $new,
-    queue_data      => $queue_data,
+	    queue_data      => $queue_data,
+	    top_retries => $top_retries,
 	    generation_time => gmtime($now)->datetime,
 	    generation_minute => join(':',gmtime($now)->hour, gmtime($now)->minute),
     summary         => $summary,

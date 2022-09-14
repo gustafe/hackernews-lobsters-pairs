@@ -72,12 +72,11 @@ li: {padding-top: 20px; padding-bottom: 20px; }
   [% ELSE -%][% current.$id.comments -%]
   [% END -%]
 </td>
-<td>
-  [% IF new.$id.retry_level  -%]
-  [% THEN -%][% current.$id.retry_level -%]→[% new.$id.retry_level -%]
-  [% ELSE -%][% current.$id.retry_level -%]
-  [% END -%]
-<span id="sub">[% current.$id.retry_count -%]</span></td>
+<td class="num">
+  [% IF new.$id.retry_level -%]
+  [% THEN -%][% current.$id.retry_level -%]→[% new.$id.retry_level -%]<span id="sub">[% current.$id.retry_count -%]</span>
+  [% ELSE -%][% current.$id.retry_level -%]<span id="sub">[% current.$id.retry_count -%]</span>
+  [% END -%]</td>
 <td class="num">[% current.$id.item_age -%]</td>
 <td class="center">[% current.$id.status -%]</td>
 <td class="num">
@@ -88,11 +87,13 @@ li: {padding-top: 20px; padding-bottom: 20px; }
 </tr>
 [% rownum = rownum + 1 -%]
 [% END -%]
-[% rownum = 1 %]
+
 <tr><th colspan="9"><h4>Current queue (next hour)</h4></th></tr>
+<tr><th>#</th><th>Id</th><th>URL</th><th>Domain</th>
+<th>S</th><th>C</th><th>R</th>
+<th>Item age</th><th>&nbsp;</th><th>&nbsp;</th></tr>
 
-<!-- <tr><th>Id</th><th>URL</th><th>Domain</th><th>S</th><th>C</th><th>R</th><th>Item age</th><th>&nbsp;</th><th>&nbsp;</th></tr> -->
-
+[% rownum = 1 %]
 [% FOREACH entry IN queue_data -%]
 <tr>
 <td class="num">[% rownum -%].<td><a href="https://news.ycombinator.com/item?id=[% entry.id -%]">[% entry.id -%]</a></td>
@@ -102,13 +103,37 @@ li: {padding-top: 20px; padding-bottom: 20px; }
 <td>[% entry.domain -%]</td>
 <td class="num">[% entry.score -%]</td>
 <td class="num">[% entry.comments -%]</td>
-<td>[% entry.retry_level -%]<span id="sub">[% entry.retry_count -%]</span></td>
+<td class="num">[% entry.retry_level -%]<span id="sub">[% entry.retry_count -%]</span></td>
 <td class="num">[% entry.item_age -%]</td>
 <td>&nbsp;</td>
 <td>&nbsp;</td>
 </tr>
 [% rownum = rownum + 1 %]
 [% END %]
+
+<tr><th colspan="9"><h4>Top 20 retries by retry count</h4></th></tr>
+<tr><th>#</th><th>Id</th><th>URL</th><th>Domain</th>
+<th>S</th><th>C</th><th>R</th>
+<th>Item age</th><th>Next run</th><th>&nbsp;</th></tr>
+
+[% rownum = 1 %]
+[% FOREACH entry IN top_retries -%]
+<tr>
+<td class="num">[% rownum -%].<td><a href="https://news.ycombinator.com/item?id=[% entry.id -%]">[% entry.id -%]</a></td>
+<td><a href="[% entry.url -%]">[% entry.title -%]</a>
+  [% IF entry.frontpage -%][% THEN -%] [% entry.frontpage -%][% END -%]
+</td>
+<td>[% entry.domain -%]</td>
+<td class="num">[% entry.score -%]</td>
+<td class="num">[% entry.comments -%]</td>
+<td class="num">[% entry.retry_level -%]<span id="sub">[% entry.retry_count -%]</span></td>
+<td class="num">[% entry.item_age -%]</td>
+<td class="num">[% entry.next_run -%]</td>
+<td>&nbsp;</td>
+</tr>
+[% rownum = rownum + 1 %]
+[% END %]
+
 </table>
 
 <h3 id="retry_summary">Retry levels and count</h3>

@@ -50,3 +50,5 @@ N-gate/*
 Logs/
 /out.md
 /compare
+/database.db-journal
+/fetchall_hashref.pl
