@@ -44,7 +44,7 @@ li: {padding-top: 20px; padding-bottom: 20px; }
 
 [% rownum = 1 -%]
 <table>
-<tr><th colspan="9"><h4>Updates</h4></th></tr>
+<tr><th colspan="9"><h4>Updates sorted by item age</h4></th></tr>
 <tr><th>#</th><th>Id</th><th>URL</th><th>Domain</th>
 <th>S</th><th>C</th><th>R</th>
 <th>Item age</th><th>Status</th><th>&percnt; change</th></tr>
@@ -88,7 +88,7 @@ li: {padding-top: 20px; padding-bottom: 20px; }
 [% rownum = rownum + 1 -%]
 [% END -%]
 
-<tr><th colspan="9"><h4>Current queue (next hour)</h4></th></tr>
+<tr><th colspan="9"><h4>Current queue (next hour), sorted by descending comment count</h4></th></tr>
 <tr><th>#</th><th>Id</th><th>URL</th><th>Domain</th>
 <th>S</th><th>C</th><th>R</th>
 <th>Item age</th><th>&nbsp;</th><th>&nbsp;</th></tr>
@@ -111,7 +111,7 @@ li: {padding-top: 20px; padding-bottom: 20px; }
 [% rownum = rownum + 1 %]
 [% END %]
 
-<tr><th colspan="9"><h4>Top 20 retries by retry count</h4></th></tr>
+<tr><th colspan="9"><h4>Top 20 retries by comment count descending, retry count descending, age descending</h4></th></tr>
 <tr><th>#</th><th>Id</th><th>URL</th><th>Domain</th>
 <th>S</th><th>C</th><th>R</th>
 <th>Item age</th><th>Next run</th><th>&nbsp;</th></tr>

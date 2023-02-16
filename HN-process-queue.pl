@@ -334,7 +334,7 @@ $stmt = "select hn.id, url, title, score,comments, q.age,q.retries,
 strftime('%s','now') - strftime('%s',created_time) 
 from hackernews hn 
 inner join hn_queue q on q.id=hn.id 
- order by q.age, q.id";
+ order by comments desc, q.id";
 $rows = $dbh->selectall_arrayref($stmt) or die $dbh->errstr;
 $summary->{items_in_queue} = scalar @$rows;
 $now = time;
@@ -418,7 +418,7 @@ $stmt = "select hn.id, url, title, score,comments, q.age,q.retries,
 strftime('%s','now') - strftime('%s',created_time) , q.age-strftime('%s','now')
 from hackernews hn 
 inner join hn_queue q on q.id=hn.id 
- order by q.retries % 1000 desc, q.age limit 20";
+ order by comments desc, q.retries % 1000 desc,  q.age limit 20";
 $rows = $dbh->selectall_arrayref($stmt) or die $dbh->errstr;
 
 my $top_retries;
