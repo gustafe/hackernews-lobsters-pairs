@@ -52,7 +52,7 @@ for my $label ( 'hn', 'lo', 'pr' ) {
         $statement
             = "select date(min(created_time)), date(max(created_time)) from "
             . $feeds->{$label}->{table_name};
-	$statement .= " where date(created_time) between '2022-01-01' and '2022-06-30' ";
+#	$statement .= " where date(created_time) between '2022-01-01' and '2022-06-30' ";
         my $dates  = $dbh->selectall_arrayref($statement);
         my $min_ts = $dates->[0]->[0];
         my $max_ts = $dates->[0]->[1];
