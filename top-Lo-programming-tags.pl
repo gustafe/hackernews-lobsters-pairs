@@ -10,7 +10,7 @@ use HNLOlib qw/$feeds get_ua get_dbh get_reddit get_web_items/;
 
 my $dbh = get_dbh();
 my $statement
-    = "select id, created_time, tags from "
+    = "select id, created_time,score,comments, tags from "
    . $feeds->{'lo'}->{table_name};
 
 my $list = $dbh->selectall_arrayref($statement);
@@ -20,51 +20,101 @@ my $dates = $dbh->selectall_arrayref($statement);
 
 my $min_ts = $dates->[0]->[0];
 my $max_ts = $dates->[0]->[1];
-
+my %exclude;
+while (<DATA>) {
+    chomp;
+    s/^\s+//;
+    $exclude{$_}++;
+}
 my %data;
 my $total = 0;
 foreach my $item ( @{$list} ) {
     #    say join(' ',@$item);
-    my @tags = split(/\,/, $item->[-1]);
-    my ($year) = ($item->[1] =~ m/^(\d+)/);
-    next unless scalar @tags == 2 and $item->[-1] =~ /programming/;
+    my ($id, $created_time,$score,$comments, $tags ) = @$item;
+    my @tags = split(/\,/, $tags);
+    my ($year) = ($created_time =~ m/^(\d+)/);
+    next unless scalar @tags == 2 and $tags =~ /programming/;
 #    my $payload;
     if ($tags[0] eq 'programming') {
 #	$payload = join(', ', @tags)
     } else {
 	@tags = reverse @tags;
     }
-
-    $data{$year}->{join(', ', @tags)}++
+    my $lang = $tags[-1];
+    next if exists $exclude{$tags[1]};
+    $data{$year}->{$lang}->{count}++;
+    $data{$year}->{$lang}->{sum} += ( $score + $comments )
  #   }
 }
-my $limit = 5;
+my $limit = 10;
 for my $year (sort keys %data) {
-    say "==> $year";
+#    say "==> $year";
     my $count = 1;
-    for my $t (sort {$data{$year}{$b}<=>$data{$year}{$a}} keys %{$data{$year}}) {
+    for my $t (sort {$data{$year}{$b}->{sum}<=>$data{$year}{$a}->{sum} ||
+		       $data{$year}{$b}->{count}<=>$data{$year}{$a}->{count} ||
+		       $a cmp $b} keys %{$data{$year}}) {
 	next if $count>$limit;
-	say "$count $t $data{$year}{$t}";
+	say join(',',$year,$count,$t,$data{$year}{$t}{sum} ,$data{$year}{$t}{count});
+#	say "$count $t $data{$year}{$t}{sum} ($data{$year}{$t}{count})";
 	$count++;
 	  
     }
 }
-
-__END__
-my $limit = 10;
-my $count = 1;
-for my $t (sort {$data{$b}<=>$data{$a}} keys %data) {
-#    next unless $count <=10;
-    next if $t =~ m/\,/;
-    say "$count $t $data{$t}";
-    $count++;
-}
-$count = 1;
-
-for my $t (sort {$data{$b}<=>$data{$a}} keys %data) {
-    next unless $count <=10;
-    next unless $t =~ m/\,/;
-    say "$count $t $data{$t}";
-    $count++;
-}
-
+__DATA__
+practices
+  video
+  compsci
+  hardware
+  games
+  web
+  release
+  vcs
+  devops
+  philosophy
+  culture
+  linux
+  android
+  distributed
+  browsers
+  person
+  mobile
+  reversing
+  networking
+  cogsci
+  book
+  databases
+  design
+  pdf
+  security
+  math
+  ml
+  compilers
+  testing
+  unix
+  ask
+  historical
+  education
+  performance
+  formalmethods
+  graphics
+  api
+  show
+  plt
+  rant
+  visualization
+  ai
+  debugging
+  cryptography
+  scaling
+  law
+  vim
+  emacs
+  windows
+  openbsd
+  satire
+  event
+  art
+  ios
+  finance
+  email
+  
