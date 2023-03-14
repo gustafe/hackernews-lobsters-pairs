@@ -61,60 +61,60 @@ for my $year (sort keys %data) {
     }
 }
 __DATA__
+ai
+android
+api
+art
+ask
+book
+browsers
+cogsci
+compilers
+compsci
+cryptography
+culture
+databases
+debugging
+design
+devops
+distributed
+education
+emacs
+email
+event
+finance
+formalmethods
+games
+graphics
+hardware
+historical
+ios
+law
+linux
+math
+ml
+mobile
+networking
+openbsd
+pdf
+performance
+person
+philosophy
+plt
 practices
-  video
-  compsci
-  hardware
-  games
-  web
-  release
-  vcs
-  devops
-  philosophy
-  culture
-  linux
-  android
-  distributed
-  browsers
-  person
-  mobile
-  reversing
-  networking
-  cogsci
-  book
-  databases
-  design
-  pdf
-  security
-  math
-  ml
-  compilers
-  testing
-  unix
-  ask
-  historical
-  education
-  performance
-  formalmethods
-  graphics
-  api
-  show
-  plt
-  rant
-  visualization
-  ai
-  debugging
-  cryptography
-  scaling
-  law
-  vim
-  emacs
-  windows
-  openbsd
-  satire
-  event
-  art
-  ios
-  finance
-  email
-  
+rant
+release
+reversing
+satire
+scaling
+security
+show
+testing
+unix
+vcs
+video
+vim
+visualization
+web
+windows
+
