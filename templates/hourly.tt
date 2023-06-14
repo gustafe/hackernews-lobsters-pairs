@@ -1,10 +1,9 @@
 [% INCLUDE header.tt %]
 <h1>[% meta.page_title %]</h1>
-<h3>... and Proggit!</h3>
+<h3>... <strike>and Proggit!</strike></h3>
 
-<p>Links shared between <a href="https://lobste.rs">Lobste.rs</a>, 
-<a href="https://news.ycombinator.com/">Hacker News</a>, and 
-<a href="https://www.reddit.com/r/programming/">/r/Programming</a> 
+<p>Links shared between <a href="https://lobste.rs">Lobste.rs</a> and 
+<a href="https://news.ycombinator.com/">Hacker News</a>
 in the last [% meta.no_of_days_to_show %]</strong> days.<p>
 
 <p>Each entry contains links to the submission on each site, and the

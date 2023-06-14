@@ -23,7 +23,7 @@ my $HOME = '/home/gustaf';
 my $BIN = $HOME.'/prj/HN-Lobsters-Tracker';
 my $t0 = [gettimeofday];
 #open( my $fh, ">>", "$BIN/Logs/$filename");
-for my $tag (qw/lo hn pr/) {
+for my $tag (qw/lo hn /) {
     open( my $fh, ">>", "$BIN/Logs/$tag-insert.log");
     my $cmd ="perl -I $BIN  $BIN/$feeds->{$tag}->{bin_prefix}".'-get-new-items-load-store.pl';
     my $output= `$cmd`;

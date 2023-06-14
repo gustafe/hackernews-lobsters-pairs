@@ -5,9 +5,8 @@
 # What's all this about, then?
 
 This is a little page that scrapes the APIs for 
-[Lobste.rs](https://lobste.rs), 
-[Hacker News](https://news.ycombinator.com/), and 
-[Reddit's /r/Programming](https://www.reddit.com/r/programming/), 
+[Lobste.rs](https://lobste.rs) and  
+[Hacker News](https://news.ycombinator.com/), 
 compares URLs for submissions, and prints a match if the URLs are the same.
 
 I wrote it to give more depth to the  discussions on Lobste.rs.
@@ -29,8 +28,6 @@ The SQL is basically
     select lo.url from lobsters lo
     left outer  join hackernews hn 
     on hn.url = lo.url
-    left outer join proggit pr
-    on pr.url = lo.url
 
 ## Limitations
 

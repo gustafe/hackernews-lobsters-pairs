@@ -1,6 +1,7 @@
 <a name="changelog"/>
 ## Changelog
 
+* 2023-06-14 - removed Reddit integration
 * 2022-07-02 - implemented an update queue for HN entries
 * 2021-05-31 - HTTPS implemented	
 * 2019-08-20 - links from /r/Programming that are shared with the links on Lobste.rs are now shown.
