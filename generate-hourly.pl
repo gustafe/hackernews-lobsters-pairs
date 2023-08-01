@@ -36,7 +36,7 @@ say gmtime . " starting, fetching 10d data... " if $debug;
 my $sth = $dbh->prepare( $sql->{get_pairs_10d} );
 my %sets = %{ get_all_sets($sth) };
 say gmtime . " got all sets... " if $debug;
-$generation_log .= " got all sets after " .sec_to_dhms(tv_interval($t0));
+$generation_log .= sec_to_dhms(tv_interval($t0)).' - got all sets<br />';
 # coerce into list
 # filter entries older than the retention time
 my @pairs;
@@ -58,7 +58,7 @@ foreach my $url (sort {$sets{$b}->{first_seen} <=> $sets{$a}->{first_seen}} keys
     push @pairs, $sets{$url};
 }
 say gmtime . " got all pairs... " if $debug;
-$generation_log .= " got all pairs after " .sec_to_dhms(tv_interval($t0));
+$generation_log .= sec_to_dhms(tv_interval($t0)).' - got all pairs after<br />';
 $sth=$dbh->prepare($sql->{rank_sql});
 $sth->execute( $min_hn_id, $max_hn_id);
 my $hn_rank = $sth->fetchall_arrayref();
@@ -141,7 +141,7 @@ foreach my $pair (@pairs) {
     }
 }
 say gmtime . " got all scores... " if $debug;
-$generation_log .= " got all scores and done after " .sec_to_dhms(tv_interval($t0));
+$generation_log .= sec_to_dhms(tv_interval($t0)).' - got all scores and done after <br />';
 # clean up data for presentation
 $now= time();
 # generate the page from the data
