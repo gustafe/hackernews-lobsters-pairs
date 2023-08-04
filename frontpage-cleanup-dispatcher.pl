@@ -24,17 +24,17 @@ my $sth = $dbh->prepare("delete from hn_frontpage where id=? and rank=? and read
 my $count = 0;
 say STDERR "-- ==> creating files...  ";
 for my $key (sort {$b<=>$a} keys %data) {
-#    say "-- ~~> $count" if $count % 10 == 0 and $count > 0;
- #   last if $count > 100;
+
     my $keep = shift @{$data{$key}};
     next unless scalar @{$data{$key}};
-    my $filename = $folder . '/' . scalar @{$data{$key}} . '-' .$key .'.sql';
-    open (my $fh, '>', $filename) or die "can't open $filename for writing: $!";
-   for my $el (@{$data{$key}}) {
-       printf $fh "delete from hn_frontpage where id=%d and rank=%d and read_time='%s';\n", $key, @$el;
-#	say join(',', ($count, $key, @$el));
-#	$sth->execute( $key, @$el );
-   }
+    my $filename = sprintf("%s/%d-%03d.sql",
+			   $folder, $key, scalar @{$data{$key}});
+
+    open (my $fh, '>', $filename) or
+      die "can't open $filename for writing: $!";
+
+    printf $fh "delete from hn_frontpage where id=%d and (rank<>%d or read_time<>'%s');\n", $key, @$keep;
+
     close $fh;
     $count++;
 }
