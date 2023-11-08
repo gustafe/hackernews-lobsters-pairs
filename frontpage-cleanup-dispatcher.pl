@@ -38,4 +38,4 @@ for my $key (sort {$b<=>$a} keys %data) {
     close $fh;
     $count++;
 }
-
+say "created $count files";
