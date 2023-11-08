@@ -16,14 +16,16 @@ my $debug =0;
 
 my $dbh = get_dbh();
 
-my $all_items_sql = 'select id from hackernews order by id';
+# my $all_items_sql = 'select id from hackernews order by id';
 
-my $insert_sql = $feeds->{hn}->{insert_sql};
-
-# my $all_ids = $dbh->selectall_arrayref( $all_items_sql );
-# my %seen = map {$all_ids->[$_][0] => 1 } (0 .. scalar @$all_ids-1);
-# my $min = 20444922  // $all_ids->[0][0];
+# my $insert_sql = $feeds->{hn}->{insert_sql};
+# say "selecting all ids...";
+#   my $all_ids = $dbh->selectall_arrayref( $all_items_sql );
+# say "done.";
+# #my %seen = map {$all_ids->[$_][0] => 1 } (0 .. scalar @$all_ids-1);
+# my $min = $all_ids->[0][0];
 # my $max = $all_ids->[-1][0];
+# say "scanning between $min and $max";
 # #my $list;
 # my %gaps;
 # my @sequences;
@@ -35,10 +37,13 @@ my $insert_sql = $feeds->{hn}->{insert_sql};
 #     $gaps{$diff}++;
 # }
 # #for my $seq (@sequences) {     say join(' - ', @$seq);}
-# #exit 0;
+# for my $diff (sort {$a<=>$b} keys %gaps) {
+#     say "$diff: $gaps{$diff}";
+# }
+# exit 0;
 
-my ( $start, $end) = (3900000,
-		      4100000);
+my ( $start, $end) = (27344426-1000,
+		      27344426+1000);
 
 my $list = [ $start .. $end ];
 
