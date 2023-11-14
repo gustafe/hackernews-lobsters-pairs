@@ -1,26 +1,28 @@
 [% INCLUDE header.tt %]
-<h1>[% meta.page_title %]</h1>
+<h1>[% meta.page_title -%]</h1>
 <h3>... <strike>and Proggit!</strike></h3>
 
-<p>Links shared between <a href="https://lobste.rs">Lobste.rs</a> and 
-<a href="https://news.ycombinator.com/">Hacker News</a> in the last [% meta.no_of_days_to_show %]</strong> days.<p>
+<p>Links shared between <a href="https://lobste.rs">Lobste.rs</a> and
+<a href="https://news.ycombinator.com/">Hacker News</a> in the last [%
+meta.no_of_days_to_show -%] days.
 
-<p>Each entry contains links to the submission on each site, and the submission's Score and number of Comments. If the ratio of comments to score exceeds 1.25, the topic is deemed to be controversial. 
- 
+<p>Each entry contains links to the submission on each site, and the
+submission's Score and number of Comments. If the ratio of comments to
+score exceeds 1.25, the topic is deemed to be controversial.
 
 <p>This page was generated <span id="generated" 
-timestamp="[% meta.generate_time %]" 
-title="[% meta.generate_time %]">[% meta.generate_time %]</span>. It usually
+timestamp="[% meta.generate_time -%]" 
+title="[% meta.generate_time -%]">[% meta.generate_time -%]</span>. It usually
 updates hourly.
-<a href="about.html">About this project</a>. 
+
+<p><a href="about.html">About this project</a>. 
 <a href="about.html#changelog">Changelog</a>. 
 <a href="archives.html">Monthly archives</a>. 
 <a href="log.html">Daily log</a>.
 <a href="queue.html">HN update queue</a>.
-</p>
 
 [% FOREACH pair=pairs %]
    [% INCLUDE pair_contents.tt %]
 [% END -%]
 <p>Time to generate page: <br/>[% meta.generation_log -%]</p>
-[% INCLUDE footer.tt %]
+[% INCLUDE footer.tt -%]

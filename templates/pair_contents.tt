@@ -6,16 +6,12 @@
          [% SET alt = 'Lobste.rs to Hacker News' -%]
       [% CASE -%]
          [% SET alt='Multiple source' -%]
-   [% END %]
-   <a name="[% pair.anchor %]"/>
-   <h2 class="link">
-   <a href="[% '#' _ pair.anchor %]">
-      <img src="img/[% pair.logo %]" alt="[% alt -%]"/></a>&nbsp;
-   <a href="[% pair.heading_url %]">[% FILTER html -%][% pair.heading -%][% END -%]</a>&nbsp;<span class="domain">[% pair.domain %]</span>&nbsp;   <span class='tags' title='tags for this entry on Lobste.rs'>[% FOREACH tag IN pair.tags_list -%] [% tag -%]
-   [%- END %]</span></h2>
+   [% END -%]
+   <h2 id="[% pair.anchor -%]" class="link">
+   <a href="[% '#' _ pair.anchor -%]"><img src="img/[% pair.logo -%]" alt="[% alt -%]"/></a>&nbsp;
+   <a href="[% pair.heading_url -%]">[% FILTER html -%][% pair.heading -%][% END -%]</a>&nbsp;<span class="domain">[% pair.domain -%]</span>&nbsp;   <span class='tags' title='tags for this entry on Lobste.rs'>[% FOREACH tag IN pair.tags_list -%] [% tag -%][% END -%]</span></h2>
 
-
-   [% FOREACH entry IN pair.sequence %]
+   [% FOREACH entry IN pair.sequence -%]
 
       [% SET site = entry.site -%]
       [% SET title_href = entry.title_href -%]
@@ -30,20 +26,19 @@
       [% SET ratio = entry.ratio -%]
       <p>
       [% IF entry.first == 1 -%]
-      <span class="[% entry.tag %]">
-      First seen on <strong>[% site %]</strong> 
-      as <a href="[% title_href -%]">[% FILTER html -%][% title %][% END -%]</a>
-      on <span class="tooltip" title="[% timestamp %]">[% pretty_date %]</span>,
-      submitted by <a href="[% submitter_href %]">[% submitter %]</a>.</span>
+      <span class="[% entry.tag -%]">First seen on <strong>[% site -%]</strong> 
+      as <a href="[% title_href -%]">[% FILTER html -%][% title -%][% END -%]</a>
+      on <span class="tooltip" title="[% timestamp -%]">[% pretty_date -%]</span>,
+      submitted by <a href="[% submitter_href -%]">[% submitter -%]</a>.</span>
       [% ELSE -%]
-      <span class="[% entry.tag %]">
-      Then appeared on <strong>[% site %]</strong>
-      <span class="tooltip" title="[% timestamp %]">[% entry.then %]</span> later [% IF entry.then_s / (2*365*24*3600) > 1  -%] &#x1F9DF; [% END -%] 
-      as <a href="[% title_href %]">[% title %]</a>,
-      submitted by <a href="[% submitter_href %]">[% submitter %]</a>.</span>	   
+      <span class="[% entry.tag -%]">
+      Then appeared on <strong>[% site -%]</strong>
+      <span class="tooltip" title="[% timestamp -%]">[% entry.then -%]</span> later [% IF entry.then_s / (2*365*24*3600) > 1  -%] &#x1F9DF; [% END -%] 
+      as <a href="[% title_href -%]">[% title -%]</a>,
+      submitted by <a href="[% submitter_href -%]">[% submitter -%]</a>.</span>
       [% END -%]
-      <span class="score_comments">Score&nbsp;[% score %], comments&nbsp;[% comments %]  
-      	   [% IF entry.ratio AND entry.ratio > 1.25 %]
+      <span class="score_comments">Score&nbsp;[% score -%], comments&nbsp;[% comments -%]  
+      	   [% IF entry.ratio AND entry.ratio > 1.25 -%]
 	       <span style="color:red">controversial</span></span>
 	   [% END -%]
       
@@ -54,7 +49,6 @@
       &nbsp;<span class="tooltip" title="COLD: this entry's sum of score and comments is in the bottom 25% percentile">&#x1F4A4;</span>
       [% END -%]
       [% IF entry.rank AND entry.rank <=30 -%]&nbsp;<span class="tooltip" title="FRONTPAGE: this entry featured on the HN frontpage"> &#x2B50;([% entry.rank -%])</span>[% END -%]
-      </p>
-
+      </span>
 
    [% END -%] 
