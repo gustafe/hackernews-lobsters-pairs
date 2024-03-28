@@ -97,6 +97,7 @@ foreach my $id ( @{$all_ids} ) {
 }
 my @updates;
 my @inserts;
+
 foreach my $entry ( @{$entries} ) {
     my $current_id = $entry->{short_id};
     if ( exists $seen_ids{$current_id} ) {
@@ -116,7 +117,8 @@ foreach my $entry ( @{$entries} ) {
             $entry->{created_at},
             $entry->{url} ? $entry->{url} : '',
             $entry->{title},
-            $entry->{submitter_user}->{username},
+	   #            $entry->{submitter_user}->{username},
+	   $entry->{submitter_user},
             $entry->{comment_count},
             $entry->{score},
             @{ $entry->{tags} } ? join( ',', @{ $entry->{tags} } ) : ''
