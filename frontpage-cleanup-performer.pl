@@ -24,7 +24,8 @@ FILE: while (@sqlfiles) {
 #    printf( "File #%2d working on %s\n", $filecount, $file);
     #    my $filedata = ($file =~ s{^.*/|\.[^.]+$}{}g);
     if ($filecount % 50 == 0) {
-	say "==> $filecount files handled, ".scalar @sqlfiles. " remaining.";
+	printf "==> %5d files handled, %5d remaining\n", $filecount, scalar @sqlfiles;
+#	say "==> $filecount files handled, ".scalar @sqlfiles. " remaining.";
     }
     my ( $id, $expected ) =(split(/\-/, $file))[-2,-1];
     $expected =~ s{^.*/|\.[^.]+$}{}g;
