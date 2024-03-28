@@ -1,4 +1,8 @@
 ### START
-[% FOREACH entry IN entries -%]Lo|[% entry.0 -%]|[% entry.3 -%]|[% entry.2 -%]|[% entry.8 -%]|[% entry.7 -%]|[% entry.4 -%]|[% entry.6 -%]|[% entry.5 %]
+[% FOREACH entry IN entries -%]
+Lo | https://lobste.rs/s/[% entry.0 -%] | 
+[% entry.3 -%] |
+[% entry.2 -%] | 
+[% entry.8 -%] | tags: [% entry.7 -%] | [% entry.4 -%] | S: [% entry.6 -%] | C: [% entry.5 %]
 [% END -%]
 ### END
