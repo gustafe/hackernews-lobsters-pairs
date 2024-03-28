@@ -2,6 +2,8 @@
 
 ## 2023
 
+### [ December 2023](2023-12.html)
+### [ November 2023](2023-11.html)
 ### [  October 2023](2023-10.html)
 ### [September 2023](2023-09.html)
 ### [   August 2023](2023-08.html)
