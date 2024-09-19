@@ -23,7 +23,7 @@ my %content;
 my @by_score;
 my @by_comments;
 
-for my $label ( 'hn', 'lo', 'pr' ) {
+for my $label ( 'hn', 'lo', ) {
     my $dbh = get_dbh();
 
     #warn "==> getting data for $label... ";

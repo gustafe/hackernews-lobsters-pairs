@@ -24,8 +24,7 @@ window.onload = function(){
 
 [% labels = {
 lo = 'Lobste.rs'
-hn = 'Hacker News'
-pr = 'Proggit' }
+hn = 'Hacker News' }
 %]
 
 [% sort_name = {
@@ -34,7 +33,7 @@ c = 'By comments'}
 %]
 <body>
   
-<h1>[% meta.page_title -%] <span style="color: red;">==> WIP <==</span></h1>
+<h1>[% meta.page_title -%] <span style="color: red;">⇒WIP⇐</span></h1>
 <h2>Top posts by score</h2>
 <table >
 <th class="rank">#</th>
