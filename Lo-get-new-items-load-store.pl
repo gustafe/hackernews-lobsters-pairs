@@ -6,7 +6,7 @@ use FindBin qw/$Bin/;
 use utf8;
 
 use JSON;
-use HNLOlib qw/$feeds get_ua get_dbh/;
+use HNLOlib qw/$feeds get_ua get_dbh extract_host/;
 use List::Util qw/sum/;
 use Getopt::Long;
 use URI;
@@ -40,20 +40,20 @@ sub usage {
     exit 1;
 
 }
-sub extract_host {
-    my ( $in ) = @_;
-    my $uri = URI->new( $in );
-    my $host;
-    eval {
-	$host = $uri->host;
-	1;
-    } or do {
-	my $error = $@;
-	$host= 'www';
-	};
-    $host =~ s/^www\.//;
-    return $host;
-}
+# sub extract_host {
+#     my ( $in ) = @_;
+#     my $uri = URI->new( $in );
+#     my $host;
+#     eval {
+# 	$host = $uri->host;
+# 	1;
+#     } or do {
+# 	my $error = $@;
+# 	$host= 'www';
+# 	};
+#     $host =~ s/^www\.//;
+#     return $host;
+# }
 
 my $from_page;
 my $help = '';

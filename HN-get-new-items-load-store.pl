@@ -3,7 +3,7 @@ use Modern::Perl '2015';
 ###
 
 use JSON;
-use HNLOlib qw/get_dbh get_ua $feeds $sql/;
+use HNLOlib qw/get_dbh get_ua $feeds $sql extract_host/;
 use Data::Dumper;
 use Getopt::Long;
 use open IO => ':utf8';
@@ -20,20 +20,20 @@ sub usage {
     exit 1;
 
 }
-sub extract_host {
-    my ( $in ) = @_;
-    my $uri = URI->new( $in );
-    my $host;
-    eval {
-	$host = $uri->host;
-	1;
-    } or do {
-	my $error = $@;
-	$host= 'www';
-	};
-    $host =~ s/^www\.//;
-    return $host;
-}
+# sub extract_host {
+#     my ( $in ) = @_;
+#     my $uri = URI->new( $in );
+#     my $host;
+#     eval {
+# 	$host = $uri->host;
+# 	1;
+#     } or do {
+# 	my $error = $@;
+# 	$host= 'www';
+# 	};
+#     $host =~ s/^www\.//;
+#     return $host;
+# }
 
 my $read_back = undef;
 my $help      = '';
