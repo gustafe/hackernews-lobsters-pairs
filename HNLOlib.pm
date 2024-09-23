@@ -70,7 +70,8 @@ rank_sql=> qq{select id, rank from hn_frontpage where id between ? and ?},
 our $feeds;
 
 $feeds->{lo} = {
-    comments       => 'comment_count',
+		no_of_comments       => 'comment_count',
+		comment_list=>'comments',
     api_item_href  => 'https://lobste.rs/s/',
     table_name     => 'lobsters',
     site           => 'Lobste.rs',
@@ -93,7 +94,8 @@ bin_prefix=>'Lo',
 
 };
 $feeds->{hn} = {
-    comments       => 'descendants',
+    no_of_comments       => 'descendants',
+comment_list=>'kids',
     api_item_href  => 'https://hacker-news.firebaseio.com/v0/item/',
     table_name     => 'hackernews',
     site           => 'Hacker News',
@@ -114,8 +116,10 @@ hot_level => 10,
 cool_level => 1,
 bin_prefix=>'HN',
 };
+
+### proggit integration removed 2023-06-14
 $feeds->{pr} = {
-    comments   => 'num_comments',
+    no_of_comments   => 'num_comments',
     site       => '/r/Programming',
     update_sql => "update proggit set title=?, score=?, comments=? where id=?",
     insert_sql => qq{ insert into proggit 
@@ -395,7 +399,8 @@ sub get_item_from_source {
     my $hashref = {
         title    => $json->{title},
         score    => $json->{score},
-        comments => $json->{ $feeds->{$label}->{comments} }
+		   comments => $json->{ $feeds->{$label}->{no_of_comments} },
+		   comment_list=>[$json->{$feeds->{$label}->{comment_list}}],				  ,
     };
 
     # lobsters has the tags
@@ -536,7 +541,7 @@ sub get_web_items {
 	}
 	my @binds = ( $json->{title},
 			$json->{score},
-		      $json->{$feeds->{$label}->{comments}});
+		      $json->{$feeds->{$label}->{no_of_comments}});
 	if (defined  $json->{tags}) {
 	    push @binds, join(',',@{$json->{tags}})
 	}
