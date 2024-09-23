@@ -10,6 +10,8 @@ use HNLOlib qw/$feeds get_ua get_dbh extract_host/;
 use List::Util qw/sum/;
 use Getopt::Long;
 use URI;
+use Time::Piece;
+use Time::Seconds;
 binmode(STDOUT, ":encoding(UTF-8)");
 my $debug    = 0;
 my $template = 'https://lobste.rs/newest/page/';
@@ -36,7 +38,7 @@ sub dump_entry {
     }
 }
 sub usage {
-    say "usage: $0 [--help] [--from_page=N]";
+    say "usage: $0 [--debug] [--help] [--from_page=N]";
     exit 1;
 
 }
@@ -54,11 +56,13 @@ sub usage {
 #     $host =~ s/^www\.//;
 #     return $host;
 # }
-
+my $now= localtime;
 my $from_page;
 my $help = '';
-GetOptions( 'from_page=i'=>\$from_page,'help'=>\$help);
+my $opt_debug;
+GetOptions( 'from_page=i'=>\$from_page,'help'=>\$help, 'debug'=>\$opt_debug);
 usage if $help;
+$debug = 1 if $opt_debug;
 my $entries;
 my $ua = get_ua();
 my @days;
@@ -97,6 +101,7 @@ foreach my $id ( @{$all_ids} ) {
 }
 my @updates;
 my @inserts;
+my @commented;
 
 foreach my $entry ( @{$entries} ) {
     my $current_id = $entry->{short_id};
@@ -124,6 +129,15 @@ foreach my $entry ( @{$entries} ) {
             @{ $entry->{tags} } ? join( ',', @{ $entry->{tags} } ) : ''
           ];
 
+    }
+    my $created_at = $entry->{created_at};
+    # strip colon from TZ, remove fractional seconds
+    $created_at =~ s/:(\d+)$/$1/;
+    $created_at =~ s/\.(\d{3})//;
+    my $dt_created_at = Time::Piece->strptime($created_at,"%FT%T%z");
+    # only grab the last 48 hours of comments
+    if ($entry->{comment_count}>0 and ($now->epoch - $dt_created_at->epoch <= 48 * 3600)) {
+	push @commented, {id=>$current_id, comment_count=>$entry->{comment_count}};
     }
 }
 
@@ -158,9 +172,16 @@ if (@updates) {
 
     $sth->finish;
 }
-my %data = (count=>$count, entries=>\@inserts, updates=>scalar @updates);
-if (scalar @inserts) {
 
-my $tt = Template->new( {INCLUDE_PATH=>"$Bin/templates",ENCODING=>'UTF-8'} );
-$tt->process( 'Lo-log-txt.tt', \%data) || die $tt->error;
+#my $tz = $time->tzoffset;
+my %data = (count=>$count,
+	    entries=>\@inserts,
+	    updates=>scalar @updates,
+	    commented=>scalar @commented,
+	    datetime=>$now->strftime("%Y-%m-%dT%H:%M:%S%z"));
+#if (scalar @inserts) {
+if ($count) {
+
+    my $tt = Template->new( {INCLUDE_PATH=>"$Bin/templates",ENCODING=>'UTF-8'} );
+    $tt->process( 'Lo-log-txt.tt', \%data) || die $tt->error;
 }

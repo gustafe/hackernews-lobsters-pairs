@@ -1,4 +1,6 @@
-### START
+### START [% datetime %]
+Updated: [% count %] Commented: [% commented %]
+Inserts: 
 [% FOREACH entry IN entries -%]
 Lo | https://lobste.rs/s/[% entry.0 -%] | 
 [% entry.3 -%] |
