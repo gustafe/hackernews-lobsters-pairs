@@ -1,5 +1,5 @@
-### START [% datetime %]
-Updated: [% count %] Commented: [% commented %]
+### START @ [% starttime %]
+Updated: [% count %] Commented: [% commented.size %]
 Inserts: 
 [% FOREACH entry IN entries -%]
 Lo | https://lobste.rs/s/[% entry.0 -%] | 
@@ -7,4 +7,9 @@ Lo | https://lobste.rs/s/[% entry.0 -%] |
 [% entry.2 -%] | 
 [% entry.8 -%] | tags: [% entry.7 -%] | [% entry.4 -%] | S: [% entry.6 -%] | C: [% entry.5 %]
 [% END -%]
-### END
+Commented:
+[% FOREACH entry IN commented -%]
+https://lobste.rs/s/[% entry.short_id -%].json | [% entry.comment_count -%] | [% entry.title %]
+[% END -%]
+### END   @ [% endtime %] ([% runtime %]s)
+

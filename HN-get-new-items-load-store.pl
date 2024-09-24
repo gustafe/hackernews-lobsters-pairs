@@ -10,6 +10,7 @@ use open IO => ':utf8';
 use List::Util qw/sum/;
 use Template;
 use FindBin qw/$Bin/;
+use Time::Piece;
 use utf8;
 use URI;
 #binmode STDOUT, ':utf8';
@@ -34,7 +35,7 @@ sub usage {
 #     $host =~ s/^www\.//;
 #     return $host;
 # }
-
+my $start_time= localtime;
 my $read_back = undef;
 my $help      = '';
 GetOptions( 'read_back' => \$read_back, 'help' => \$help );
@@ -167,17 +168,6 @@ if ( scalar @failed > 0 ) {
         say $id;
     }
 }
-if (scalar @items > 0) {
-    for my $item (@items) {
-	my $url = $item->[2];
-	my $host = extract_host( $url );
-	push @$item, $host;
-    }
-
-    my %data = (entries=>\@items);
-    my $tt = Template->new( {INCLUDE_PATH=>"$Bin/templates",ENCODING=>'UTF-8'} );
-    $tt->process( 'HN-log-txt.tt', \%data) || die $tt->error;
-}
 
 ### update items that are part of sets
 unless ($read_back) {
@@ -201,4 +191,20 @@ unless ($read_back) {
     }
 }
 $dbh->disconnect();
+my $end_time=localtime;
+if (scalar @items > 0) {
+    for my $item (@items) {
+	my $url = $item->[2];
+	my $host = extract_host( $url );
+	push @$item, $host;
+    }
 
+    my %data = (entries=>\@items,
+		starttime=>$start_time->strftime("%Y-%m-%dT%H:%M:%S%z"),
+		endtime=>$end_time->strftime("%Y-%m-%dT%H:%M:%S%z"),
+		runtime=> $end_time->epoch - $start_time->epoch,
+
+	       );
+    my $tt = Template->new( {INCLUDE_PATH=>"$Bin/templates",ENCODING=>'UTF-8'} );
+    $tt->process( 'HN-log-txt.tt', \%data) || die $tt->error;
+}
