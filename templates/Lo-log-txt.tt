@@ -11,5 +11,9 @@ Commented:
 [% FOREACH entry IN commented -%]
 https://lobste.rs/s/[% entry.short_id -%].json | [% entry.comment_count -%] | [% entry.title %]
 [% END -%]
+Log:
+[% FOREACH line IN Log -%]
+[% line %]
+[% END -%]
 ### END   @ [% endtime %] ([% runtime %]s)
 

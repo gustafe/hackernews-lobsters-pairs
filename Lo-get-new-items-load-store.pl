@@ -50,6 +50,7 @@ my $opt_debug;
 GetOptions( 'from_page=i'=>\$from_page,'help'=>\$help, 'debug'=>\$opt_debug);
 usage if $help;
 $debug = 1 if $opt_debug;
+my @Log;
 my $entries;
 my $ua = get_ua();
 my @days;
@@ -73,7 +74,7 @@ foreach my $day ( @days ) {
     my $list = decode_json( $response->decoded_content );
     push @{$entries}, @{$list};
     if ($from_page) {
-	say "==> fetched page for $day... sleeping 5s";
+	push @Log, "==> fetched page for $day... sleeping 5s";
 	sleep 5;
     }
 }
@@ -110,8 +111,8 @@ foreach my $entry ( @{$entries} ) {
 	# do we need to update comments?
 	my $comments_in_db = scalar keys %{$ids_have_comments{$current_id}};
 					     
-	if ($seen_ids{$current_id} != $entry->{comment_count} or
-	    $comments_in_db != $entry->{comment_count} 
+	if ($seen_ids{$current_id} != $entry->{comment_count}
+#	    or	    $comments_in_db != $entry->{comment_count} 
 	   ) {
 	    if ($ids_have_comments{$current_id}) {
 		push @new_comment_updates, $entry;
@@ -143,7 +144,7 @@ my $count = 0;
 $dbh->{PrintError} = 1;
 
 if (@inserts) {
-    print "\n";
+#    print "\n";
     $sth = $dbh->prepare( $feeds->{lo}->{insert_sql} ) or die $dbh->errstr;
     foreach my $values (@inserts) {
         $sth->execute( @{$values} ) or warn $sth->errstr;
@@ -181,7 +182,7 @@ if (@new_comment_inserts) {
 
     # insert data
     for my $entry (@new_comment_inserts) {
-	say "==> getting insert data for submission ".$entry->{short_id};
+	push @Log, "==> getting insert data for submission ".$entry->{short_id};
 	my $item_ref=get_item_from_source('lo', $entry->{short_id});
 	for my $comment (@{$item_ref->{comment_list}->[0]}) {
 	    my @data=( $entry->{short_id},$comment->{short_id});
@@ -189,10 +190,10 @@ if (@new_comment_inserts) {
 		push @data, $comment->{$field_name};
 	    }
 
-	    say "inserting NEW comment ".$comment->{short_id}." for submission ".$entry->{short_id};
+	    push @Log, "inserting NEW comment ".$comment->{short_id}." for submission ".$entry->{short_id};
 	    $sth_insert->execute(@data) or warn $sth->errstr;
 	}
-	say "... sleeping 2s...";
+	push @Log, "... sleeping 2s...";
 	sleep 2;
     }
 }
@@ -201,13 +202,13 @@ my $sth_update = $dbh->prepare("update lo_comments set updated_at=?, is_deleted=
 
 if (@new_comment_updates) {
     for my $entry (@new_comment_updates) {
-     	say "==> getting update data for submission ".$entry->{short_id};
+     	push @Log, "==> getting update data for submission ".$entry->{short_id};
      	my $item_ref=get_item_from_source('lo', $entry->{short_id});
 	for my $comment (@{$item_ref->{comment_list}->[0]}) {
 	    if ($ids_have_comments{ $entry->{short_id} }->{ $comment->{short_id}}) {
 		# nop for now
 	    } else {
-		say "inserting UPD comment ".$comment->{short_id}." for submission ".$entry->{short_id};
+		push @Log, "inserting UPD comment ".$comment->{short_id}." for submission ".$entry->{short_id};
 		my @data=( $entry->{short_id},$comment->{short_id});
 		for my $field_name (@fields[2..$#fields]) {
 		    push @data, $comment->{$field_name};
@@ -227,6 +228,7 @@ my %data = (count=>$count,
 	    starttime=>$start_time->strftime("%Y-%m-%dT%H:%M:%S%z"),
 	    endtime=>$end_time->strftime("%Y-%m-%dT%H:%M:%S%z"),
 	    runtime=> $end_time->epoch - $start_time->epoch,
+	    Log=>\@Log,
 	   );
 my $tt = Template->new( {INCLUDE_PATH=>"$Bin/templates",ENCODING=>'UTF-8'} );
 $tt->process( 'Lo-log-txt.tt', \%data) || die $tt->error;
