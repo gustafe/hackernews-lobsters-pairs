@@ -36,7 +36,7 @@ checked_time datetime not null);
 create table lo_comments
 (
 id text not null,
-comment_id text  not null,
+comment_id text primary key not null,
 created_at datetime,
 updated_at datetime,
 is_deleted boolean,

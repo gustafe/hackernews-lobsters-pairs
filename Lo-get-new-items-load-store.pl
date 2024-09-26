@@ -12,6 +12,7 @@ use Getopt::Long;
 use URI;
 use Time::Piece;
 use Time::Seconds;
+use Data::Dump qw/dump/;
 binmode(STDOUT, ":encoding(UTF-8)");
 my $debug    = 0;
 my $template = 'https://lobste.rs/newest/page/';
@@ -80,19 +81,21 @@ foreach my $day ( @days ) {
 my $dbh = get_dbh;
 
 my $all_ids = $dbh->selectall_arrayref("select id,comments from lobsters")  or die $dbh->errstr;
-#my $commented_id = $dbh->selectall_arrayref("select id,no_of_comments from lo_comment_count") or die $dbh->errstr;
+my $comment_ids = $dbh->selectall_arrayref("select id,comment_id from lo_comments") or die $dbh->errstr;
 
 my %seen_ids;
 foreach my $row ( @{$all_ids} ) {
     $seen_ids{ $row->[0] }=$row->[1];
 }
-# my %previous_comments;
-# foreach my $row (@{$commented_id}) {
-#     $previous_comments{$row->[0]} = $row->[1];
-# }
+my %ids_have_comments;
+for my $row (@{$comment_ids}) {
+    $ids_have_comments{$row->[0]}->{$row->[1]}++;
+}
+
 my @updates;
 my @inserts;
-my @commented;
+my @new_comment_inserts;
+my @new_comment_updates;
 
 foreach my $entry ( @{$entries} ) {
     my $current_id = $entry->{short_id};
@@ -104,8 +107,15 @@ foreach my $entry ( @{$entries} ) {
             $entry->{comment_count}, join( ',', @{ $entry->{tags} } ),
             $current_id
           ];
-	if ($seen_ids{$current_id} != $entry->{comment_count}) {
-	    push @commented, $entry;
+	# do we need to update comments?
+	my $comments_in_db = scalar keys %{$ids_have_comments{$current_id}};
+					     
+	if ($seen_ids{$current_id} != $entry->{comment_count} or
+	    $comments_in_db != $entry->{comment_count} 
+	   ) {
+	    if ($ids_have_comments{$current_id}) {
+		push @new_comment_updates, $entry;
+	    } 
 	}
     }
     else {
@@ -116,28 +126,16 @@ foreach my $entry ( @{$entries} ) {
             $entry->{created_at},
             $entry->{url} ? $entry->{url} : '',
             $entry->{title},
-	   #            $entry->{submitter_user}->{username},
 	   $entry->{submitter_user},
             $entry->{comment_count},
             $entry->{score},
             @{ $entry->{tags} } ? join( ',', @{ $entry->{tags} } ) : ''
           ];
-	push @commented, $entry if $entry->{comment_count}>0;
-
     }
-    # my $created_at = $entry->{created_at};
-    # # strip colon from TZ, remove fractional seconds
-    # $created_at =~ s/:(\d+)$/$1/;
-    # $created_at =~ s/\.(\d{3})//;
-    # my $dt_created_at = Time::Piece->strptime($created_at,"%FT%T%z");
-    # # only grab the last 48 hours of comments, skip 'ask' submissions
-    # if ($entry->{comment_count}>0 # and	($start_time->epoch - $dt_created_at->epoch <= 48 * 3600)
-    #    ) {
-    # 	# next if (grep {'ask'} @{$entry->{tags}});
-    # 	push @commented, {id=>$current_id,
-    # 			  comment_count=>sprintf("%3d",$entry->{comment_count}),
-    # 			  title=>$entry->{title}};
-    # }
+    # entries with comments we haven't seen before 
+    if (!exists $ids_have_comments{$current_id}) {
+	push @new_comment_inserts, $entry if $entry->{comment_count}>0;
+    }
 }
 
 my $sth;
@@ -173,114 +171,62 @@ if (@updates) {
 }
 
 ### Handle comments
-my %comments_report;
-#if (@commented) {
-if (0) {
 
-    my @new_comment_inserts;
-    my @new_comment_updates;
-    my $comment_ids = $sth->selectall_arrayref("select distinct id from lo_comments");
-    my %ids_have_comments;
-    for my $id (@{$comment_ids}) {
-	$ids_have_comments{$id}++;
-    }
-    for my $entry (@commented) {
-	if (exists $ids_have_comments{$entry->{short_id}}) {
-	    push @new_comment_updates, $entry->{short_id}
-	} else {
-	    push @new_comment_inserts, $entry->{short_id}
-	}
-    }
-    my $sth_insert=$dbh->prepare("insert into lo_comments (id,comment_id,created_at,updated_at,is_deleted,is_moderated,score,flags,parent_comment,comment_plain,depth,commenting_user) values (?,?,?,?,?,?,?,?,?,?,?,?)") or die $dbh->errstr;
+my @fields = qw/id comment_id created_at updated_at is_deleted is_moderated score flags parent_comment comment_plain depth commenting_user/;
+my @placeholders = map{'?'} @fields;
+my $sth_insert = $dbh->prepare("insert into lo_comments (".join(',',@fields).") values (".join(',',@placeholders).")") or die $dbh->errstr;
+
+
+if (@new_comment_inserts) {
+
     # insert data
-    for my $id (@new_comment_inserts) {
-	say "==> gettting insert data for submission $id...";
-	my $item_ref=get_item_from_source('lo', $id);
+    for my $entry (@new_comment_inserts) {
+	say "==> getting insert data for submission ".$entry->{short_id};
+	my $item_ref=get_item_from_source('lo', $entry->{short_id});
 	for my $comment (@{$item_ref->{comment_list}->[0]}) {
-	    my ($comment_id, $created_at, $updated_at, $is_deleted, $is_moderated,	$score, $flags, $parent_comment, $comment_plain, $depth, $commenting_user ) = map { $comment->{$_}} qw/short_id created_at updated_at is_deleted is_moderated score flags parent_comment comment_plain depth commenting_user/;
-	    $sth_insert->execute($id,$comment_id, $created_at, $updated_at, $is_deleted, $is_moderated,	$score, $flags, $parent_comment, $comment_plain, $depth, $commenting_user ) or warn $sth->errstr;
-	
-	}
-	say "... sleeping 5s...";
-	sleep 5;
-#	$sth->finish;
-    }
-    #    my $sth_insert=$dbh->prepare("insert into lo_comments (id,comment_id,created_at,updated_at,is_deleted,is_moderated,score,flags,parent_comment,comment_plain,depth,commenting_user) values (?,?,?,?,?,?,?,?,?,?,?,?)") or die $dbh->errstr;
-    my $sth_update=$dbh->prepare("update lo_comments set updated_at=?, is_deleted=?, is_moderated=?, score=?, flags=? where id=? and comment_id=?") or die $dbh->errstr;
-
-    for my $id (@new_comment_updates) {
-	my %existing_comments;
-	my $comments_for_id = $sth->fetchall_arrayref("select * from lo_comments where id=?",$id) or warn $sth->errstr;
-	# gather existing info, for comparison
-
-	for my $row (@$comments_for_id) {
-	    my ( $db_id, $comment_id, $created_at, $updated_at, $is_deleted, $is_moderated, $score, $flags, $parent_comment, $comment_plain, $depth, $commenting_user) = @$row;
-	    $existing_comments{$comment_id} = {updated_at=>$updated_at , is_deleted=>$is_deleted, is_moderated=>$is_moderated, score=>$score,flags=>$flags};
-	    
-	}
-	
-	say "==> gettting update data for submission $id...";
-	my $item_ref=get_item_from_source('lo', $id);
-	for my $comment (@{$item_ref->{comment_list}->[0]}) {
-	    my ($comment_id, $created_at, $updated_at, $is_deleted, $is_moderated,	$score, $flags, $parent_comment, $comment_plain, $depth, $commenting_user ) = map { $comment->{$_}} qw/short_id created_at updated_at is_deleted is_moderated score flags parent_comment comment_plain depth commenting_user/;
-	    if (exists $existing_comments{$comment_id}) { # update
-		if ($existing_comments{$comment_id}->{is_deleted} != $is_deleted) {
-		    $comments_report{$comment_id}->{is_deleted} = $is_deleted;
-		    $comments_report{$comment_id}->{comment_plain}=$comment_plain;
-		}
-		if ($existing_comments{$comment_id}->{is_moderated} != $is_moderated) {
-		    $comments_report{$comment_id}->{is_moderated} = $is_moderated;
-		    $comments_report{$comment_id}->{comment_plain}=$comment_plain;
-		}
-		if ($existing_comments{$comment_id}->{updated_at} != $updated_at) {
-		    $comments_report{$comment_id}->{updated_at}= $updated_at;
-		    $comments_report{$comment_id}->{comment_plain}=$comment_plain;
-		}
-
-		$sth_update->execute($updated_at, $is_deleted, $is_moderated, $score, $flags, $id, $comment_id) or warn $sth_update->errstr;
-	    } else {
-		$sth_insert->execute($id,$comment_id, $created_at, $updated_at, $is_deleted, $is_moderated,	$score, $flags, $parent_comment, $comment_plain, $depth, $commenting_user ) or warn $sth->errstr;
+	    my @data=( $entry->{short_id},$comment->{short_id});
+	    for my $field_name (@fields[2..$#fields]) {
+		push @data, $comment->{$field_name};
 	    }
+
+	    say "inserting NEW comment ".$comment->{short_id}." for submission ".$entry->{short_id};
+	    $sth_insert->execute(@data) or warn $sth->errstr;
 	}
-	say "... sleeping 5s...";
-	sleep 5;
+	say "... sleeping 2s...";
+	sleep 2;
     }
 }
 
+my $sth_update = $dbh->prepare("update lo_comments set updated_at=?, is_deleted=?, is_moderated=?, score=?, flags=? where id=? and comment_id=?") or die $dbh->errstr;
 
-# my @handled_commented;
-# if (@commented) {
-#     my $checked_time = gmtime;
-#     my $sth_insert=$dbh->prepare("insert into lo_comment_count values(?,?,?)") or die $dbh->errstr;
-#     my $sth_update=$dbh->prepare("update lo_comment_count set no_of_comments=?, checked_time=? where id=?") or die $dbh->errstr;
-#     for my $entry (@commented) {
-# 	if (exists $previous_comments{$entry->{id}} and $previous_comments{$entry->{id}} != $entry->{comment_count}) {
-# 	    $sth_update->execute($entry->{comment_count},$checked_time->strftime("%Y-%m-%dT%H:%M:%S%z"), $entry->{id} ) or warn $sth_update->errstr;
-# 	    push @handled_commented, $entry;
-# 	} elsif (!$previous_comments{$entry->{id}}) {
+if (@new_comment_updates) {
+    for my $entry (@new_comment_updates) {
+     	say "==> getting update data for submission ".$entry->{short_id};
+     	my $item_ref=get_item_from_source('lo', $entry->{short_id});
+	for my $comment (@{$item_ref->{comment_list}->[0]}) {
+	    if ($ids_have_comments{ $entry->{short_id} }->{ $comment->{short_id}}) {
+		# nop for now
+	    } else {
+		say "inserting UPD comment ".$comment->{short_id}." for submission ".$entry->{short_id};
+		my @data=( $entry->{short_id},$comment->{short_id});
+		for my $field_name (@fields[2..$#fields]) {
+		    push @data, $comment->{$field_name};
+		}
+		$sth_insert->execute(@data) or warn $sth->errstr;
+	    }
+	}
+	sleep 2;
+    }
+}
 
-# 	    $sth_insert->execute($entry->{id},$entry->{comment_count},$checked_time->strftime("%Y-%m-%dT%H:%M:%S%z")) or warn $sth_insert->errstr;
-# 	    push @handled_commented, $entry;
-# 	} else { # unchanged
-# 	    next;
-# 	}
-#     }
-#     $sth_insert->finish;
-#     $sth_update->finish;
-# }
 my $end_time = localtime;
-#my $tz = $time->tzoffset;
 my %data = (count=>$count,
 	    entries=>\@inserts,
 	    updates=>scalar @updates,
-	    commented=>\@commented,
+	    commented=>[@new_comment_updates,@new_comment_inserts],
 	    starttime=>$start_time->strftime("%Y-%m-%dT%H:%M:%S%z"),
 	    endtime=>$end_time->strftime("%Y-%m-%dT%H:%M:%S%z"),
 	    runtime=> $end_time->epoch - $start_time->epoch,
 	   );
-#if (scalar @inserts) {
-if ($count) {
-
-    my $tt = Template->new( {INCLUDE_PATH=>"$Bin/templates",ENCODING=>'UTF-8'} );
-    $tt->process( 'Lo-log-txt.tt', \%data) || die $tt->error;
-}
+my $tt = Template->new( {INCLUDE_PATH=>"$Bin/templates",ENCODING=>'UTF-8'} );
+$tt->process( 'Lo-log-txt.tt', \%data) || die $tt->error;
