@@ -82,7 +82,7 @@ foreach my $day ( @days ) {
 my $dbh = get_dbh;
 
 my $all_ids = $dbh->selectall_arrayref("select id,comments from lobsters")  or die $dbh->errstr;
-my $comment_ids = $dbh->selectall_arrayref("select id,comment_id from lo_comments") or die $dbh->errstr;
+my $comment_ids = $dbh->selectall_arrayref("select id,comment_id,updated_at,is_deleted,is_moderated,score,flags from lo_comments") or die $dbh->errstr;
 
 my %seen_ids;
 foreach my $row ( @{$all_ids} ) {
@@ -90,7 +90,13 @@ foreach my $row ( @{$all_ids} ) {
 }
 my %ids_have_comments;
 for my $row (@{$comment_ids}) {
-    $ids_have_comments{$row->[0]}->{$row->[1]}++;
+    $ids_have_comments{$row->[0]}->{$row->[1]} = {
+						  updated_at=>$row->[2],
+						  is_deleted=>$row->[3],
+						  is_moderated=>$row->[4],
+						  score=>$row->[5],
+						  flags=>$row->[6],
+						 };
 }
 
 my @updates;
@@ -182,7 +188,7 @@ if (@new_comment_inserts) {
 
     # insert data
     for my $entry (@new_comment_inserts) {
-	push @Log, "==> getting insert data for submission ".$entry->{short_id};
+	push @Log, "==> getting insert data for submission ".$entry->{short_id}.' "'.$entry->{title}.'"';
 	my $item_ref=get_item_from_source('lo', $entry->{short_id});
 	for my $comment (@{$item_ref->{comment_list}->[0]}) {
 	    my @data=( $entry->{short_id},$comment->{short_id});
@@ -190,10 +196,10 @@ if (@new_comment_inserts) {
 		push @data, $comment->{$field_name};
 	    }
 
-	    push @Log, "inserting NEW comment ".$comment->{short_id}." for submission ".$entry->{short_id};
+	    push @Log, "~~> inserting NEW comment ".$comment->{short_id}." by ".$comment->{commenting_user};
 	    $sth_insert->execute(@data) or warn $sth->errstr;
 	}
-	push @Log, "... sleeping 2s...";
+	push @Log, "     ... sleeping 2s...";
 	sleep 2;
     }
 }
@@ -202,21 +208,54 @@ my $sth_update = $dbh->prepare("update lo_comments set updated_at=?, is_deleted=
 
 if (@new_comment_updates) {
     for my $entry (@new_comment_updates) {
-     	push @Log, "==> getting update data for submission ".$entry->{short_id};
+     	push @Log, "==> getting update data for submission ".$entry->{short_id}.' "'.$entry->{title}.'"';
+#	my $existing_comments = $dbh->selectall_arrayref("select * from lo_comments where id='?'",($entry->{short_id}));
+#	dump $existing_comments;
      	my $item_ref=get_item_from_source('lo', $entry->{short_id});
+
+
 	for my $comment (@{$item_ref->{comment_list}->[0]}) {
+	    my ( $is_unseen, $is_changed) = (0,0);
 	    if ($ids_have_comments{ $entry->{short_id} }->{ $comment->{short_id}}) {
-		# nop for now
+		my $prev = $ids_have_comments{ $entry->{short_id} }->{ $comment->{short_id}};
+		
+		if ($comment->{updated_at} ne $prev->{updated_at}) {
+		    push @Log, sprintf("--> %s has new updated_at value: %s", $comment->{short_id},
+				       $comment->{updated_at});
+		    $is_changed++;
+		} elsif ($comment->{is_deleted} != $prev->{is_deleted}) {
+		    push @Log, sprintf("++> %s has new flag is_deleted: %d", $comment->{short_id},
+				       $comment->{is_deleted});
+		    $is_changed++;
+		    
+		} elsif ($comment->{is_moderated} != $prev->{is_moderated}) {
+		    push @Log, sprintf("!!> %s has new flag is_moderated: %d", $comment->{short_id},
+				       $comment->{is_moderated});
+		    $is_changed++;
+		}
 	    } else {
-		push @Log, "inserting UPD comment ".$comment->{short_id}." for submission ".$entry->{short_id};
+		$is_unseen++;
+	    }
+	    if ($is_unseen ) {
+		push @Log, "~~> inserting UPD comment ".$comment->{short_id}." by ".$comment->{commenting_user};
+				
+	    
 		my @data=( $entry->{short_id},$comment->{short_id});
 		for my $field_name (@fields[2..$#fields]) {
 		    push @data, $comment->{$field_name};
 		}
 		$sth_insert->execute(@data) or warn $sth->errstr;
 	    }
-	}
-	sleep 2;
+	    if ($is_changed) {
+		push @Log, sprintf("..> updating comment %s by %s with new info", $comment->{short_id}, $comment->{commenting_user});
+		my @data = map {$comment->{$_}} qw/updated_at is_deleted is_moderated score flags/;
+		push @data, $entry->{short_id};
+		push @data, $comment->{short_id};
+		$sth_update->execute(@data) or warn $sth->errstr;
+	    
+	    }
+#	    sleep 2;
+	} 
     }
 }
 
