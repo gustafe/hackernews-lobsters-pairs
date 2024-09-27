@@ -1,19 +1,17 @@
-### START @ [% starttime %]
+## START @ [% starttime %]
 Updated: [% count %] Commented: [% commented.size %]
-Inserts: 
+### Inserts: 
 [% FOREACH entry IN entries -%]
-Lo | https://lobste.rs/s/[% entry.0 -%] | 
-[% entry.3 -%] |
-[% entry.2 -%] | 
-[% entry.8 -%] | tags: [% entry.7 -%] | [% entry.4 -%] | S: [% entry.6 -%] | C: [% entry.5 %]
+"[% entry.3 -%]" <[% entry.2 -%]> <https://lobste.rs/s/[% entry.0 -%]>
+site: [% entry.8 -%] | tags: [% entry.7 -%] | submitter: [% entry.4 -%] | S: [% entry.6 -%] | C: [% entry.5 %]
 [% END -%]
-Commented:
+### Commented:
 [% FOREACH entry IN commented -%]
-https://lobste.rs/s/[% entry.short_id -%].json | [% entry.comment_count -%] | [% entry.title %]
+"[% entry.title %]" ([% entry.comment_count -%]) <https://lobste.rs/s/[% entry.short_id -%].json>
 [% END -%]
-Log:
+### Log:
 [% FOREACH line IN Log -%]
 [% line %]
 [% END -%]
-### END   @ [% endtime %] ([% runtime %]s)
+## END   @ [% endtime %] ([% runtime %]s)
 

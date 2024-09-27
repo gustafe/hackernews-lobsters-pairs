@@ -17,6 +17,7 @@ binmode(STDOUT, ":encoding(UTF-8)");
 my $debug    = 0;
 my $template = 'https://lobste.rs/newest/page/';
 my $entry_template='https://lobste.rs/s/';
+my $comment_template='https://lobste.rs/c/';
 sub md_entry {
     my ($entry) = @_;
     my ( $id, $created_at, $url, $title, $author, $comments, $score, $tags ) = @$entry;
@@ -118,7 +119,6 @@ foreach my $entry ( @{$entries} ) {
 	my $comments_in_db = scalar keys %{$ids_have_comments{$current_id}};
 					     
 	if ($seen_ids{$current_id} != $entry->{comment_count}
-#	    or	    $comments_in_db != $entry->{comment_count} 
 	   ) {
 	    if ($ids_have_comments{$current_id}) {
 		push @new_comment_updates, $entry;
@@ -150,7 +150,6 @@ my $count = 0;
 $dbh->{PrintError} = 1;
 
 if (@inserts) {
-#    print "\n";
     $sth = $dbh->prepare( $feeds->{lo}->{insert_sql} ) or die $dbh->errstr;
     foreach my $values (@inserts) {
         $sth->execute( @{$values} ) or warn $sth->errstr;
@@ -162,7 +161,6 @@ if (@inserts) {
 	my $host = extract_host( $url );
 	push @$el,$host;
     }
-
 }
 
 if (@updates) {
@@ -188,7 +186,8 @@ if (@new_comment_inserts) {
 
     # insert data
     for my $entry (@new_comment_inserts) {
-	push @Log, "==> getting insert data for submission ".$entry->{short_id}.' "'.$entry->{title}.'"';
+#	push @Log, "==> getting insert data for submission ".$entry->{short_id}.' "'.$entry->{title}.'"';
+	push @Log, sprintf("==> getting insert data for submission \"%s\" <%s%s>", $entry->{title}, $entry_template, $entry->{short_id});
 	my $item_ref=get_item_from_source('lo', $entry->{short_id});
 	for my $comment (@{$item_ref->{comment_list}->[0]}) {
 	    my @data=( $entry->{short_id},$comment->{short_id});
@@ -196,11 +195,13 @@ if (@new_comment_inserts) {
 		push @data, $comment->{$field_name};
 	    }
 
-	    push @Log, "~~> inserting NEW comment ".$comment->{short_id}." by ".$comment->{commenting_user};
+	    #push @Log, "~~> inserting NEW comment ".$comment->{short_id}." by ".$comment->{commenting_user};
+	    push @Log, sprintf("  --> inserting NEW comment by %s <%s%s>", $comment->{commenting_user},
+			       $comment_template, $comment->{short_id});
+	    
 	    $sth_insert->execute(@data) or warn $sth->errstr;
 	}
-	push @Log, "     ... sleeping 2s...";
-	sleep 2;
+
     }
 }
 
@@ -208,37 +209,42 @@ my $sth_update = $dbh->prepare("update lo_comments set updated_at=?, is_deleted=
 
 if (@new_comment_updates) {
     for my $entry (@new_comment_updates) {
-     	push @Log, "==> getting update data for submission ".$entry->{short_id}.' "'.$entry->{title}.'"';
-#	my $existing_comments = $dbh->selectall_arrayref("select * from lo_comments where id='?'",($entry->{short_id}));
-#	dump $existing_comments;
+     	#push @Log, "==> getting update data for submission ".$entry->{short_id}.' "'.$entry->{title}.'"';
+	push @Log, sprintf("==> getting insert data for submission \"%s\" <%s%s>", $entry->{title}, $entry_template, $entry->{short_id});
+
      	my $item_ref=get_item_from_source('lo', $entry->{short_id});
-
-
 	for my $comment (@{$item_ref->{comment_list}->[0]}) {
 	    my ( $is_unseen, $is_changed) = (0,0);
 	    if ($ids_have_comments{ $entry->{short_id} }->{ $comment->{short_id}}) {
 		my $prev = $ids_have_comments{ $entry->{short_id} }->{ $comment->{short_id}};
 		
 		if ($comment->{updated_at} ne $prev->{updated_at}) {
-		    push @Log, sprintf("--> %s has new updated_at value: %s", $comment->{short_id},
-				       $comment->{updated_at});
+		    push @Log, sprintf("      > comment by %s has new updated_at value: %s <%s%s>",
+				       $comment->{commenting_user},
+				       $comment->{updated_at},
+				       $comment_template, $comment->{short_id});
+		    
 		    $is_changed++;
 		} elsif ($comment->{is_deleted} != $prev->{is_deleted}) {
-		    push @Log, sprintf("++> %s has new flag is_deleted: %d", $comment->{short_id},
-				       $comment->{is_deleted});
+		    push @Log, sprintf("   ++> comment by %s has new flag is_deleted: %d <%s%s>",
+				       $comment->{commenting_user},
+				       $comment->{is_deleted}, $comment_template, $comment->{short_id});
 		    $is_changed++;
 		    
 		} elsif ($comment->{is_moderated} != $prev->{is_moderated}) {
-		    push @Log, sprintf("!!> %s has new flag is_moderated: %d", $comment->{short_id},
-				       $comment->{is_moderated});
+		    push @Log, sprintf("   !!> comment by %s has new flag is_moderated: %d <%s%s>",
+				       $comment->{commenting_user},
+				       $comment->{is_moderated},$comment_template,$comment->{short_id},);
 		    $is_changed++;
 		}
 	    } else {
 		$is_unseen++;
 	    }
 	    if ($is_unseen ) {
-		push @Log, "~~> inserting UPD comment ".$comment->{short_id}." by ".$comment->{commenting_user};
-				
+#		push @Log, "~~> inserting UPD comment ".$comment->{short_id}." by ".$comment->{commenting_user};
+		push @Log, sprintf("   --> inserting UPD comment by %s <%s%s>", $comment->{commenting_user},
+			       $comment_template, $comment->{short_id});
+
 	    
 		my @data=( $entry->{short_id},$comment->{short_id});
 		for my $field_name (@fields[2..$#fields]) {
@@ -247,14 +253,16 @@ if (@new_comment_updates) {
 		$sth_insert->execute(@data) or warn $sth->errstr;
 	    }
 	    if ($is_changed) {
-		push @Log, sprintf("..> updating comment %s by %s with new info", $comment->{short_id}, $comment->{commenting_user});
+		push @Log, sprintf("   ..> updating comment by %s with new info <%s%s>",
+				   $comment->{commenting_user},
+				   $comment_template, $comment->{short_id}
+				  );
 		my @data = map {$comment->{$_}} qw/updated_at is_deleted is_moderated score flags/;
 		push @data, $entry->{short_id};
 		push @data, $comment->{short_id};
 		$sth_update->execute(@data) or warn $sth->errstr;
 	    
 	    }
-#	    sleep 2;
 	} 
     }
 }
