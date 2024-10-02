@@ -5,10 +5,6 @@ Updated: [% count %] Commented: [% commented.size %]
 "[% entry.3 -%]" <[% entry.2 -%]> <https://lobste.rs/s/[% entry.0 -%]>
 site: [% entry.8 -%] | tags: [% entry.7 -%] | submitter: [% entry.4 -%] | S: [% entry.6 -%] | C: [% entry.5 %]
 [% END -%]
-### Commented:
-[% FOREACH entry IN commented -%]
-"[% entry.title %]" ([% entry.comment_count -%]) <https://lobste.rs/s/[% entry.short_id -%].json>
-[% END -%]
 ### Log:
 [% FOREACH line IN Log -%]
 [% line %]

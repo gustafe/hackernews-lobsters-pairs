@@ -1,8 +1,8 @@
 ### START @ [% starttime %]
 [% FOREACH entry IN entries -%]
-HN | https://news.ycombinator.com/item?id=[% entry.0 -%] *
-[% entry.3 -%] *
-[% entry.2 -%] *
-[% entry.7 -%] | | [% entry.4 -%] | S: [% entry.5 -%] | C: [% entry.6 %]
+"[% entry.3 -%]" <[% entry.2 -%]>
+<https://news.ycombinator.com/item?id=[% entry.0 -%]> 
+site: [% entry.7 -%] | submitter: [% entry.4 -%] | S: [% entry.5 -%] | C: [% entry.6 %]
+
 [% END -%]
 ### END   @ [% endtime %] ([% runtime %]s)
