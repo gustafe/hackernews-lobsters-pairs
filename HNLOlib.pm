@@ -75,7 +75,8 @@ $feeds->{lo} = {
     api_item_href  => 'https://lobste.rs/s/',
     table_name     => 'lobsters',
     site           => 'Lobste.rs',
-    title_href     => 'https://lobste.rs/s/',
+		title_href     => 'https://lobste.rs/s/',
+		comment_href=>'https://lobste.rs/c/',
     submitter_href => 'https://lobste.rs/u/',
     insert_sql     => "insert into lobsters 
 (id, created_time, url,title,submitter,comments,score,tags) values 
