@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>[% meta.page_title %]</title>
+
+[% INCLUDE common.tt %]
+
+<script src="http://gerikson.com/js/pretty.js"></script>
+
+<script>
+window.onload = function(){
+	var links = document.getElementById("generated");	
+
+		if ( links.getAttribute("timestamp")) {
+			var date = prettyDate(links.getAttribute("timestamp"));
+			if ( date )
+				links.innerHTML = date;
+		}
+};
+</script>
+
+
+</head>
+<body>
+<h1>[% meta.page_title %]</h1>
+
+<p><a href="#stats">Stats</a></p>
+
+
+
+<h2>Removed archived comments</h2>
+
+<p>Number of comments: [% meta.comment_count -%]. Latest: [% meta.latest_comment -%]</p>
+
+[% USE Markdown -%]
+[% FILTER markdown %]
+
+[% FOREACH line IN report %]
+[% line %]
+[% END %]
+
+[% END %]
+
+<h2 id="stats">Comment stats</h2>
+
+[% FOREACH id IN stats.keys.sort %]
+
+<h3>[% stats.$id.label -%]</h3>
+
+<ol>
+[% FOREACH line IN stats.$id.res %]
+
+<li><a href="https://lobste.rs/c/[% line.comment_id -%]">[% line.commenting_user -%]</a>
+  on <a href="lobste.rs/s/[% line.entry_id -%]">[% line.entry_title -%]<a>
+      score: [% line.comment_score -%]
+      [% IF line.comment_flags>0 -%]flags: [% line.comment_flags -%][% END -%]
+      [% IF line.is_moderated -%] MODERATED [% END -%]
+      [% IF line.is_deleted -%] DELETED [% END -%]
+</li>
+
+
+[% END %]
+</ol>
+[% END %]
+
+
+<hr/>
+<p>This page was generated on [% meta.generate_time %].</p>
+[% INCLUDE static_footer.tt %]
+</body>
