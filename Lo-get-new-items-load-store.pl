@@ -185,8 +185,12 @@ if (@new_comment_inserts) {
 
     # insert data
     for my $entry (@new_comment_inserts) {
-#	push @Log, "==> getting insert data for submission ".$entry->{short_id}.' "'.$entry->{title}.'"';
-	push @Log, sprintf("==> getting comment data for submission \"%s\" <%s%s> (S: %d, C: %d)", $entry->{title}, $entry_template, $entry->{short_id}, $entry->{score}, $entry->{comments});
+	#	push @Log, "==> getting insert data for submission ".$entry->{short_id}.' "'.$entry->{title}.'"';
+	my $host = extract_host( $entry->{url} );
+	push @Log, sprintf("==> getting comment data for submission \"%s\" <%s%s> (%s) (S: %d, C: %d)",
+			   $entry->{title}, $entry_template, $entry->{short_id},
+			   $host,
+			   $entry->{score}, $entry->{comment_count});
 	my $item_ref=get_item_from_source('lo', $entry->{short_id});
 	for my $comment (@{$item_ref->{comment_list}->[0]}) {
 	    my @data=( $entry->{short_id},$comment->{short_id});
@@ -195,7 +199,8 @@ if (@new_comment_inserts) {
 	    }
 
 	    #push @Log, "~~> inserting NEW comment ".$comment->{short_id}." by ".$comment->{commenting_user};
-	    push @Log, sprintf("  --> inserting NEW comment by %s <%s%s>", $comment->{commenting_user},
+	    push @Log, sprintf("  --> inserting NEW comment by %s <%s%s>",
+			       $comment->{commenting_user},
 			       $comment_template, $comment->{short_id});
 	    
 	    $sth_insert->execute(@data) or warn $sth->errstr;
@@ -209,7 +214,12 @@ my $sth_update = $dbh->prepare("update lo_comments set updated_at=?, is_deleted=
 if (@new_comment_updates) {
     for my $entry (@new_comment_updates) {
      	#push @Log, "==> getting update data for submission ".$entry->{short_id}.' "'.$entry->{title}.'"';
-	push @Log, sprintf("==> getting comment data for submission \"%s\" <%s%s> (S: %d, C: %d)", $entry->{title}, $entry_template, $entry->{short_id}, $entry->{score}, $entry->{comments});
+	my $host = extract_host( $entry->{url} );
+	push @Log, sprintf("==> getting comment data for submission \"%s\" <%s%s> (%s) (S: %d, C: %d)",
+			   $entry->{title}, $entry_template,
+			   $host,
+			   $entry->{short_id}, $entry->{score},
+			   $entry->{comment_count});
 
      	my $item_ref=get_item_from_source('lo', $entry->{short_id});
 	for my $comment (@{$item_ref->{comment_list}->[0]}) {
@@ -266,7 +276,6 @@ if (@new_comment_updates) {
 		$is_unseen++;
 	    }
 	    if ($is_unseen ) {
-#		push @Log, "~~> inserting UPD comment ".$comment->{short_id}." by ".$comment->{commenting_user};
 		push @Log, sprintf("   ++> inserting NEW comment by %s <%s%s>", $comment->{commenting_user},
 			       $comment_template, $comment->{short_id});
 
@@ -278,7 +287,7 @@ if (@new_comment_updates) {
 		$sth_insert->execute(@data) or warn $sth->errstr;
 	    }
 	    if ($is_changed) {
-#		push @Log, sprintf("   ..> updating comment by %s with new info <%s%s>",				   $comment->{commenting_user},				   $comment_template, $comment->{short_id}				  );
+
 		my @data = map {$comment->{$_}} qw/updated_at is_deleted is_moderated score flags/;
 		push @data, $entry->{short_id};
 		push @data, $comment->{short_id};
