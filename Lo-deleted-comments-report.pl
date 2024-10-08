@@ -10,8 +10,16 @@ use HNLOlib qw/$feeds get_dbh/;
 use Data::Dump qw/dump/;
 use DateTime;
 use Template;
+use Time::Piece;
 use FindBin qw/$Bin/;
 
+sub convert_to_local {
+    my ($time_in) = @_;
+    $time_in =~ s/\.\d{3}//;
+    $time_in =~ s/:(\d+)$/$1/;
+    my $obj_time = Time::Piece->strptime($time_in,"%FT%T%z");
+    return Time::Piece->localtime($obj_time)->strftime("%FT%T%z");
+}
 
 my $dbh=get_dbh();
 my $comments=$dbh->selectall_arrayref("select lo.id, title, created_time,co.comment_id,co.created_at,co.commenting_user,co.is_deleted,co.is_moderated,co.score,co.flags,co.comment_plain 
@@ -30,14 +38,15 @@ for my $row (@$comments) {
     my ($id,$title,$created_time,$comment_id,$created_at,$commenting_user,$is_deleted,$is_moderated,$score,$flags,$comment_plain)= @$row;
     if ($id ne $curr_id) {
 	push @report, sprintf("## [%s](%s)\n", $title, $feeds->{lo}{title_href}.$id);
-	push @report, sprintf("*First posted on %s*\n", $created_time);
+	push @report, sprintf("*First posted on %s*\n", convert_to_local($created_at));
 	$curr_id=$id;
     }
     my $reason = "deleted" if $is_deleted;
     $reason .= ' and moderated' if $is_moderated;
     
     push @report, sprintf("### [Comment by %s](%s) is %s (score: %d, flags: %d)\n",$commenting_user,$feeds->{lo}{comment_href}.$comment_id,$reason, $score, $flags );
-    push @report, sprintf("*Originally posted on %s*\n", $created_at);
+    
+    push @report, sprintf("*Originally posted on %s*\n", convert_to_local($created_at));
     push @report, $comment_plain;
     $comment_count++;
     $latest_comment = $created_at if $created_at gt $latest_comment;
@@ -79,9 +88,8 @@ for my $id (sort keys %results) {
 
 my $data;
 $data->{meta}->{page_title} = 'Lobste.rs recent comment stats';
-$data->{meta}->{generate_time}
-  = DateTime->now()->strftime('%Y-%m-%d %H:%M:%S%z');
-$data->{meta}->{latest_comment} = $latest_comment;
+$data->{meta}->{generate_time} = Time::Piece->localtime()->strftime("%FT%T%z");
+$data->{meta}->{latest_comment} = convert_to_local($latest_comment);
 $data->{meta}->{comment_count}= $comment_count;
 $data->{report} = \@report;
 $data->{stats} = \%results;
