@@ -13,6 +13,11 @@ use URI;
 use Time::Piece;
 use Time::Seconds;
 use Data::Dump qw/dump/;
+
+use Time::HiRes qw/gettimeofday tv_interval/;
+sub sec_to_hms;
+
+
 binmode(STDOUT, ":encoding(UTF-8)");
 my $debug    = 0;
 my $template = 'https://lobste.rs/newest/page/';
@@ -44,7 +49,14 @@ sub usage {
     exit 1;
 
 }
-my $start_time= localtime;
+
+sub sec_to_hms {
+    my ($s) = @_;
+    return sprintf("Duration: %.2f s", $s);
+}
+
+my $start_tv = [gettimeofday];
+my $start_time= Time::Piece->localtime();
 my $from_page;
 my $help = '';
 my $opt_debug;
@@ -199,7 +211,7 @@ if (@new_comment_inserts) {
 	    }
 
 	    #push @Log, "~~> inserting NEW comment ".$comment->{short_id}." by ".$comment->{commenting_user};
-	    push @Log, sprintf("  --> inserting NEW comment by %s <%s%s>",
+	    push @Log, sprintf("  ++> inserting NEW comment by %s <%s%s>",
 			       $comment->{commenting_user},
 			       $comment_template, $comment->{short_id});
 	    
@@ -216,9 +228,9 @@ if (@new_comment_updates) {
      	#push @Log, "==> getting update data for submission ".$entry->{short_id}.' "'.$entry->{title}.'"';
 	my $host = extract_host( $entry->{url} );
 	push @Log, sprintf("==> getting comment data for submission \"%s\" <%s%s> (%s) (S: %d, C: %d)",
-			   $entry->{title}, $entry_template,
+			   $entry->{title}, $entry_template,$entry->{short_id},
 			   $host,
-			   $entry->{short_id}, $entry->{score},
+			    $entry->{score},
 			   $entry->{comment_count});
 
      	my $item_ref=get_item_from_source('lo', $entry->{short_id});
@@ -298,14 +310,16 @@ if (@new_comment_updates) {
     }
 }
 
-my $end_time = localtime;
+#my $end_time = Time::Piece->localtime->datetime;
 my %data = (count=>$count,
 	    entries=>\@inserts,
 	    updates=>scalar @updates,
 	    commented=>[@new_comment_updates,@new_comment_inserts],
 	    starttime=>$start_time->strftime("%Y-%m-%dT%H:%M:%S%z"),
-	    endtime=>$end_time->strftime("%Y-%m-%dT%H:%M:%S%z"),
-	    runtime=> $end_time->epoch - $start_time->epoch,
+	    #	    endtime=>$end_time->strftime("%Y-%m-%dT%H:%M:%S%z"),
+#	    starttime=>$start_time . $tzstring,
+#	    endtime=>$end_time,
+	    runtime=> sec_to_hms(tv_interval($start_tv)),
 	    Log=>\@Log,
 	   );
 

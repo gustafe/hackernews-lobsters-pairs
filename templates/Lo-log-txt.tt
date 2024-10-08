@@ -9,5 +9,5 @@ site: [% entry.8 -%] | tags: [% entry.7 -%] | submitter: [% entry.4 -%] | S: [% 
 [% FOREACH line IN Log -%]
 [% line %]
 [% END -%]
-## END   @ [% endtime %] ([% runtime %]s)
+## END   @ [% runtime %]
 
