@@ -116,7 +116,11 @@ my @updates;
 my @inserts;
 my @new_comment_inserts;
 my @new_comment_updates;
-
+my %skip_entries_for_comments;
+while (<DATA>) {
+    chomp;
+    $skip_entries_for_comments{$_}++;
+}
 foreach my $entry ( @{$entries} ) {
     my $current_id = $entry->{short_id};
     if ( exists $seen_ids{$current_id} ) {
@@ -130,7 +134,7 @@ foreach my $entry ( @{$entries} ) {
 	# do we need to update comments?
 #	my $comments_in_db = scalar keys %{$ids_have_comments{$current_id}};
 					     
-	if ($seen_ids{$current_id} != $entry->{comment_count}	   ) {
+	if ($seen_ids{$current_id} != $entry->{comment_count}	and ! exists $skip_entries_for_comments{$current_id}   ) {
 	    if ($ids_have_comments{$current_id}) {
 		push @new_comment_updates, $entry;
 	    } 
@@ -151,7 +155,7 @@ foreach my $entry ( @{$entries} ) {
           ];
     }
     # entries with comments we haven't seen before 
-    if (!exists $ids_have_comments{$current_id}) {
+    if (!exists $ids_have_comments{$current_id} 	and ! exists $skip_entries_for_comments{$current_id}  ) {
 	push @new_comment_inserts, $entry if $entry->{comment_count}>0;
     }
 }
@@ -328,3 +332,5 @@ if (@inserts or @new_comment_updates or @new_comment_inserts ) {
     $tt->process( 'Lo-log-txt.tt', \%data) || die $tt->error;
 }
 
+__DATA__
+idlkrv
