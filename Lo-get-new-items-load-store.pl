@@ -332,5 +332,7 @@ if (@inserts or @new_comment_updates or @new_comment_inserts ) {
     $tt->process( 'Lo-log-txt.tt', \%data) || die $tt->error;
 }
 
+### quick and dirty filter to remove dupes from the feed
+
 __DATA__
 idlkrv
