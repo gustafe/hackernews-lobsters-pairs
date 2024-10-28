@@ -22,7 +22,7 @@ sub convert_to_local {
 }
 
 my $dbh=get_dbh();
-my $comments=$dbh->selectall_arrayref("select lo.id, title, created_time,co.comment_id,co.created_at,co.commenting_user,co.is_deleted,co.is_moderated,co.score,co.flags,co.comment_plain 
+my $comments=$dbh->selectall_arrayref("select lo.id, title, lo.created_time,co.comment_id,co.created_at,co.commenting_user,co.is_deleted,co.is_moderated,co.score,co.flags,co.comment_plain 
 from lobsters lo inner join lo_comments co on lo.id=co.id 
 where (co.is_deleted=1 or co.is_moderated=1) and comment_plain <> 'Comment removed by author'
 order by lo.created_time desc, co.created_at desc") or warn $dbh->errstr;
@@ -38,7 +38,7 @@ for my $row (@$comments) {
     my ($id,$title,$created_time,$comment_id,$created_at,$commenting_user,$is_deleted,$is_moderated,$score,$flags,$comment_plain)= @$row;
     if ($id ne $curr_id) {
 	push @report, sprintf("## [%s](%s)\n", $title, $feeds->{lo}{title_href}.$id);
-	push @report, sprintf("*First posted on %s*\n", convert_to_local($created_at));
+	push @report, sprintf("*First posted on %s*\n", convert_to_local($created_time));
 	$curr_id=$id;
     }
     my $reason = "deleted" if $is_deleted;
