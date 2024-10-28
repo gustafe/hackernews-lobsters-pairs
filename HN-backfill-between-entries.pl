@@ -42,8 +42,7 @@ my $dbh = get_dbh();
 # }
 # exit 0;
 
-my ( $start, $end) = (39434899,
-		      39444519);
+my ( $start, $end) = (36296185,36297144);
 
 my $list = [ $start .. $end ];
 
