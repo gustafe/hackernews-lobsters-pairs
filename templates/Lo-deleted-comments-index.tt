@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>[% meta.page_title %]</title>
+
+[% INCLUDE common.tt %]
+
+<script src="http://gerikson.com/js/pretty.js"></script>
+
+<script>
+window.onload = function(){
+	var links = document.getElementById("generated");	
+
+		if ( links.getAttribute("timestamp")) {
+			var date = prettyDate(links.getAttribute("timestamp"));
+			if ( date )
+				links.innerHTML = date;
+		}
+};
+</script>
+
+
+</head>
+<body>
+<h1>[% meta.page_title %]</h1>
+
+
+<p>Number of deleted comments: [% meta.deleted_count -%]. Latest comment: [% meta.latest_comment -%]</p>
+
+[% USE Markdown -%]
+[% FILTER markdown %]
+
+[% FOREACH obj IN entries %]
+
+## [[% obj.title -%]](https://lobste.rs/s/[% obj.id -%])
+
+* [Deleted comments ([% obj.deleted_comment_count -%]/[% obj.comment_count -%])](deleted-[% obj.id -%].html)
+* [Original submission link]([% obj.url -%])
+* Time span: [% obj.first_comment %] -- [% obj.last_comment %]
+
+[% END %]
+
+[% END %]
+
+
+<hr/>
+<p>This page was generated on [% meta.generate_time %].</p>
+[% INCLUDE static_footer.tt %]
+</body>

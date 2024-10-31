@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Deleted comments for lobste.rs entry [% meta.entry_id %]</title>
+
+[% INCLUDE common.tt %]
+
+<script src="http://gerikson.com/js/pretty.js"></script>
+
+<script>
+window.onload = function(){
+	var links = document.getElementById("generated");	
+
+		if ( links.getAttribute("timestamp")) {
+			var date = prettyDate(links.getAttribute("timestamp"));
+			if ( date )
+				links.innerHTML = date;
+		}
+};
+</script>
+
+
+</head>
+<body>
+<h1>Deleted comments for lobste.rs entry &laquo; [% meta.title -%] &raquo;</h1>
+
+[% USE Markdown -%]
+[% FILTER markdown %]
+
+[Original comments](https://lobste.rs/s/[% meta.entry_id -%])
+
+[% FOREACH comment IN comments %]
+
+## [Comment](https://lobste.rs/c/[% comment.comment_id -%]) by [[% comment.commenting_user -%]](https://lobste.rs/u/[% comment.commenting_user -%]) is [% comment.reason -%] (score: [% comment.score -%], flags: [% comment.flags -%])
+
+[% comment.comment_plain %]
+
+* Originally posted on [% comment.created_at %]
+
+[% END %]
+
+[% END %]
+
+
+<hr/>
+<p>This page was generated on [% meta.generate_time %].</p>
+[% INCLUDE static_footer.tt %]
+</body>
