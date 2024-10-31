@@ -38,7 +38,7 @@ for my $row (@$comments) {
     my ($id,$title,$created_time,$comment_id,$created_at,$commenting_user,$is_deleted,$is_moderated,$score,$flags,$comment_plain)= @$row;
     if ($id ne $curr_id) {
 	push @report, sprintf("## [%s](%s)\n", $title, $feeds->{lo}{title_href}.$id);
-	push @report, sprintf("*First posted on %s*\n", convert_to_local($created_time));
+	push @report, sprintf("*Entry posted on %s*\n", convert_to_local($created_time));
 	$curr_id=$id;
     }
     my $reason = "deleted" if $is_deleted;
