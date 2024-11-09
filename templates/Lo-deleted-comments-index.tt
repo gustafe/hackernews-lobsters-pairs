@@ -34,7 +34,7 @@ window.onload = function(){
 
 ## [[% obj.title -%]](https://lobste.rs/s/[% obj.id -%])
 
-* [Deleted comments ([% obj.deleted_comment_count -%]/[% obj.comment_count -%])](deleted-[% obj.id -%].html)
+* [Deleted comments ([% obj.deleted_comment_count -%]/[% obj.comment_count -%])]([% obj.id -%].html)
 * [Original submission link]([% obj.url -%])
 * Time span: [% obj.first_comment %] -- [% obj.last_comment %]
 

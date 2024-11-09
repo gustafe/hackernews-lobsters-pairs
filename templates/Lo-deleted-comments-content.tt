@@ -22,7 +22,7 @@ window.onload = function(){
 
 </head>
 <body>
-<h1>Deleted comments for lobste.rs entry &laquo; [% meta.title -%] &raquo;</h1>
+<h2>Deleted comments for lobste.rs entry &laquo; [% meta.title -%] &raquo;</h2>
 
 [% USE Markdown -%]
 [% FILTER markdown %]
@@ -31,12 +31,13 @@ window.onload = function(){
 
 [% FOREACH comment IN comments %]
 
-## [Comment](https://lobste.rs/c/[% comment.comment_id -%]) by [[% comment.commenting_user -%]](https://lobste.rs/u/[% comment.commenting_user -%]) is [% comment.reason -%] (score: [% comment.score -%], flags: [% comment.flags -%])
+<h3 id="[% comment.comment_id -%]"><a href="https://lobste.rs/c/[% comment.comment_id -%]">Comment</a> by <a href="https://lobste.rs/u/[% comment.commenting_user -%]">[% comment.commenting_user -%]</a> is [% comment.reason -%] (score: [% comment.score -%], flags: [% comment.flags -%])</h3>
 
 [% comment.comment_plain %]
 
 * Originally posted on [% comment.created_at %]
 
+<a href="#[% comment.comment_id -%]">#</a>
 [% END %]
 
 [% END %]

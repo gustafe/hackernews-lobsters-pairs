@@ -31,6 +31,7 @@ order by lo.created_time desc, co.created_at desc") or warn $dbh->errstr;
 #my @fields = qw/id title  created_time comment_id created_at commenting_user is_deleted is_moderated comment_plain/;
 my @report;
 my %entries;
+my %commenters;
 my $curr_id='';
 my $latest_comment = '1900-01-01T00:00:00.000+00:00';
 my $deleted_count = 0;
@@ -44,16 +45,20 @@ for my $row (@$comments) {
     if ($entries{$id}->{first_comment}) {
 	$entries{$id}->{first_comment} = $created_at if $created_at lt  $entries{$id}->{first_comment} 
     } else {
-	$entries{$id}->{first_comment} = '2999-12-31T23:59:59+00:00'
+	$entries{$id}->{first_comment} = $created_at;
     }
     if ($entries{$id}->{last_comment}) {
 	$entries{$id}->{last_comment} = $created_at if $created_at gt $entries{$id}->{last_comment}
     } else {
-	$entries{$id}->{last_comment} ='1900-01-01T00:00:00+00:00'
+	$entries{$id}->{last_comment} = $created_at;
     }
-
-    
-
+    if (!$commenters{$commenting_user}) {
+	$commenters{$commenting_user} = {count=>0, max_score=>-100,flags=>0,min_score=>100}
+    }
+    $commenters{$commenting_user}->{count}++;
+    $commenters{$commenting_user}->{max_score} = $score if $commenters{$commenting_user}->{max_score} < $score;
+    $commenters{$commenting_user}->{min_score} = $score if $commenters{$commenting_user}->{min_score} > $score;
+    $commenters{$commenting_user}->{flags} = $flags if $commenters{$commenting_user}->{flags} < $flags;
     if ($is_deleted or $is_moderated) {
 	my $reason = "deleted" if $is_deleted;
 	$reason .= ' and moderated' if $is_moderated;
@@ -111,11 +116,16 @@ for my $id (keys %{$pages}) {
     $data->{meta}{title} = $entries{$id}{title};
     $data->{comments} = $pages->{$id}{comments};
 
-    $tt->process('Lo-deleted-comments-content.tt', $data, "Deleted/deleted-$id.html", { binmode => ':utf8' })||die $tt->error;
+    $tt->process('Lo-deleted-comments-content.tt', $data, "Deleted/$id.html", { binmode => ':utf8' })||die $tt->error;
 
 }
 
+
+
 __END__
+for my $user (sort {$commenters{$a}->{min_score} <=> $commenters{$b}->{min_score}}keys %commenters) {
+    say join('|',$user, map{$commenters{$user}->{$_}} qw/count min_score max_score flags/);
+}
 
 
 
