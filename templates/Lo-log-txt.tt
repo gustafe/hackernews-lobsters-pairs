@@ -1,13 +1,16 @@
-## START @ [% starttime %]
+==> START @ [% starttime %]
 Updated: [% count %] Commented: [% commented.size %]
-### Inserts: 
+[% IF entries.size > 0 -%]### Inserts: 
 [% FOREACH entry IN entries -%]
-"[% entry.3 -%]" <[% entry.2 -%]> <https://lobste.rs/s/[% entry.0 -%]>
-site: [% entry.8 -%] | tags: [% entry.7 -%] | submitter: [% entry.4 -%] | S: [% entry.6 -%] | C: [% entry.5 %]
+    "[% entry.3 -%]"
+    <[% entry.2 -%]>
+    <https://lobste.rs/s/[% entry.0 -%]>
+    site: [% entry.8 -%] | tags: [% entry.7 -%] | submitter: [% entry.4 -%] | S: [% entry.6 -%] | C: [% entry.5 %]
 [% END -%]
-### Log:
+[% END -%]
+[% IF Log.size >0 -%]### Log:
 [% FOREACH line IN Log -%]
 [% line %]
 [% END -%]
-## END   @ [% runtime %]
-
+[% END -%]
+<== END   @ [% runtime %]

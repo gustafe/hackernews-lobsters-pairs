@@ -134,7 +134,9 @@ foreach my $entry ( @{$entries} ) {
 	# do we need to update comments?
 #	my $comments_in_db = scalar keys %{$ids_have_comments{$current_id}};
 					     
-	if ($seen_ids{$current_id} != $entry->{comment_count}	and ! exists $skip_entries_for_comments{$current_id}   ) {
+		if ($seen_ids{$current_id} != $entry->{comment_count}	and ! exists $skip_entries_for_comments{$current_id}   ) {
+	#if (! exists $skip_entries_for_comments{$current_id}  ) {
+
 	    if ($ids_have_comments{$current_id}) {
 		push @new_comment_updates, $entry;
 	    } 
@@ -144,14 +146,14 @@ foreach my $entry ( @{$entries} ) {
 
         push @inserts,
           [
-            $current_id,
-            $entry->{created_at},
-            $entry->{url} ? $entry->{url} : '',
-            $entry->{title},
+	   $current_id,
+	   $entry->{created_at},
+	   $entry->{url} ? $entry->{url} : '',
+	   $entry->{title},
 	   $entry->{submitter_user},
-            $entry->{comment_count},
-            $entry->{score},
-            @{ $entry->{tags} } ? join( ',', @{ $entry->{tags} } ) : ''
+	   $entry->{comment_count},
+	   $entry->{score},
+	   @{ $entry->{tags} } ? join( ',', @{ $entry->{tags} } ) : ''
           ];
     }
     # entries with comments we haven't seen before 
@@ -203,10 +205,10 @@ if (@new_comment_inserts) {
     for my $entry (@new_comment_inserts) {
 	#	push @Log, "==> getting insert data for submission ".$entry->{short_id}.' "'.$entry->{title}.'"';
 	my $host = extract_host( $entry->{url} );
-	push @Log, sprintf("==> getting comment data for submission \"%s\" <%s%s> (%s) (S: %d, C: %d)",
-			   $entry->{title}, $entry_template, $entry->{short_id},
-			   $host,
-			   $entry->{score}, $entry->{comment_count});
+	# push @Log, sprintf("==> getting comment data for submission \"%s\" <%s%s> (%s) (S: %d, C: %d)",
+	# 		   $entry->{title}, $entry_template, $entry->{short_id},
+	# 		   $host,
+	# 		   $entry->{score}, $entry->{comment_count});
 	my $item_ref=get_item_from_source('lo', $entry->{short_id});
 	for my $comment (@{$item_ref->{comment_list}->[0]}) {
 	    my @data=( $entry->{short_id},$comment->{short_id});
@@ -215,9 +217,9 @@ if (@new_comment_inserts) {
 	    }
 
 	    #push @Log, "~~> inserting NEW comment ".$comment->{short_id}." by ".$comment->{commenting_user};
-	    push @Log, sprintf("  ++> inserting NEW comment by %s <%s%s>",
-			       $comment->{commenting_user},
-			       $comment_template, $comment->{short_id});
+	    # push @Log, sprintf("  ++> inserting NEW comment by %s <%s%s>",
+	    # 		       $comment->{commenting_user},
+	    # 		       $comment_template, $comment->{short_id});
 	    
 	    $sth_insert->execute(@data) or warn $sth->errstr;
 	}
@@ -231,11 +233,11 @@ if (@new_comment_updates) {
     for my $entry (@new_comment_updates) {
      	#push @Log, "==> getting update data for submission ".$entry->{short_id}.' "'.$entry->{title}.'"';
 	my $host = extract_host( $entry->{url} );
-	push @Log, sprintf("==> getting comment data for submission \"%s\" <%s%s> (%s) (S: %d, C: %d)",
-			   $entry->{title}, $entry_template,$entry->{short_id},
-			   $host,
-			    $entry->{score},
-			   $entry->{comment_count});
+	# push @Log, sprintf("==> getting comment data for submission \"%s\" <%s%s> (%s) (S: %d, C: %d)",
+	# 		   $entry->{title}, $entry_template,$entry->{short_id},
+	# 		   $host,
+	# 		    $entry->{score},
+	# 		   $entry->{comment_count});
 
      	my $item_ref=get_item_from_source('lo', $entry->{short_id});
 	for my $comment (@{$item_ref->{comment_list}->[0]}) {
@@ -244,35 +246,35 @@ if (@new_comment_updates) {
 		my $prev = $ids_have_comments{ $entry->{short_id} }->{ $comment->{short_id}};
 		
 		if ($comment->{updated_at} ne $prev->{updated_at}) {
-		    push @Log, sprintf("   ~~> comment by %s has new updated_at value: %s <%s%s>",
-				       $comment->{commenting_user},
-				       $comment->{updated_at},
-				       $comment_template, $comment->{short_id});
+		    push @Log, sprintf("~~> \"%s\": comment by %s has new updated_at value\n    <%s%s>", $entry->{title},
+		    		       $comment->{commenting_user},
+		    		      #  $comment->{updated_at},
+		    		       $comment_template, $comment->{short_id});
 		    
 		    $is_changed++;
 		} elsif ($comment->{is_deleted} != $prev->{is_deleted}) {
-		    push @Log, sprintf("   **> comment by %s has new status 'is_deleted': %d <%s%s>",
+		    push @Log, sprintf("**> \"%s\"comment by %s has new status 'is_deleted': %d\n    <%s%s>",$entry->{title},
 				       $comment->{commenting_user},
 				       $comment->{is_deleted}, $comment_template,
 				       $comment->{short_id});
 		    $is_changed++;
 		    
 		} elsif ($comment->{is_moderated} != $prev->{is_moderated}) {
-		    push @Log, sprintf("   !!> comment by %s has new status 'is_moderated': %d <%s%s>",
+		    push @Log, sprintf("!!> \"%s\": comment by %s has new status 'is_moderated': %d\n    <%s%s>", $entry->{title},
 				       $comment->{commenting_user},
 				       $comment->{is_moderated},$comment_template,$comment->{short_id},);
 		    $is_changed++;
 		} elsif ($comment->{score} != $prev->{score} ) {
 		    if ($comment->{score}<$prev->{score}) {
 
-			push @Log, sprintf("   _ > comment by %s has new LOWER values for score: %d -> %d <%s%s>",
+			push @Log, sprintf("S-> \"%s\": comment by %s has new LOWER values for score: %d -> %d\n    <%s%s>", $entry->{title},
 				       $comment->{commenting_user},
 				       $prev->{score},
 				       $comment->{score},
 				       $comment_template,$comment->{short_id});
 		}
 		    if ($comment->{score}>=10 and $prev->{score}<10) {
-			push @Log, sprintf("   _ > comment by %s has new HIGH values for score: %d -> %d <%s%s>",
+			push @Log, sprintf("S+> \"%s\": comment by %s has new HIGH values for score: %d -> %d\n    <%s%s>", $entry->{title},
 				       $comment->{commenting_user},
 				       $prev->{score},
 				       $comment->{score},
@@ -281,7 +283,7 @@ if (@new_comment_updates) {
 		    }
 		    $is_changed++;
 		} elsif ($comment->{flags} != $prev->{flags}) {
-		    push @Log, sprintf("    _> comment by %s has new values for flags: %d -> %d <%s%s>",
+		    push @Log, sprintf("F+> \"%s\": comment by %s has new values for flags: %d -> %d\n    <%s%s>", $entry->{title},
 				       $comment->{commenting_user},
 				       $prev->{flags},
 				       $comment->{flags},
@@ -292,8 +294,8 @@ if (@new_comment_updates) {
 		$is_unseen++;
 	    }
 	    if ($is_unseen ) {
-		push @Log, sprintf("   ++> inserting NEW comment by %s <%s%s>", $comment->{commenting_user},
-			       $comment_template, $comment->{short_id});
+		# push @Log, sprintf("   ++> inserting NEW comment by %s <%s%s>", $comment->{commenting_user},
+		# 	       $comment_template, $comment->{short_id});
 
 	    
 		my @data=( $entry->{short_id},$comment->{short_id});
