@@ -1,5 +1,5 @@
 ==> START @ [% starttime %]
-Updated: [% count %] Commented: [% commented.size %]
+    Updated: [% count %] Commented: [% commented.size %]
 [% IF entries.size > 0 -%]### Inserts: 
 [% FOREACH entry IN entries -%]
     "[% entry.3 -%]"

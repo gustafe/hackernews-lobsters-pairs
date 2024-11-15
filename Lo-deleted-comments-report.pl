@@ -90,7 +90,8 @@ for my $id (sort {$entries{$b}->{created_time} cmp $entries{$a}->{created_time}}
 				    url=> $entries{$id}->{url},
 				    first_comment=>convert_to_local($entries{$id}->{first_comment}),
 				    last_comment=>convert_to_local($entries{$id}->{last_comment}),
-				    deleted_comment_count=> scalar @{$entries{$id}->{removed}}
+				    deleted_comment_count=> scalar @{$entries{$id}->{removed}},
+				    percentage => sprintf("%.1f", scalar @{$entries{$id}->{removed}}/$entries{$id}->{comment_count} * 100),
 				   };
 #	say "Entry $id with title $entries{$id}->{title} has $entries{$id}->{comment_count} comments";
 	# say "Number of deleted or moderated comments: " . scalar @{$entries{$id}->{removed}};

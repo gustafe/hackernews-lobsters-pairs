@@ -273,7 +273,9 @@ if (@new_comment_updates) {
 				       $comment->{score},
 				       $comment_template,$comment->{short_id});
 		}
-		    if ($comment->{score}>=10 and $prev->{score}<10) {
+		    if (($comment->{score}>=10 and $prev->{score}<10) or
+			($comment->{score}>=20 and $prev->{score}<20) or
+			($comment->{score}>=50 and $prev->{score}<50)  ) {
 			push @Log, sprintf("S+> \"%s\": comment by %s has new HIGH values for score: %d -> %d\n    <%s%s>", $entry->{title},
 				       $comment->{commenting_user},
 				       $prev->{score},
