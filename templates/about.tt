@@ -39,7 +39,12 @@ only scan the [`/newest`](https://lobste.rs/newest) page on Lobste.rs,
 and if the number of new entries manages to replace the page entirely
 between reads, the script might miss entries.
 
-The scores and comments are only updated occasionally as I don't want to overload the API endpoints.
+The scores and comments are only updated occasionally as I don't want
+to overload the API endpoints.
+
+## Source
+
+The GitHub repo is [here](https://github.com/gustafe/hackernews-lobsters-pairs).
 
 [% INCLUDE todo.md %]
 
