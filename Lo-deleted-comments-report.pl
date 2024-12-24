@@ -25,13 +25,21 @@ my $dbh=get_dbh();
 my $comments=$dbh->selectall_arrayref("select lo.id, title,lo.url, lo.created_time,co.comment_id,
 co.created_at,co.commenting_user,co.is_deleted,co.is_moderated,co.score,co.flags,co.comment_plain 
 from lobsters lo inner join lo_comments co on lo.id=co.id
-order by lo.created_time desc, co.created_at desc") or warn $dbh->errstr;
+order by lo.created_time desc, co.created_at desc ") or warn $dbh->errstr;
 
+
+my $comment_stats_common_sql = "select lo.id,title,lo.url,co.comment_id,co.commenting_user,co.score,co.flags,co.is_deleted,co.is_moderated from lobsters lo inner join lo_comments co on lo.id=co.id";
+
+my $stats->{top}={ sql_filter => 'order by co.score desc limit 25',};
+$stats->{bottom}={sql_filter=>' where flags > 0 order by co.score asc, co.flags desc limit 25'};
+$stats->{controversial}={sql_filter=>' order by co.flags desc limit 25'};
+
+#my $top_score = $dbh->selectall_arrayref(" order by co.score desc limit 25") or warn $dbh->errstr;
 
 #my @fields = qw/id title  created_time comment_id created_at commenting_user is_deleted is_moderated comment_plain/;
 my @report;
 my %entries;
-my %commenters;
+
 my $curr_id='';
 my $latest_comment = '1900-01-01T00:00:00.000+00:00';
 my $deleted_count = 0;
@@ -52,14 +60,7 @@ for my $row (@$comments) {
     } else {
 	$entries{$id}->{last_comment} = $created_at;
     }
-    if (!$commenters{$commenting_user}) {
-	$commenters{$commenting_user} = {count=>0, max_score=>-100,flags=>0,min_score=>100}
-    }
-    $commenters{$commenting_user}->{count}++;
-    $commenters{$commenting_user}->{max_score} = $score if $commenters{$commenting_user}->{max_score} < $score;
-    $commenters{$commenting_user}->{min_score} = $score if $commenters{$commenting_user}->{min_score} > $score;
-    $commenters{$commenting_user}->{flags} = $flags if $commenters{$commenting_user}->{flags} < $flags;
-    if ($is_deleted or $is_moderated) {
+    if ($is_deleted and $is_moderated) {
 	my $reason = "deleted" if $is_deleted;
 	$reason .= ' and moderated' if $is_moderated;
 
@@ -106,7 +107,21 @@ for my $id (sort {$entries{$b}->{created_time} cmp $entries{$a}->{created_time}}
 	next;
     }
 }
+my $process_stats=0;
+if ($process_stats) {
 
+for my $tag (qw/top bottom controversial/) {
+    my $data = $dbh->selectall_arrayref( $comment_stats_common_sql . ' '. $stats->{$tag}{sql_filter}) or warn $dbh->errstr;
+    for my $row (@$data) {
+	my ( $id,$title,$url,$comment_id,$commenting_user,$score,$flags,$is_deleted,$is_moderated) = @$row;
+	push @{$stats->{$tag}{res}}, {id=>$id, url=>$url, comment_id=>$comment_id,
+			       commenting_user=>$commenting_user,
+			       score=>$score,flags=>$flags,
+			       is_deleted=>$is_deleted,is_moderated=>$is_moderated};
+	
+    }
+}
+}
 $tt->process(
     'Lo-deleted-comments-index.tt', $index, 'Deleted/index.html',     { binmode => ':utf8' } ) || die $tt->error;
 
@@ -120,6 +135,8 @@ for my $id (keys %{$pages}) {
     $tt->process('Lo-deleted-comments-content.tt', $data, "Deleted/$id.html", { binmode => ':utf8' })||die $tt->error;
 
 }
+$stats->{meta}{generate_time}= Time::Piece->localtime()->strftime("%FT%T%z");
+#$tt->process('Lo-deleted-comments-stats.tt', $stats, "Deleted/stats.html", {binmode=>':utf8'})||die $tt->error;
 
 
 
