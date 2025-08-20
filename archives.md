@@ -1,7 +1,16 @@
 # Monthly archives for HN&&LO
 
+## 2025
+
+### [ February 2025](2025-02.html)
+### [  January 2025](2025-01.html)
+
 ## 2024
 
+### [ December 2024](2024-12.html)
+### [ November 2024](2024-11.html)
+### [  October 2024](2024-10.html)
+### [September 2024](2024-09.html)
 ### [   August 2024](2024-08.html)
 ### [     July 2024](2024-07.html)
 ### [     June 2024](2024-06.html)
