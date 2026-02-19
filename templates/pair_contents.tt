@@ -34,7 +34,7 @@
       <span class="[% entry.tag -%]">
       Then appeared on <strong>[% site -%]</strong>
       <span class="tooltip" title="[% timestamp -%]">[% entry.then -%]</span> later [% IF entry.then_s / (2*365*24*3600) > 1  -%] &#x1F9DF; [% END -%] 
-      as <a href="[% title_href -%]">[% title -%]</a>,
+      as <a href="[% title_href -%]">[% FILTER html -%][% title -%][% END -%]</a>,
       submitted by <a href="[% submitter_href -%]">[% submitter -%]</a>.</span>
       [% END -%]
       <span class="score_comments">Score&nbsp;[% score -%], comments&nbsp;[% comments -%]  
