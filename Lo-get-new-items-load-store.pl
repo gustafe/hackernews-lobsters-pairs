@@ -78,12 +78,17 @@ foreach my $day ( @days ) {
 
     my $url      = $template . $day . '.json';
     my $response = $ua->get($url);
+#    warn "URL: $url";
+    #    dump $response;
+#    dump $response->is_success;
+ #   dump $response->code;
     if ( !$response->is_success ) {
         warn "could not fetch newest entries day $day: $response->status_line";
+
 	$load_fail_count++;
 	LAST FETCH if $load_fail_count > 5;
     }
-
+  #  dump $response->decoded_content;
     my $list = decode_json( $response->decoded_content );
     push @{$entries}, @{$list};
     if ($from_page) {
@@ -243,7 +248,7 @@ if (@new_comment_updates) {
 		    
 		     $is_changed++; }
 		elsif ($comment->{is_deleted} != $prev->{is_deleted}) {
-		    push @Log, sprintf("**> \"%s\"comment by %s has new status 'is_deleted': %d\n    <%s%s>",$entry->{title},
+		    push @Log, sprintf("**> \"%s\": comment by %s has new status 'is_deleted': %d\n    <%s%s>",$entry->{title},
 				       $comment->{commenting_user},
 				       $comment->{is_deleted}, $comment_template,
 				       $comment->{short_id});
@@ -266,7 +271,7 @@ if (@new_comment_updates) {
 		    if (($comment->{score}>=10 and $prev->{score}<10) or
 			($comment->{score}>=20 and $prev->{score}<20) or
 			($comment->{score}>=50 and $prev->{score}<50)  ) {
-			push @Log, sprintf("S+> \"%s\": comment by %s has new HIGH values for score: %d -> %d\n    <%s%s>", $entry->{title},
+			push @Log, sprintf("S+> \"%s\": comment by %s has new HIGHER values for score: %d -> %d\n    <%s%s>", $entry->{title},
 				       $comment->{commenting_user},
 				       $prev->{score},
 				       $comment->{score},
