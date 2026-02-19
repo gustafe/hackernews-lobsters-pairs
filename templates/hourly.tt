@@ -18,7 +18,6 @@ updates hourly.
 <p><a href="about.html">About this project</a>. 
 <a href="about.html#changelog">Changelog</a>. 
 <a href="archives.html">Monthly archives</a>. 
-<a href="log.html">Daily log</a>.
 <a href="queue.html">HN update queue</a>.
 
 [% FOREACH pair=pairs %]
