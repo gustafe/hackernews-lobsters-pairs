@@ -41,8 +41,8 @@ my $dbh = get_dbh();
 #     say "$diff: $gaps{$diff}";
 # }
 # exit 0;
-
-my ( $start, $end) = (46492810-10*10_000,46492810-9*10_000  );
+my $mid=47671129;
+my ( $start, $end) = ($mid, $mid+10_000 );
 
 my $list = [ $start .. $end ];
 

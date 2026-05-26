@@ -52,17 +52,13 @@ on pr.url = lo.url
 where (lo.url is not null and lo.url !='')},
 	    get_pairs_10d=>qq{select lo.url, 
 lo.id as lo_id,strftime('%s',lo.created_time) as lo_time,lo.title as lo_title, lo.submitter as lo_submitter,lo.score as lo_score, lo.comments as lo_comments, lo.tags as lo_tags,
-hn.id as hn_id,strftime('%s',hn.created_time) as hn_time,hn.title as hn_title , hn.submitter as hn_submitter,hn.score as hn_score, hn.comments as hn_comments, null as hn_tags,
-pr.id as pr_id, strftime('%s',pr.created_time) as pr_time,pr.title as pr_title, pr.submitter as pr_submitter,pr.score as pr_score, pr.comments as pr_comments, null as pr_tags
+hn.id as hn_id,strftime('%s',hn.created_time) as hn_time,hn.title as hn_title , hn.submitter as hn_submitter,hn.score as hn_score, hn.comments as hn_comments, null as hn_tags
 from lobsters  lo
 left outer  join hackernews hn
 on lo.url = hn.url 
-left outer join proggit pr
-on pr.url = lo.url 
 where (lo.url is not null and lo.url !='')
     and ( strftime('%s','now') - strftime('%s',lo.created_time) < 10 * 24 * 3600 )
-	    or ( strftime('%s','now') - strftime('%s',hn.created_time) < 10 * 24 * 3600 )
-or ( strftime('%s','now') - strftime('%s',pr.created_time) < 10 * 24 * 3600 )
+	    and ( strftime('%s','now') - strftime('%s',hn.created_time) < 10 * 24 * 3600 )
 },
 rank_sql=> qq{select id, rank from hn_frontpage where id between ? and ?},
 };

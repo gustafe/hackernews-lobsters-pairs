@@ -233,7 +233,7 @@ my $sth_update = $dbh->prepare("update lo_comments set updated_at=?, is_deleted=
 
 if (@new_comment_updates) {
     for my $entry (@new_comment_updates) {
-     	#push @Log, "==> getting update data for submission ".$entry->{short_id}.' "'.$entry->{title}.'"';
+     	#push @Log, "U=> getting update data for submission ".$entry->{short_id}.' "'.$entry->{title}.'"';
 	my $host = extract_host( $entry->{url} );
 #	 push @Log, sprintf("==> getting comment data for submission \"%s\" <%s%s> (%s) (S: %d, C: %d)",	 		   $entry->{title}, $entry_template,$entry->{short_id},	 		   $host,	 		    $entry->{score},	 		   $entry->{comment_count});
 
@@ -262,7 +262,7 @@ if (@new_comment_updates) {
 		} elsif ($comment->{score} != $prev->{score} ) {
 		    if ($comment->{score}<$prev->{score}) {
 
-			push @Log, sprintf("S-> \"%s\": comment by %s has new LOWER values for score: %d -> %d\n    <%s%s>", $entry->{title},
+			push @Log, sprintf("S↓> \"%s\": comment by %s has new LOWER values for score: %d -> %d\n    <%s%s>", $entry->{title},
 				       $comment->{commenting_user},
 				       $prev->{score},
 				       $comment->{score},
@@ -271,7 +271,7 @@ if (@new_comment_updates) {
 		    if (($comment->{score}>=10 and $prev->{score}<10) or
 			($comment->{score}>=20 and $prev->{score}<20) or
 			($comment->{score}>=50 and $prev->{score}<50)  ) {
-			push @Log, sprintf("S+> \"%s\": comment by %s has new HIGHER values for score: %d -> %d\n    <%s%s>", $entry->{title},
+			push @Log, sprintf("S↑> \"%s\": comment by %s has new HIGHER values for score: %d -> %d\n    <%s%s>", $entry->{title},
 				       $comment->{commenting_user},
 				       $prev->{score},
 				       $comment->{score},
@@ -280,7 +280,7 @@ if (@new_comment_updates) {
 		    }
 		    $is_changed++;
 		} elsif ($comment->{flags} != $prev->{flags}) {
-		    push @Log, sprintf("F+> \"%s\": comment by %s has new values for flags: %d -> %d\n    <%s%s>", $entry->{title},
+		    push @Log, sprintf("F↑> \"%s\": comment by %s has new values for flags: %d -> %d\n    <%s%s>", $entry->{title},
 				       $comment->{commenting_user},
 				       $prev->{flags},
 				       $comment->{flags},
