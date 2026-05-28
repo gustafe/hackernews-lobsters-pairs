@@ -28,3 +28,31 @@ HNL_LIB=/home/gustaf/prj/HN-Lobsters-Tracker
 ** top domains  ?
 
 * List of pairs 
+
+
+## new server setup
+
+### Perl modules
+
+#### using apt
+
+```
+libmodern-perl-perl
+libdatetime-perl
+libtemplate-perl
+libdatetime-format-strptime-perl
+libdata-dump-perl
+libconfig-simple-perl
+libdbi-perl
+liblwp-useragent-perl
+libwww-perl
+libjson-perl
+libdbd-sqlite3-perl
+cpanminus + recommended packages (including make)
+```
+
+#### using CPAN
+
+```
+Template::Plugin::Markdown
+```

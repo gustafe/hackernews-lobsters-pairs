@@ -100,8 +100,10 @@ foreach my $day ( @days ) {
 my $dbh = get_dbh;
 
 my $all_ids = $dbh->selectall_arrayref("select id,comments from lobsters")  or die $dbh->errstr;
-my $comment_ids = $dbh->selectall_arrayref("select id,comment_id,updated_at,is_deleted,is_moderated,score,flags from lo_comments") or die $dbh->errstr;
-
+#                                                  0 , 1         , 2         , 3         , 4           , 5    , 6 
+my $comment_ids = $dbh->selectall_arrayref("select id, comment_id, updated_at, is_deleted, is_moderated, score, flags from lo_comments") or die $dbh->errstr;
+#                                                 0 , 1           , 2       , 3    , 4    , 5             , 6         , 7
+my $metadata_ids=$dbh->selectall_arrayref("select id, update_time, comments, score, flags, user_is_author, is_deleted, check_count from lo_metadata") or die $dbh->errstr;
 my %seen_ids;
 foreach my $row ( @{$all_ids} ) {
     $seen_ids{ $row->[0] }=$row->[1];
@@ -116,16 +118,31 @@ for my $row (@{$comment_ids}) {
 						  flags=>$row->[6],
 						 };
 }
+my %ids_have_metadata;
+for my $row (@{$metadata_ids}) {
+    $ids_have_metadata{$row->[0]} = { update_time => $row->[1],
+				      comments =>$row->[2],
+				      score => $row->[3],
+				      flags =>$row->[4],
+				      user_is_author=> $row->[5],
+				      is_deleted => $row->[6],
+				      check_count=>$row->[7], };
+}
 
 my @updates;
 my @inserts;
 my @new_comment_inserts;
 my @new_comment_updates;
+my @meta_updates;
+my @meta_inserts;
 my %skip_entries_for_comments;
 while (<DATA>) {
     chomp;
     $skip_entries_for_comments{$_}++;
 }
+
+
+
 foreach my $entry ( @{$entries} ) {
     my $current_id = $entry->{short_id};
     if ( exists $seen_ids{$current_id} ) {
@@ -136,16 +153,19 @@ foreach my $entry ( @{$entries} ) {
             $entry->{comment_count}, join( ',', @{ $entry->{tags} } ),
             $current_id
           ];
+	my $ut = Time::Piece->localtime();
+	my $check_count = $ids_have_metadata{$current_id}->{check_count};
+	$check_count = $check_count ? $check_count : 0;
+	push @meta_updates, [$ut->epoch() , $entry->{comment_count}, $entry->{score}, $entry->{flags}, $entry->{user_is_author}, 0, $check_count+1, $current_id];
 	# do we need to update comments?
-#	my $comments_in_db = scalar keys %{$ids_have_comments{$current_id}};
 					     
-		if ($seen_ids{$current_id} != $entry->{comment_count}	and ! exists $skip_entries_for_comments{$current_id}   ) {
-	#if (! exists $skip_entries_for_comments{$current_id}  ) {
+	if ($seen_ids{$current_id} != $entry->{comment_count}	and ! exists $skip_entries_for_comments{$current_id}   ) {
 
 	    if ($ids_have_comments{$current_id}) {
 		push @new_comment_updates, $entry;
 	    } 
 	}
+
     }
     else {
 
@@ -160,6 +180,9 @@ foreach my $entry ( @{$entries} ) {
 	   $entry->{score},
 	   @{ $entry->{tags} } ? join( ',', @{ $entry->{tags} } ) : ''
           ];
+	my $ut = Time::Piece->localtime();
+	push @meta_inserts, [$current_id, $ut->epoch(), $entry->{comment_count},
+			     $entry->{score}, $entry->{flags}, $entry->{user_is_author}, 0, 1];
     }
     # entries with comments we haven't seen before 
     if (!exists $ids_have_comments{$current_id} 	and ! exists $skip_entries_for_comments{$current_id}  ) {
@@ -169,13 +192,16 @@ foreach my $entry ( @{$entries} ) {
 
 my $sth;
 my $count = 0;
+my $stats = { entries => {inserts=>0, updates=>0},
+	      metadata => {inserts=>0, updates=>0},
+	      comments=>{inserts=>0, updates=>0}};
 $dbh->{PrintError} = 1;
 
 if (@inserts) {
     $sth = $dbh->prepare( $feeds->{lo}->{insert_sql} ) or die $dbh->errstr;
     foreach my $values (@inserts) {
         $sth->execute( @{$values} ) or warn $sth->errstr;
-        $count++;
+        $stats->{entries}{inserts}++;
     }
     $sth->finish();
     for my $el (@inserts) {
@@ -184,16 +210,39 @@ if (@inserts) {
 	push @$el,$host;
     }
 }
-
 if (@updates) {
     $count = 0;
     $sth = $dbh->prepare( $feeds->{lo}->{update_sql} ) or die $dbh->errstr;
     foreach my $values (@updates) {
 
         $sth->execute( @{$values} ) or warn $sth->errstr;
+	$stats->{entries}{updates}++;
         $count++;
     }
 
+    $sth->finish;
+}
+
+#### metadata
+
+my @meta_fields = qw/id update_time comments score flags user_is_author is_deleted check_count/;
+if (@meta_inserts) {
+    $sth= $dbh->prepare( "insert into lo_metadata (" . join(',',@meta_fields) .") values (".join(',', map {'?'} @meta_fields).")") or die $dbh->errstr;
+    foreach my $values (@meta_inserts) {
+	$sth->execute( @{$values} ) or warn $sth->errstr;
+	$stats->{metadata}{inserts}++;
+    }
+    $sth->finish();
+}
+    
+
+
+if (@meta_updates) {
+    $sth = $dbh->prepare("update lo_metadata set update_time= ?,comments=?, score=?, flags=?,user_is_author=?,is_deleted=?, check_count=? where id=?") or die $dbh->errstr;
+    for my $values( @meta_updates) {
+	$sth->execute( @{$values} ) or warn $sth->errstr;
+	$stats->{metadata}{updates}++;
+    }
     $sth->finish;
 }
 
@@ -224,6 +273,7 @@ if (@new_comment_inserts) {
 #	     push @Log, sprintf("  ++> inserting NEW comment by %s <%s%s>",	     		       $comment->{commenting_user},	     		       $comment_template, $comment->{short_id});
 	    
 	    $sth_insert->execute(@data) or warn $sth->errstr;
+	    $stats->{comments}{inserts}++;
 	}
 
     }
@@ -306,6 +356,7 @@ if (@new_comment_updates) {
 		push @data, $entry->{short_id};
 		push @data, $comment->{short_id};
 		$sth_update->execute(@data) or warn "error during update of comment $comment->{short_id} on entry $entry->{short_id}: $sth->errstr";
+		$stats->{comments}{updates}++;
 	    
 	    }
 	} 
@@ -323,6 +374,7 @@ my %data = (count=>$count,
 #	    endtime=>$end_time,
 	    runtime=> sec_to_hms(tv_interval($start_tv)),
 	    Log=>\@Log,
+	    stats=>$stats,
 	   );
 
 if (@inserts or @new_comment_updates or @new_comment_inserts ) {
