@@ -70,13 +70,15 @@ my @days;
 if ($from_page ) {
     @days = ( $from_page .. $from_page + 10 );
 } else {
-    @days = ( 1 .. 16 );
+    my $end_day = $debug ? 16: 16;
+    @days = ( 1 .. $end_day );
 }
 my $load_fail_count  =0 ;
 FETCH:
 foreach my $day ( @days ) {
 
-    my $url      = $template . $day . '.json';
+    my $url      = $template . $day . '.json?ref=hnlo';
+#    push @Log, "==> fetching for $day: $url " . sec_to_hms(tv_interval($start_tv));
     my $response = $ua->get($url);
 #    warn "URL: $url";
     #    dump $response;
@@ -98,11 +100,15 @@ foreach my $day ( @days ) {
 }
 
 my $dbh = get_dbh;
+#push @Log, "==> getting all ids... " . sec_to_hms(tv_interval($start_tv));
 
 my $all_ids = $dbh->selectall_arrayref("select id,comments from lobsters")  or die $dbh->errstr;
-#                                                  0 , 1         , 2         , 3         , 4           , 5    , 6 
+#                                                  0 , 1         , 2         , 3         , 4           , 5    , 6
+#push @Log, "==> getting comment ids... " . sec_to_hms(tv_interval($start_tv));
 my $comment_ids = $dbh->selectall_arrayref("select id, comment_id, updated_at, is_deleted, is_moderated, score, flags from lo_comments") or die $dbh->errstr;
 #                                                 0 , 1           , 2       , 3    , 4    , 5             , 6         , 7
+#push @Log, "==> getting metadata ids... " . sec_to_hms(tv_interval($start_tv));
+
 my $metadata_ids=$dbh->selectall_arrayref("select id, update_time, comments, score, flags, user_is_author, is_deleted, check_count from lo_metadata") or die $dbh->errstr;
 my %seen_ids;
 foreach my $row ( @{$all_ids} ) {
@@ -141,9 +147,10 @@ while (<DATA>) {
     $skip_entries_for_comments{$_}++;
 }
 
-
+#push @Log, "==> comparing new entries to existing... " .sec_to_hms(tv_interval($start_tv)) ;
 
 foreach my $entry ( @{$entries} ) {
+   dump  $entry  if $debug;
     my $current_id = $entry->{short_id};
     if ( exists $seen_ids{$current_id} ) {
 
@@ -196,6 +203,8 @@ my $stats = { entries => {inserts=>0, updates=>0},
 	      metadata => {inserts=>0, updates=>0},
 	      comments=>{inserts=>0, updates=>0}};
 $dbh->{PrintError} = 1;
+
+#push @Log, sprintf("==> inserts: %d ; updates: %d ; meta: %d - %s",		   scalar @inserts,		   scalar @updates,		   scalar @meta_updates,		   sec_to_hms(tv_interval($start_tv)));
 
 if (@inserts) {
     $sth = $dbh->prepare( $feeds->{lo}->{insert_sql} ) or die $dbh->errstr;
@@ -362,7 +371,7 @@ if (@new_comment_updates) {
 	} 
     }
 }
-
+#push @Log, "==> FINISHED ". 		   sec_to_hms(tv_interval($start_tv));
 #my $end_time = Time::Piece->localtime->datetime;
 my %data = (count=>$count,
 	    entries=>\@inserts,
