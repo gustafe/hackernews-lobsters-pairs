@@ -15,8 +15,6 @@ timestamp="[% meta.generate_time -%]"
 title="[% meta.generate_time -%]">[% meta.generate_time -%]</span>. It usually
 updates hourly.
 
-<p><b>As of 2026-07-26, we are investigating integration to lobste.rs.</b>
-
 <p><a href="about.html">About this project</a>. 
 <a href="about.html#changelog">Changelog</a>. 
 <a href="archives.html">Monthly archives</a>. 
