@@ -147,6 +147,7 @@ sub get_dbh {
 
 sub get_ua {
     my $ua = LWP::UserAgent->new( agent => $cfg->param('UserAgent.string') );
+    # we need to set a cookie for lobsters to bust the cache
     $ua->cookie_jar({});
     $ua->cookie_jar->set_cookie(0,'scraper','HNLO', '/','lobste.rs', 80, 0,0,24*3600,0);
     $ua->cookie_jar->set_cookie(0,'scraper','HNLO', '/','lobste.rs',443, 0,1,24*3600,0);

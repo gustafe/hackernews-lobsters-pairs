@@ -78,19 +78,14 @@ FETCH:
 foreach my $day ( @days ) {
 
     my $url      = $template . $day . '.json?ref=hnlo';
-#    push @Log, "==> fetching for $day: $url " . sec_to_hms(tv_interval($start_tv));
+
     my $response = $ua->get($url);
-#    warn "URL: $url";
-    #    dump $response;
-#    dump $response->is_success;
- #   dump $response->code;
     if ( !$response->is_success ) {
         warn "could not fetch newest entries day $day: $response->status_line";
 
 	$load_fail_count++;
 	LAST FETCH if $load_fail_count > 5;
     }
-  #  dump $response->decoded_content;
     my $list = decode_json( $response->decoded_content );
     push @{$entries}, @{$list};
     if ($from_page) {
@@ -100,14 +95,11 @@ foreach my $day ( @days ) {
 }
 
 my $dbh = get_dbh;
-#push @Log, "==> getting all ids... " . sec_to_hms(tv_interval($start_tv));
 
 my $all_ids = $dbh->selectall_arrayref("select id,comments from lobsters")  or die $dbh->errstr;
 #                                                  0 , 1         , 2         , 3         , 4           , 5    , 6
-#push @Log, "==> getting comment ids... " . sec_to_hms(tv_interval($start_tv));
 my $comment_ids = $dbh->selectall_arrayref("select id, comment_id, updated_at, is_deleted, is_moderated, score, flags from lo_comments") or die $dbh->errstr;
 #                                                 0 , 1           , 2       , 3    , 4    , 5             , 6         , 7
-#push @Log, "==> getting metadata ids... " . sec_to_hms(tv_interval($start_tv));
 
 my $metadata_ids=$dbh->selectall_arrayref("select id, update_time, comments, score, flags, user_is_author, is_deleted, check_count from lo_metadata") or die $dbh->errstr;
 my %seen_ids;
@@ -146,8 +138,6 @@ while (<DATA>) {
     chomp;
     $skip_entries_for_comments{$_}++;
 }
-
-#push @Log, "==> comparing new entries to existing... " .sec_to_hms(tv_interval($start_tv)) ;
 
 foreach my $entry ( @{$entries} ) {
    dump  $entry  if $debug;
@@ -203,8 +193,6 @@ my $stats = { entries => {inserts=>0, updates=>0},
 	      metadata => {inserts=>0, updates=>0},
 	      comments=>{inserts=>0, updates=>0}};
 $dbh->{PrintError} = 1;
-
-#push @Log, sprintf("==> inserts: %d ; updates: %d ; meta: %d - %s",		   scalar @inserts,		   scalar @updates,		   scalar @meta_updates,		   sec_to_hms(tv_interval($start_tv)));
 
 if (@inserts) {
     $sth = $dbh->prepare( $feeds->{lo}->{insert_sql} ) or die $dbh->errstr;
@@ -303,7 +291,7 @@ if (@new_comment_updates) {
 		my $prev = $ids_have_comments{ $entry->{short_id} }->{ $comment->{short_id}};
 		
 		 if ($comment->{last_edited_at} and $comment->{last_edited_at} ne $prev->{updated_at}) {
-		     push @Log, sprintf("~~> \"%s\": comment by %s has new last_edited_at value\n    <%s%s>", $entry->{title},		    		       $comment->{commenting_user},					$comment_template,					$comment->{short_id});
+#		     push @Log, sprintf("~~> \"%s\": comment by %s has new last_edited_at value\n    <%s%s>", $entry->{title},		    		       $comment->{commenting_user},					$comment_template,					$comment->{short_id});
 		    
 		     $is_changed++; }
 		elsif ($comment->{is_deleted} != $prev->{is_deleted}) {
@@ -330,11 +318,7 @@ if (@new_comment_updates) {
 		    if (($comment->{score}>=10 and $prev->{score}<10) or
 			($comment->{score}>=20 and $prev->{score}<20) or
 			($comment->{score}>=50 and $prev->{score}<50)  ) {
-			push @Log, sprintf("S↑> \"%s\": comment by %s has new HIGHER values for score: %d -> %d\n    <%s%s>", $entry->{title},
-				       $comment->{commenting_user},
-				       $prev->{score},
-				       $comment->{score},
-				       $comment_template,$comment->{short_id});
+#			push @Log, sprintf("S↑> \"%s\": comment by %s has new HIGHER values for score: %d -> %d\n    <%s%s>", $entry->{title},				       $comment->{commenting_user},				       $prev->{score},				       $comment->{score},				       $comment_template,$comment->{short_id});
 			
 		    }
 		    $is_changed++;
@@ -371,16 +355,12 @@ if (@new_comment_updates) {
 	} 
     }
 }
-#push @Log, "==> FINISHED ". 		   sec_to_hms(tv_interval($start_tv));
-#my $end_time = Time::Piece->localtime->datetime;
+
 my %data = (count=>$count,
 	    entries=>\@inserts,
 	    updates=>scalar @updates,
 	    commented=>[@new_comment_updates,@new_comment_inserts],
 	    starttime=>$start_time->strftime("%Y-%m-%dT%H:%M:%S%z"),
-	    #	    endtime=>$end_time->strftime("%Y-%m-%dT%H:%M:%S%z"),
-#	    starttime=>$start_time . $tzstring,
-#	    endtime=>$end_time,
 	    runtime=> sec_to_hms(tv_interval($start_tv)),
 	    Log=>\@Log,
 	    stats=>$stats,
@@ -398,3 +378,4 @@ idlkrv
 mggy9m
 zck7bo
 t1enph
+ax914v

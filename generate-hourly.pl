@@ -26,7 +26,7 @@ my $ua;
 
 my $dbh = get_dbh;
 $dbh->{sqlite_unicode} = 1;
-
+my @Log;
 #### CODE ####
 my $now=time();
 my $t0 = [gettimeofday];
@@ -35,7 +35,7 @@ say gmtime . " starting, fetching 10d data... " if $debug;
 # get all pairs from the DB
 my $sth = $dbh->prepare( $sql->{get_pairs_10d} );
 my %sets = %{ get_all_sets($sth) };
-say gmtime . " got all sets... " if $debug;
+push @Log, gmtime . " got all sets... ";
 $generation_log .= sec_to_dhms(tv_interval($t0)).' - got all sets<br />';
 # coerce into list
 # filter entries older than the retention time
@@ -57,7 +57,7 @@ foreach my $url (sort {$sets{$b}->{first_seen} <=> $sets{$a}->{first_seen}} keys
     }
     push @pairs, $sets{$url};
 }
-say gmtime . " got all pairs... " if $debug;
+push @Log, gmtime . " got all pairs... ";
 $generation_log .= sec_to_dhms(tv_interval($t0)).' - got all pairs after<br />';
 $sth=$dbh->prepare($sql->{rank_sql});
 $sth->execute( $min_hn_id, $max_hn_id);
@@ -140,7 +140,7 @@ foreach my $pair (@pairs) {
 
     }
 }
-say gmtime . " got all scores... " if $debug;
+push @Log,  gmtime . " got all scores... " ;
 $generation_log .= sec_to_dhms(tv_interval($t0)).' - got all scores and done after <br />';
 # clean up data for presentation
 $now= time();
@@ -167,4 +167,5 @@ $tt->process(
     '/home/gustaf/public_html/hnlo/index.html',
     { binmode => ':utf8' }
 ) || die $tt->error;
-say gmtime . " generated page, done. " if $debug;
+push @Log, gmtime . " generated page, done. " ;
+
