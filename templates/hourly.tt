@@ -1,6 +1,5 @@
 [% INCLUDE header.tt %]
 <h1>[% meta.page_title -%]</h1>
-<h3>... <strike>and Proggit!</strike></h3>
 
 <p>Links shared between <a href="https://lobste.rs">Lobste.rs</a> and
 <a href="https://news.ycombinator.com/">Hacker News</a> in the last [%
